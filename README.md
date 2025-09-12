@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Eproc
 
-## Getting Started
+## Notes
+Eproc is a .... It is developed using nvm lts version `v20.19.5`.
 
-First, run the development server:
+## I. Getting Started
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Make sure you are on the correct nodejs version for this build. Run the following:
+```
+nvm install v20.19.5
+nvm use v20.19.5
+
+# Note the use option will not persist when opening a new terminal session. 
+# You must run nvm use or run the following to set a default
+nvm default v20.19.5 
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## II. First Time Setup
+After cloning this application install the packages:
+```
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### a. Running locally
+You can run a local application using a mocked json database located in the data directory. To run this configuration run the following: 
+```bash
+cp .env.local.example .env.local 
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### b. Running against Mongo
+TBD
 
-## Learn More
+### III. Troubleshooting
+If you run into any issues try to manually clear the nextjs cache and any installed packages: 
+```
+rm -rf .next node_modules package-lock.json
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Then try running the app again from II. First Time Setup
+```
