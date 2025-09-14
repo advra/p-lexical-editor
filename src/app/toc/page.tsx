@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import TocClient, { Link } from "./components/ClientToc";
 import { DatabaseError } from "./components/DatabaseError";
+import LogoutButton from "@/components/common/buttons/LogoutButton";
 
 interface PageData {
   root: { props?: { title?: string } };
@@ -61,7 +62,12 @@ export default function Page() {
 
   try {
     const links = getNavLinks(dbRelative);
-    return <TocClient links={links} />;
+    return (
+      <>
+        <LogoutButton />
+        <TocClient links={links} />
+      </>
+    )
   } catch (err) {
     console.error("Error loading database:", err);
     return <DatabaseError />;

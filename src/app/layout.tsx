@@ -1,4 +1,4 @@
-import "./styles.css";
+import "./global.css";
 
 export default function RootLayout({
   children,
@@ -7,7 +7,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <head>
+        <meta name="viewport" content="initial-scale=1, width=device-width" />
+      </head>
+      <body>
+        <div className="min-h-screen">
+          {children}
+        </div>
+      </body>
     </html>
   );
 }

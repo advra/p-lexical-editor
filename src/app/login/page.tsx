@@ -2,37 +2,67 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { LoginView } from '@/components/ui/login/login-view';
+
+import { LoginView } from '@/components/login/views/login-view';
 
 export default function LoginPage() {
   const router = useRouter();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setLoading] = useState(false);
 
-  async function handleSubmit(event: Event) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
 
-    // check username and password from app\api\login\route.ts
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    });
+    if (!username.trim() || !password.trim()) {
+      setError('Username and password are required');
+      return;
+    }
 
-    if (res.ok) {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // include credentials only if your server sets/uses cookies for sessions
+        credentials: 'include',
+        body: JSON.stringify({ username, password }),
+      });
+
+      // try to parse JSON (guard in case server returns non-JSON)
+      let data: { message?: string } | null = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+
+      if (!res.ok) {
+        // handle 401 specifically if you want a custom UX
+        if (res.status === 401) {
+          setError('Invalid username or password');
+        } else {
+          setError(data?.message ?? 'Login failed');
+        }
+        setLoading(false);
+        return;
+      }
+
+      setPassword('');
       router.push('/toc');
-    } else {
-      const data = await res.json();
-      setError(data.message || 'Login failed');
+    } catch (err) {
+      console.error('Login error', err);
+      setError('Network error, please try again');
+      setLoading(false);
     }
   }
 
   return (
-    <main className="min-h-screen border-b border-red-600 flex items-center justify-center bg-gray-100 px-4">
-      <LoginView username={username} password={password} error={error} event={event} setUsername={setUsername} setPassword={setPassword} handleSubmit={handleSubmit} />
-    </main>
+    <>
+      <LoginView username={username} password={password} error={error} isLoading={isLoading} setUsername={setUsername} setPassword={setPassword} handleSubmit={handleSubmit} />
+    </>
   );
 }
