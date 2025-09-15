@@ -14,15 +14,16 @@ export async function POST(request: NextRequest) {
   const { username, password } = await request.json();
   const users = readUsers();
   const user = users.find((u: { username: any; }) => u.username === username);
-  if (!user) return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
-  const ok = await bcrypt.compare(password, user.passwordHash);
-  if (!ok) return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
-
-  const sessionId = crypto.randomUUID();
-
   if (!user) {
     return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
   }
+
+  const ok = await bcrypt.compare(password, user.passwordHash);
+  if (!ok) {
+    return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
+  }
+
+  const sessionId = crypto.randomUUID();
 
   // For now, we'll just set a cookie with the username and role
   const response = NextResponse.json({ message: 'Login successful' });

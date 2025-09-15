@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from "react";
-import { Card, CardContent, Divider, List, TextField } from "@mui/material";
+import { Card, CardContent, List, TextField } from "@mui/material";
+import { Toaster, toast } from 'sonner';
+
 import ErrorIcon from '@mui/icons-material/Error';
 
 import Button from "@/components/common/buttons/Button";
@@ -32,7 +34,7 @@ export default function Page() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [showChangePassword, setShowChangePassword] = useState(false)
-  const [error, setError] = useState<string | null>('Sample error here');
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const newStrong = isStrongPassword(newPassword);
@@ -57,6 +59,7 @@ export default function Page() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setError(data?.message ?? 'Failed to change password');
+        toast.error('Error occured changing password');
         return;
       }
 
@@ -64,10 +67,11 @@ export default function Page() {
       setOldPassword('');
       setNewPassword('');
       setConfirmNewPassword('');
-      // TODO: show success UI or toast
+      toast.success('Successfully changed password!')
     } catch (err) {
       console.error(err);
       setError('Network error');
+      toast.error('Error occured changing password');
     } finally {
       setLoading(false);
     }
@@ -76,6 +80,7 @@ export default function Page() {
   return (
     <>
       <Navbar />
+      <Toaster position="top-right" />
       <div className="mx-auto max-w-4xl p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="col-span-1">
@@ -116,7 +121,7 @@ export default function Page() {
 
                 {showChangePassword && (
                   <form onSubmit={handleSubmit}>
-                    {true && (
+                    {error && (
                       <div className="w-full bg-red-200 my-2 rounded-sm">
                         <div className="p-2 text-sm text-red-500">
                           <ErrorIcon /> {error}
