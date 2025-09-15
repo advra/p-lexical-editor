@@ -1,4 +1,4 @@
-import Navbar from "@/components/common/Navbar/Navbar"
+import Navbar from "@/components/common/navbar/Navbar"
 import TocClient, { Link } from "..//ClientToc";
 
 type Props = {

@@ -44,7 +44,6 @@ export async function POST(req: NextRequest) {
     const newHash = await bcrypt.hash(newPassword, 10);
     users[idx] = { ...user, passwordHash: newHash };
     writeUsers(users);
-
     return NextResponse.json({ message: "Password changed" }, { status: 200 });
   } catch (err) {
     console.error(err);

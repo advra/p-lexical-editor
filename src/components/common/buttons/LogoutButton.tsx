@@ -23,7 +23,7 @@ export default function LogoutButton({ handleClose }: Props) {
 
   return (
     <div
-      className='p-2 hover:bg-gray-200 w-full rounded-none hover:cursor-pointer'
+      className=' w-full rounded-none hover:bg-gray-200 hover:cursor-pointer'
       onClick={handleLogout}
     >
       <div className="pl-2 flex items-center justify-start gap-2 w-full text-left">

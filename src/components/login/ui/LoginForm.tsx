@@ -2,10 +2,12 @@
 
 import React from "react";
 
-import TextField from "@mui/material/TextField";
+import { default as CustomTextField } from "@/components/common/TextField";
 import ErrorIcon from '@mui/icons-material/Error';
 import Button from "@/components/common/buttons/Button";
 import CircularProgress from "@mui/material/CircularProgress";
+import { useTheme } from "next-themes";
+import { toast } from "sonner";
 
 interface Props {
   username: string;
@@ -18,19 +20,25 @@ interface Props {
 }
 
 export const LoginForm = ({ username, password, error, isLoading, setUsername, setPassword, handleSubmit }: Props) => {
+  const { setTheme, resolvedTheme } = useTheme();
+
   const isDisabled = !username.trim() || !password.trim();
+  console.log("Theme is", resolvedTheme)
   return (
     <>
       <div className="max-w-md w-full bg-gray p-8 rounded-2xl shadow-xs border border-gray-100">
-        <h4 className="text-center mb-4">Sign in to EPuck</h4>
-        <p className="text-center text-gray-600">Welcome to EPuck. Please enter your login credentials below to use the app</p>
+        <h4 className="text-center mb-4">Sign in to Eproc</h4>
+        <p className="text-center">Welcome to EPuck. Please enter your login credentials below to use the app</p>
         <form onSubmit={handleSubmit} className="space-y-5">
-          <TextField margin="dense" size="small" className="w-full" placeholder="Username"
+          <CustomTextField
+            className="w-full text-black "
+            placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
           />
-          <TextField margin="dense" size="small" className="w-full" placeholder="Password"
+          <CustomTextField className="w-full text-black"
+            placeholder="Password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -54,7 +62,12 @@ export const LoginForm = ({ username, password, error, isLoading, setUsername, s
             </Button>
           </>}
           <div className="text-gray-600 text-right">
-            <span className="hover:underline hover:cursor-pointer">
+            <span
+              className="hover:underline hover:cursor-pointer"
+              onClick={() => {
+                toast("Please contact an Administrator for a password reset")
+              }}
+            >
               Forgot Password?
             </span>
           </div>

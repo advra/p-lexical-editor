@@ -1,15 +1,19 @@
 'use client';
 
 import { useState } from "react";
-import { Card, CardContent, List, TextField } from "@mui/material";
+import { Card, CardContent, Divider, List, TextField } from "@mui/material";
 import { Toaster, toast } from 'sonner';
-
+import cn from "classnames";
 import ErrorIcon from '@mui/icons-material/Error';
 
+const SETTINGS_SECONDARY_COLOR = 'bg-blue-400';
+
 import Button from "@/components/common/buttons/Button";
-import Navbar from "@/components/common/Navbar/Navbar";
+import Link from "next/link";
+import { ErrorMessage } from "@/components/common/notifications/ErrorMessage";
 
 type SettingItem = {
+  active?: boolean;
   id: string;
   title: string;
   description: string;
@@ -20,7 +24,7 @@ function isStrongPassword(pw: string) {
 }
 
 const menuItems: SettingItem[] = [
-  { id: "account", title: "Account & Security", description: "Choose a unique password to protect your account" },
+  { active: true, id: "account", title: "Account & Security", description: "Choose a unique password to protect your account" },
   { id: "theme", title: "Theme", description: "Appearance and theme settings" },
 ];
 
@@ -79,8 +83,6 @@ export default function Page() {
 
   return (
     <>
-      <Navbar />
-      <Toaster position="top-right" />
       <div className="mx-auto max-w-4xl p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="col-span-1">
@@ -91,7 +93,11 @@ export default function Page() {
               <CardContent>
                 <List>
                   {menuItems.map((item, idx) => (
-                    <li className="hover:underline hover:cursor-pointer">{item.title}</li>
+                    <li key={idx} className="flex items-center gap-3 list-none hover:underline hover:cursor-pointer mb-2">
+                      {item.active && (
+                        <div className={cn("h-6 w-[3px]", SETTINGS_SECONDARY_COLOR)} />)}
+                      <Link href={'/settings/' + item.id}>{item.title}</Link>
+                    </li>
                   ))}
                 </List>
               </CardContent>
@@ -103,6 +109,7 @@ export default function Page() {
               <div className="px-4 py-3">
                 <h3>Account & Security</h3>
               </div>
+              <div className={cn("h-[2px] mx-auto max-w-[90%]", SETTINGS_SECONDARY_COLOR)} />
               <CardContent>
                 <div key={items[0].id} className="flex gap-4 items-center mb-4">
                   <div className="flex-3/4">
@@ -110,10 +117,11 @@ export default function Page() {
                     <div className="text-sm text-slate-500">{items[0].description}</div>
                   </div>
                   <div className="flex-1/4">
+
                     <div
                       onClick={() => setShowChangePassword((s) => !s)}
-                      className="font-semibold hover:cursor-pointer">
-                      Change
+                      className="font-light hover:cursor-pointer select-none">
+                      {showChangePassword ? 'Close' : 'Change'}
                     </div>
                     <div className="text-sm text-slate-500">Last Changed: N/A</div>
                   </div>
@@ -122,13 +130,8 @@ export default function Page() {
                 {showChangePassword && (
                   <form onSubmit={handleSubmit}>
                     {error && (
-                      <div className="w-full bg-red-200 my-2 rounded-sm">
-                        <div className="p-2 text-sm text-red-500">
-                          <ErrorIcon /> {error}
-                        </div>
-                      </div>
+                      <ErrorMessage errorMessage={error} />
                     )}
-                    {/* <p className="text-md">Choose a unique password which matches the password requirements: minimum 6 characters, 1 special character, 1 upper, 1 lower</p> */}
                     <TextField margin="dense" size="small" className="w-full" placeholder="Current Password"
                       value={oldPassword}
                       type="password"
@@ -176,7 +179,7 @@ export default function Page() {
               </CardContent>
             </Card>
           </div>
-        </div>
+        </div >
       </div >
     </>
   );

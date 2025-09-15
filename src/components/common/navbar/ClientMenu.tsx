@@ -16,11 +16,11 @@ export default function ClientMenu({ username }: { username: string | null }) {
   return (
     <div>
       <div className="text-sm flex items-center gap-1 min-w-32">
-        <span onClick={(e) => setAnchorEl(e.currentTarget as HTMLElement)} className="hover:cursor-pointer">
+        <span onClick={(e) => setAnchorEl(e.currentTarget as HTMLElement)} className="hover:cursor-pointer text-white">
           Welcome {username ?? 'Guest'}!
         </span>
         <IconButton size="small" onClick={(e) => setAnchorEl(e.currentTarget)}>
-          <ExpandMoreIcon fontSize="small" className={open ? 'rotate-180' : ''} />
+          <ExpandMoreIcon fontSize="small" className={open ? 'text-white rotate-180' : 'text-white'} />
         </IconButton>
 
         <Menu
@@ -31,13 +31,23 @@ export default function ClientMenu({ username }: { username: string | null }) {
             },
           }}
         >
-          {username ?
-            <>
-              <MenuItem onClick={async () => { setAnchorEl(null); await router.push('/settings'); }}>Settings</MenuItem>
+          {username ? [
+            <MenuItem onClick={async () => {
+              setAnchorEl(null);
+              await router.push('/settings');
+            }}>
+              <div className="pl-2 flex items-center justify-start gap-2 w-full text-left">
+                <span>Settings</span>
+              </div>
+            </MenuItem>,
+            <MenuItem>
               <LogoutButton handleClose={() => setAnchorEl(null)} />
-            </> : <>
+            </MenuItem>
+          ] : [
+            <MenuItem>
               <LoginButton handleClose={() => setAnchorEl(null)} />
-            </>}
+            </MenuItem>
+          ]}
         </Menu>
       </div>
     </div>

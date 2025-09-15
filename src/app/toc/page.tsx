@@ -1,9 +1,8 @@
 // src/app/toc/page.tsx  (server component)
 import fs from "fs";
 import path from "path";
-import TocClient, { Link } from "./components/ClientToc";
+import { Link } from "./components/ClientToc";
 import { DatabaseError } from "./components/DatabaseError";
-import Navbar from "@/components/common/Navbar/Navbar";
 import { TocView } from "./components/view/toc-view";
 
 interface PageData {
