@@ -19,8 +19,32 @@ export async function middleware(req: NextRequest) {
 
     // Disable "/puck/[...puckPath]"
     if (req.nextUrl.pathname.startsWith("/puck")) {
-       console.error('Error fetching data:');
+      console.error('Error fetching data:');
       return NextResponse.redirect(new URL("/", req.url));
+    }
+
+    /*
+      Protect many routes by ensuring users are logged in.
+      TODO: Do we want to guard pages?
+    */
+
+    // define protected prefixes
+    const url = req.nextUrl.clone();
+    const protectedPaths = ['/settings', '/toc', '/app'];
+    const isProtected = protectedPaths.some((p) => url.pathname.startsWith(p));
+
+    if (isProtected) {
+      const token = req.cookies.get('user-session')?.value;
+      if (!token) {
+        url.pathname = '/login';
+        return NextResponse.redirect(url);
+      }
+      // TODO: JWT verify or DB check
+      // const valid = await verifySessionToken(token);
+      // if (!valid) {
+      //   url.pathname = '/login';
+      //   return NextResponse.redirect(url);
+      // }
     }
   }
 

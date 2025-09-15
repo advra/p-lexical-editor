@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     const { oldPassword, newPassword } = body ?? {};
 
     // Get the user from the cookie/session instead of client-supplied username
-    const cookie = req.cookies.get("user")?.value;
+    const cookie = req.cookies.get("user-session")?.value;
     if (!cookie) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     let sessionUser;

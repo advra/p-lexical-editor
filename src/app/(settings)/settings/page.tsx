@@ -11,6 +11,7 @@ const SETTINGS_SECONDARY_COLOR = 'bg-blue-400';
 import Button from "@/components/common/buttons/Button";
 import Link from "next/link";
 import { ErrorMessage } from "@/components/common/notifications/ErrorMessage";
+import { SuccessMessage } from "@/components/common/notifications/SuccessMessage";
 
 type SettingItem = {
   active?: boolean;
@@ -43,7 +44,6 @@ export default function Page() {
 
   const newStrong = isStrongPassword(newPassword);
   const match = newPassword === confirmNewPassword;
-  // const canEnable = newStrong && match && oldPasswordVerified;
   const canSubmit = newStrong && match && oldPassword.length > 0 && !loading;
 
   async function handleSubmit(e: React.FormEvent) {
@@ -159,6 +159,13 @@ export default function Page() {
                       onChange={(e) => setConfirmNewPassword(e.target.value)}
                       required
                     />
+
+                    <div className="text-sm text-slate-500">
+                      {newPassword !== confirmNewPassword && (
+                        <span className="text-red-600">New passwords do not match.</span>
+                      )}
+                    </div>
+
                     <div className="flex gap-2">
                       <Button
                         disabled={!canSubmit}

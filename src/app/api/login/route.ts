@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
   console.log(`XXXXX LOGIN sessionId ${sessionId}`)
 
-  response.cookies.set('user', JSON.stringify(cookieData), {
+  response.cookies.set('user-session', JSON.stringify(cookieData), {
     httpOnly: true,
     path: '/',
     secure: process.env.NODE_ENV === 'production',

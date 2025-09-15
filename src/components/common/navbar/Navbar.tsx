@@ -1,17 +1,6 @@
-import Link from "next/link";
-import { cookies } from "next/headers";
-import ClientMenu from "./ClientMenu";
 import { NavbarContainer } from "./NavbarContainer";
+import useUser from "@/hooks/use-user";
 
 export default async function Navbar() {
-  const cookieValue = (await cookies()).get("user")?.value;
-  let username: string | null = null;
-  try {
-    const session = cookieValue ? JSON.parse(cookieValue) : null;
-    username = session?.username ?? null;
-  } catch {
-    username = null;
-  }
-
-  return <NavbarContainer username={username} />;
+  return <NavbarContainer />;
 }

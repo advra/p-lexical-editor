@@ -12,6 +12,7 @@ export default function ClientMenu({ username }: { username: string | null }) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const router = useRouter();
+  console.log("Username is ", username)
 
   return (
     <div>
@@ -32,7 +33,7 @@ export default function ClientMenu({ username }: { username: string | null }) {
           }}
         >
           {username ? [
-            <MenuItem onClick={async () => {
+            <MenuItem key="settings" onClick={async () => {
               setAnchorEl(null);
               await router.push('/settings');
             }}>
@@ -40,11 +41,11 @@ export default function ClientMenu({ username }: { username: string | null }) {
                 <span>Settings</span>
               </div>
             </MenuItem>,
-            <MenuItem>
+            <MenuItem key="logout">
               <LogoutButton handleClose={() => setAnchorEl(null)} />
             </MenuItem>
           ] : [
-            <MenuItem>
+            <MenuItem key="login">
               <LoginButton handleClose={() => setAnchorEl(null)} />
             </MenuItem>
           ]}
