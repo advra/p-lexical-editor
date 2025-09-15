@@ -4,6 +4,7 @@ import path from "path";
 import TocClient, { Link } from "./components/ClientToc";
 import { DatabaseError } from "./components/DatabaseError";
 import LogoutButton from "@/components/common/buttons/LogoutButton";
+import { Navbar } from "@/components/common/Navbar";
 
 interface PageData {
   root: { props?: { title?: string } };
@@ -64,7 +65,7 @@ export default function Page() {
     const links = getNavLinks(dbRelative);
     return (
       <>
-        <LogoutButton />
+        <Navbar />
         <TocClient links={links} />
       </>
     )

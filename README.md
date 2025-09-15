@@ -25,6 +25,10 @@ npm install
 You can run a local application using a mocked json database located in the data directory. To run this configuration run the following: 
 ```bash
 cp .env.local.example .env.local 
+
+# Run seed script to pr-seed the local database with default users (admin etc)
+node scripts/seed-users.mjs
+
 npm run dev
 ```
 

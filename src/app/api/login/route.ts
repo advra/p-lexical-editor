@@ -1,22 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
+import path from 'path';
+import fs from 'fs';
 
-const USERS = [
-  { username: 'admin', password: 'admin123', role: 'admin' },
-  { username: 'user', password: 'user123', role: 'operator' },
-  { username: 'viewer', password: 'viewer123', role: 'viewer' },
-];
-
-// Also allow GET if you want a simple browser check:
-export async function GET() {
-  return NextResponse.json({ message: 'pong' }, { status: 200 });
+export function readUsers() {
+  const p = path.join(process.cwd(), 'data', 'users.json');
+  if (!fs.existsSync(p)) return [];
+  const raw = fs.readFileSync(p, 'utf8');
+  return JSON.parse(raw);
 }
 
 export async function POST(request: NextRequest) {
   const { username, password } = await request.json();
-
-  const user = USERS.find(
-    (u) => u.username === username && u.password === password
-  );
+  const users = readUsers();
+  const user = users.find((u: { username: any; }) => u.username === username);
+  if (!user) return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
+  const ok = await bcrypt.compare(password, user.passwordHash);
+  if (!ok) return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
 
   const sessionId = crypto.randomUUID();
 

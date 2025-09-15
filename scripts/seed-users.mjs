@@ -1,9 +1,8 @@
 // scripts/seed-users.js
-import { SALT_NUMBER } from "../src/lib/constants"
-
-const fs = require('fs');
-const path = require('path');
-const bcrypt = require('bcryptjs');
+import fs from 'fs';
+import path from 'path';
+import bcrypt from 'bcryptjs';
+import { SALT_NUMBER } from '../src/lib/constants.mjs';
 
 const outPath = path.join(process.cwd(), 'data', 'users.json');
 
