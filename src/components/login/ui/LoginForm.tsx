@@ -1,6 +1,7 @@
 'use client';
 
 import React from "react";
+import Image from 'next/image'
 
 import { default as CustomTextField } from "@/components/common/TextField";
 import ErrorIcon from '@mui/icons-material/Error';
@@ -27,9 +28,20 @@ export const LoginForm = ({ username, password, error, isLoading, setUsername, s
   return (
     <>
       <div className="max-w-md w-full bg-gray p-8 rounded-2xl shadow-xs border border-gray-100">
-        <h4 className="text-center mb-4">Sign in to Eproc</h4>
-        <p className="text-center">Welcome to EPuck. Please enter your login credentials below to use the app</p>
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="flex items-center justify-center align-middle mb-8">
+          <div className="relative w-24 h-24">
+            <Image
+              src="/EprocLogoWhite.png"
+              alt="Eproc Logo"
+              fill
+              className="object-contain"
+            />
+          </div>
+        </div>
+        <h4 className="text-center font-extralight">Welcome to Eproc! The procedure tasking suite.</h4>
+
+        <p className="text-center text-gray-600">Enter your login credentials below to use the app</p>
+        <form onSubmit={handleSubmit} className="space-y-5 mt-4">
           <CustomTextField
             className="w-full text-black "
             placeholder="Username"

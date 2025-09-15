@@ -1,5 +1,3 @@
-import { FormEvent, SetStateAction } from "react";
-import Button from "../../common/buttons/Button";
 import { LoginForm } from "../ui/LoginForm";
 
 interface Props {
@@ -15,7 +13,7 @@ interface Props {
 export const LoginView = ({ username, password, error, isLoading, setUsername, setPassword, handleSubmit }: Props) => {
   return (
     <>
-      <div className='min-h-screen flex items-center justify-center'>
+      <div className='flex items-center justify-center mt-18'>
         <LoginForm username={username} password={password} error={error} isLoading={isLoading} setUsername={setUsername} setPassword={setPassword} handleSubmit={handleSubmit} />
       </div >
     </>
