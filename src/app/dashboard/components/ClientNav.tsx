@@ -1,7 +1,7 @@
 // app/dashboard/page.tsx   (Server component)
 import fs from "fs";
 import path from "path";
-import ClientDashboardSidebar, { Link } from "./ClientDashboardSidebar";
+import ClientDashboardSidebar, { ProcMetadata } from "./ui/ClientDashboardSidebar";
 
 // Define shape of DB as you expect
 interface PageData {
@@ -21,7 +21,7 @@ export default function Page() {
   const database = JSON.parse(raw) as DatabaseSchema;
 
   // Convert database to the Link[] you expect (or compute inside client)
-  const links: Link[] = Object.keys(database).map((p) => ({
+  const links: ProcMetadata[] = Object.keys(database).map((p) => ({
     href: p,
     label: p === "/" ? "Home" : p.replace(/^\//, ""),
   }));

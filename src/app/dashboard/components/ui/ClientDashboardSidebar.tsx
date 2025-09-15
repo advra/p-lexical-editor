@@ -6,13 +6,13 @@ import { useMemo, useState } from "react";
 
 import SearchIcon from '@mui/icons-material/Search';
 
-export interface Link {
+export interface ProcMetadata {
   href: string;
   label: string;
 }
 
 interface Props {
-  links: Link[];
+  links: ProcMetadata[];
 }
 
 // export default function TocClient({ links }: Props) {
@@ -57,7 +57,7 @@ export default function ClientDashboardSidebar({ links }: Props) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [showOptions, setShowOptions] = useState(false);
-  const [compact, setCompact] = useState(false);
+  const [compact, setCompact] = useState(true);
 
   // simple filtered list based on search
   const filtered = useMemo(() => {
@@ -135,49 +135,55 @@ export default function ClientDashboardSidebar({ links }: Props) {
           {filtered.length === 0 ? (
             <div className="px-3 py-2 text-sm text-blue-200">No matches</div>
           ) : (
-            <ul className={`space-y-1 ${compact ? "text-xs" : "text-sm"}`}>
-              {filtered.map((link) => (
-                <li key={link.href}>
-                  <button
-                    onClick={() => {
-                      router.push('/procs/' + link.href);
-                    }}
-                    className="w-full text-left px-3 py-2 hover:bg-blue-800/60 rounded flex items-center gap-2 hover:cursor-pointer"
-                    title={link.label}
-                  >
-                    {/* small bullet icon */}
-                    <span className="w-2 h-2 rounded-full bg-blue-300/80 inline-block shrink-0" />
-                    <span className="truncate">{link.label}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
+            <>
+              <span className="ml-2 text-gray-300 text-sm">Procedures:</span>
+              <ul className={`space-y-1 ${compact ? "text-xs" : "text-sm"}`}>
+                {filtered.map((link) => (
+                  <li key={link.href}>
+                    <button
+                      onClick={() => {
+                        router.push(link.href);
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-blue-800/60 rounded flex items-center gap-2 hover:cursor-pointer"
+                      title={link.label}
+                    >
+                      {/* small bullet icon */}
+                      <span className="w-2 h-2 rounded-full bg-blue-300/80 inline-block shrink-0" />
+                      <span className="truncate">{link.label}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
         </nav>
 
         {/* Spacer / Footer area */}
-        {/* <div className="px-3 py-3 border-t border-blue-800">
-          <div className="text-xs text-blue-200">Space</div>
+        <div className="px-3 py-3 border-t border-gray-700">
+          {/* <div className="text-xs text-blue-200">Space</div> */}
           <div className="mt-2 flex items-center justify-between">
-            <button
+            {/* <button
               onClick={() => {
                 setQuery("");
               }}
               className="text-xs bg-blue-800/50 hover:bg-blue-800 px-2 py-1 rounded"
             >
               Clear search
-            </button>
+            </button> */}
+            <div>
+
+            </div>
 
             <button
               onClick={() => {
-                router.push("/");
+                router.push("/help");
               }}
-              className="text-xs bg-blue-700/80 hover:bg-blue-700 px-2 py-1 rounded"
+              className="text-xs bg-blue-700/80 hover:bg-blue-700 px-2 py-1 rounded hover:cursor-pointer"
             >
-              Home
+              Help
             </button>
           </div>
-        </div> */}
+        </div>
       </aside>
     </>
   );

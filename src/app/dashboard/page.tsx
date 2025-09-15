@@ -1,7 +1,7 @@
 // src/app/toc/page.tsx  (server component)
 import fs from "fs";
 import path from "path";
-import { Link } from "./components/ClientDashboardSidebar";
+import { ProcMetadata } from "./components/ui/ClientDashboardSidebar";
 import { DatabaseError } from "./components/DatabaseError";
 import { TocView } from "./components/view/toc-view";
 
@@ -15,7 +15,7 @@ type DatabaseSchema = Record<string, PageData>;
 export default function Page() {
   const dbRelative = process.env.DB_JSON_PATH ?? "";
 
-  const getNavLinks = (dbPathOrRelative: string): Link[] => {
+  const getNavLinks = (dbPathOrRelative: string): ProcMetadata[] => {
     if (!dbPathOrRelative) {
       throw new Error("DB_JSON_PATH not configured");
     }
@@ -52,7 +52,7 @@ export default function Page() {
       throw new Error(`Failed to parse DB JSON at ${found}: ${(err as Error).message}`);
     }
 
-    const links: Link[] = Object.keys(database).map((p) => ({
+    const links: ProcMetadata[] = Object.keys(database).map((p) => ({
       href: p,
       label: p === "/" ? "Home" : p.replace(/^\//, ""),
     }));
