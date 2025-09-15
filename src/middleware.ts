@@ -30,7 +30,7 @@ export async function middleware(req: NextRequest) {
 
     // define protected prefixes
     const url = req.nextUrl.clone();
-    const protectedPaths = ['/settings', '/toc', '/app'];
+    const protectedPaths = ['/settings', '/dashboard', '/app'];
     const isProtected = protectedPaths.some((p) => url.pathname.startsWith(p));
 
     if (isProtected) {

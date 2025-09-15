@@ -14,7 +14,7 @@ export const NavbarContainer = () => {
         <div className="max-w-7xl mx-auto flex items-center">
           <div className="flex items-center justify-center align-middle gap-1">
             <div className="relative w-8 h-8">
-              <Link href="/toc" className="text-white">
+              <Link href="/dashboard" className="text-white">
                 <Image
                   src="/EprocLogo.png"
                   alt="Eproc Logo"
@@ -24,7 +24,7 @@ export const NavbarContainer = () => {
               </Link>
             </div>
             <div>
-              <Link href="/toc" className="text-white">
+              <Link href="/dashboard" className="text-white">
                 <div className="mr-4 font-semibold">
                   EPROC
                 </div>

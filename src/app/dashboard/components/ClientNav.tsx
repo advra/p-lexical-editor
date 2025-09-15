@@ -1,4 +1,4 @@
-// app/toc/page.tsx   (Server component)
+// app/dashboard/page.tsx   (Server component)
 import fs from "fs";
 import path from "path";
 import ClientDashboardSidebar, { Link } from "./ClientDashboardSidebar";

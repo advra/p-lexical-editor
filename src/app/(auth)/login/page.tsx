@@ -52,7 +52,7 @@ export default function LoginPage() {
       }
 
       setPassword('');
-      router.push('/toc');
+      router.push('/dashboard');
     } catch (err) {
       console.error('Login error', err);
       setError('Network error, please try again');
