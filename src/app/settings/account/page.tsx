@@ -1,5 +1,5 @@
 import Button from "@/components/common/buttons/Button";
-import { Navbar } from "@/components/common/Navbar";
+import { Navbar } from "@/components/common/Navbar/Navbar";
 import { Card, CardContent, Divider, List, TextField } from "@mui/material";
 
 type SettingItem = {

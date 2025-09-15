@@ -7,7 +7,7 @@ import { Toaster, toast } from 'sonner';
 import ErrorIcon from '@mui/icons-material/Error';
 
 import Button from "@/components/common/buttons/Button";
-import { Navbar } from "@/components/common/Navbar";
+import Navbar from "@/components/common/Navbar/Navbar";
 
 type SettingItem = {
   id: string;

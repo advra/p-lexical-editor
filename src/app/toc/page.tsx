@@ -3,8 +3,8 @@ import fs from "fs";
 import path from "path";
 import TocClient, { Link } from "./components/ClientToc";
 import { DatabaseError } from "./components/DatabaseError";
-import LogoutButton from "@/components/common/buttons/LogoutButton";
-import { Navbar } from "@/components/common/Navbar";
+import Navbar from "@/components/common/Navbar/Navbar";
+import { TocView } from "./components/view/toc-view";
 
 interface PageData {
   root: { props?: { title?: string } };
@@ -65,8 +65,7 @@ export default function Page() {
     const links = getNavLinks(dbRelative);
     return (
       <>
-        <Navbar />
-        <TocClient links={links} />
+        <TocView links={links} />
       </>
     )
   } catch (err) {
