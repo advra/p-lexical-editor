@@ -12,6 +12,7 @@ import Button from "@/components/common/buttons/Button";
 import Link from "next/link";
 import { ErrorMessage } from "@/components/common/notifications/ErrorMessage";
 import { SuccessMessage } from "@/components/common/notifications/SuccessMessage";
+import { useRouter } from "next/navigation";
 
 type SettingItem = {
   active?: boolean;
@@ -35,6 +36,7 @@ const items: SettingItem[] = [
 
 
 export default function Page() {
+  const router = useRouter();
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
@@ -84,7 +86,17 @@ export default function Page() {
   return (
     <>
       <div className="mx-auto max-w-4xl p-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="mb-4">
+          <span
+            className="hover:underline hover:cursor-pointer"
+            onClick={() => {
+              router.back();
+            }}
+          >
+            Back to EPROC
+          </span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 ">
           <div className="col-span-1">
             <Card className="w-full max-w-lg">
               <div className="px-4 py-3">

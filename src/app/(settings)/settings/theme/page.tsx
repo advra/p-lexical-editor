@@ -11,6 +11,7 @@ import Link from "next/link";
 import Button from "@/components/common/buttons/Button";
 import { useTheme } from "next-themes";
 import { WarnMessage } from "@/components/common/notifications/WarnMessage";
+import { useRouter } from "next/navigation";
 
 type SettingItem = {
   active?: boolean
@@ -30,12 +31,23 @@ const items: SettingItem[] = [
 
 
 export default function Page() {
+  const router = useRouter();
   const { setTheme, resolvedTheme } = useTheme();
   const [showThemeMenu, setShowThemeMenu] = useState(false)
 
   return (
     <>
       <div className="mx-auto max-w-4xl p-4">
+        <div className="mb-4">
+          <span
+            className="hover:underline hover:cursor-pointer"
+            onClick={() => {
+              router.back();
+            }}
+          >
+            Back to EPROC
+          </span>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="col-span-1">
             <Card className="w-full max-w-lg dark:bg-gray-700">

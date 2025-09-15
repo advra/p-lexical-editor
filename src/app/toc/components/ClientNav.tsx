@@ -1,7 +1,7 @@
 // app/toc/page.tsx   (Server component)
 import fs from "fs";
 import path from "path";
-import TocClient, { Link } from "./ClientToc";
+import ClientDashboardSidebar, { Link } from "./ClientDashboardSidebar";
 
 // Define shape of DB as you expect
 interface PageData {
@@ -27,5 +27,5 @@ export default function Page() {
   }));
 
   // Pass links as props into the client component
-  return <TocClient links={links} />;
+  return <ClientDashboardSidebar links={links} />;
 }
