@@ -1,4 +1,5 @@
 import type { Config } from "@measured/puck";
+import HeadingBlock from "./components/puck/HeadingBlock";
 
 type Props = {
   HeadingBlock: { title: string };
@@ -6,19 +7,7 @@ type Props = {
 
 export const config: Config<Props> = {
   components: {
-    HeadingBlock: {
-      fields: {
-        title: { type: "text" },
-      },
-      defaultProps: {
-        title: "Heading",
-      },
-      render: ({ title }) => (
-        <div style={{ padding: 64 }}>
-          <h1>{title}</h1>
-        </div>
-      ),
-    },
+    HeadingBlock,
   },
 };
 
