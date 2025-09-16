@@ -26,14 +26,30 @@ You can run a local application using a mocked json database located in the data
 ```bash
 cp .env.local.example .env.local 
 
+# install packages if you havent already yet
+npm install
+
 # Run seed script to pr-seed the local database with default users (admin etc)
 node scripts/seed-users.mjs
-
 npm run dev
 ```
 
-### b. Running against Mongo
-TBD
+### b. Running Against Mongo Instance
+Spin up your own docker container instance. By default it will create a docker container named `mongo-puck-{USER}`
+```bash
+./scripts/mongo-start.bash
+```
+
+Now copy the test configs and run you app.
+```bash
+cp .env.test.example .env.test
+
+# install packages if you havent already yet
+npm install
+
+# start the app against our mongodb container
+npm run dev:test
+```
 
 ### III. Troubleshooting
 If you run into any issues try to manually clear the nextjs cache and any installed packages: 
