@@ -3,24 +3,7 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import { getUserFromCookie } from "@/lib/utils/auth";
 import { notFound } from "next/navigation";
-
-export type Payload = {
-  data: RecordData & {
-    metadata: Metadata
-  }
-}
-
-export type Metadata = {
-  createdAt: string;
-  createdBy: string;
-  updatedAt: string;
-  updatedBy: string;
-  version: number;
-}
-
-export type RecordData = {
-  metadata: Metadata;
-}
+import { Metadata, Payload, RecordData } from "@/app/puck/types";
 
 function createProcMetadata(payload: Payload, record: RecordData, username: string): Metadata {
   const now = new Date().toISOString();
