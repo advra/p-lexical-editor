@@ -1,8 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import SearchIcon from '@mui/icons-material/Search';
+import AddIcon from '@mui/icons-material/Add';
 import Button from "@/components/common/buttons/Button";
+import CreateNewProcDialog from "./CreateNewProcDialog";
+import type { ProcPayload } from "./CreateNewProcDialog";
+import { useRouter } from "next/navigation";
 
 export type Proc = {
   id: string;
@@ -18,7 +22,9 @@ type Props = {
 };
 
 export default function ProcsTabbedTable({ procs, currentUser }: Props) {
-  const tabs = ["All", "My Procs", "Shared with Me"] as const;
+  const router = useRouter()
+  const [showCreateNewProc, setShowCreateNewProc] = useState(false);
+  const tabs = ["All", "My Procs", "Shared With Me"] as const;
   type Tab = (typeof tabs)[number];
 
   const [active, setActive] = useState<Tab>("All");
@@ -46,11 +52,73 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
     );
   }, [procs, query, active, currentUser]);
 
+  const tryCreateNewProc = async ({ name, description, projectTag }: ProcPayload) => {
+    // 1) generate id
+    const id = crypto.randomUUID()
+    const path = `/procs/${id}`;
+
+    // 2) build the data object in the same shape your DB expects
+    const data = {
+      root: {
+        props: {
+          title: name,
+          // add other meta if you want: owner/currentUser, projectTag...
+          owner: currentUser,
+          projectTag: projectTag ?? null,
+          description: description ?? "",
+        },
+      },
+      // initial content: you can include helpful starter blocks
+      content: [
+        {
+          type: "HeadingBlock",
+          props: {
+            title: "Edit this page by adding /edit to the end of the URL",
+            id: `HeadingBlock-${Date.now()}`,
+          },
+        },
+      ],
+      zones: {},
+    };
+
+    try {
+      const res = await fetch("/api/puck", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path, data }),
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err || `Request failed: ${res.status}`);
+      }
+
+      // Optionally parse server response
+      await res.json();
+
+      // Close the dialog
+      setShowCreateNewProc(false);
+
+      // Optionally update local UI: either refetch from server or update local state
+      // Example: if you have local procs state, prepend a new proc item:
+      // setProcs(prev => [{ id, name, owner: currentUser, sharedWith: [], updatedAt: new Date().toISOString() }, ...prev]);
+
+      // Optionally navigate to the new proc page
+      router.push(`/procs/${id}`);
+
+      return { id, path, data };
+    } catch (error) {
+      console.error("Failed to create proc", error);
+      // Show user-facing error (toast/snackbar) as needed
+      throw error;
+    }
+  }
+
   return (
-    <div className="bg-white rounded-md shadow-sm border">
+    <div className="bg-white rounded-md shadow-xs border border-gray-300">
       {/* Tabs */}
-      <div className="border-b">
-        <nav className="flex px-3" aria-label="Procs tabs">
+      <div className="pt-2">
+        <nav className="flex px-3 mx-2 border-b border-gray-200" aria-label="Procs tabs">
           {tabs.map((t) => {
             const isActive = t === active;
             return (
@@ -69,6 +137,16 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
               </Button>
             );
           })}
+          <div className="ml-auto">
+            <Button
+              size="none"
+              className="px-4 py-1 my-4 bg-green-700 text-white rounded-sm flex hover:bg-green-700/85"
+              onClick={() => setShowCreateNewProc(true)}>
+              <div className="flex items-center">
+                <AddIcon sx={{ fontSize: 24 }} /> <span className="text-sm">New Proc</span>
+              </div>
+            </Button>
+          </div>
         </nav>
       </div>
 
@@ -79,7 +157,7 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
         </label>
 
         <div className="flex items-center gap-2 max-w-md">
-          <div className="flex items-center gap-2 w-full bg-gray-50 rounded-md border px-2 py-1">
+          <div className="flex items-center gap-2 w-full bg-gray-50 rounded-md border border-gray-500 px-2 py-1">
             {/* If you don't have Heroicons, replace SearchIcon with an SVG or text */}
             <SearchIcon className="w-4 h-4 text-gray-400" />
             <input
@@ -120,16 +198,16 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
             <tbody className="divide-y">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-3 py-6 text-center text-sm text-gray-500">
+                  <td colSpan={5} className="px-3 py-6 text-center text-sm text-gray-500 ">
                     No procs found
                   </td>
                 </tr>
               ) : (
                 filtered.map((p) => (
-                  <tr key={p.id} className="hover:bg-gray-50">
+                  <tr key={p.id} className="hover:bg-gray-50 ">
                     <td className="px-3 py-3 font-medium text-gray-800">{p.name}</td>
                     <td className="px-3 py-3 text-gray-600">{p.owner}</td>
-                    <td className="px-3 py-3 text-gray-600">
+                    <td className="px-3 py-3 text-gray-600 ">
                       {p.sharedWith && p.sharedWith.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
                           {p.sharedWith.slice(0, 3).map((s) => (
@@ -153,8 +231,9 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
                     <td className="px-3 py-3 text-gray-600">{p.updatedAt ?? "—"}</td>
                     <td className="px-3 py-3">
                       <div className="flex gap-2">
-                        <button className="text-sm text-blue-600 hover:underline">Open</button>
-                        <button className="text-sm text-gray-600 hover:underline">More</button>
+                        <button className="text-sm text-blue-600 hover:underline hover:cursor-pointer">View</button>
+                        <button className="text-sm text-blue-600 hover:underline hover:cursor-pointer">Edit</button>
+                        <button className="text-sm text-gray-600 hover:underline hover:cursor-pointer">More</button>
                       </div>
                     </td>
                   </tr>
@@ -164,6 +243,15 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
           </table>
         </div>
       </div>
+
+      {/* Render NewProcDialog */}
+      {showCreateNewProc &&
+        <CreateNewProcDialog
+          open={showCreateNewProc}
+          onClose={() => setShowCreateNewProc(false)}
+          onCreate={tryCreateNewProc}
+          projectTags={["Viasat", "Northrop", "Qualcomm"]}
+        />}
     </div>
   );
 }

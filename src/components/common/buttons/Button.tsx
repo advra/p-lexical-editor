@@ -23,13 +23,13 @@ const variantStyles: Record<Variant, string> = {
 
 const sizeStyles: Record<Size, string> = {
   none: "",
-  sm: "h-8 px-3 text-sm",
-  md: "h-8 px-4 text-sm",
-  lg: "h-12 px-6 text-base",
+  sm: "px-3 py-1.5 text-sm min-h-[32px] leading-none",
+  md: "px-4 py-2 text-sm min-h-[36px] leading-none",
+  lg: "px-6 py-3 text-base min-h-[44px] leading-none",
 };
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "none", size = "none", children, ...props }, ref) => {
+  ({ className, variant = "none", size = "md", children, ...props }, ref) => {
     return (
       <button
         ref={ref}

@@ -15,6 +15,7 @@ export type TextFieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
 };
 
 export const TextField = forwardRef<HTMLInputElement, TextFieldProps>((props, ref) => {
+  // Note pulling out dangerouslySetInnerHTML and children so they dont pass into ..rest
   const {
     label,
     description,
@@ -27,6 +28,8 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>((props, re
     iconLeft,
     iconRight,
     disabled,
+    dangerouslySetInnerHTML,
+    children,
     ...rest
   } = props;
 

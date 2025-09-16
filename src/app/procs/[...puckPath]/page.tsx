@@ -14,6 +14,8 @@ import { Client } from "./client";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { getPage } from "@/lib/get-page";
+import { BackToDashboardButton } from "./ui/components/BackToDashboardButton";
+import { EditButton } from "./ui/components/EditButton";
 
 export async function generateMetadata({
   params,
@@ -43,7 +45,17 @@ export default async function Page({
     return notFound();
   }
 
-  return <Client data={data} />;
+  return (
+    <div className="p-4">
+      <div className="flex">
+        <BackToDashboardButton />
+        <div className="ml-auto">
+          <EditButton path={path} />
+        </div>
+      </div>
+      <Client data={data} />
+    </div>
+  );
 }
 
 // Force Next.js to produce static pages: https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic

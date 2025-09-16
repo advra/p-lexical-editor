@@ -38,7 +38,11 @@ export default async function Page({
   const path = `/${puckPath.join("/")}`;
   const data = getPage(path);
 
-  return <Client path={path} data={data || {}} />;
+  return (
+    <>
+      <Client path={path} data={data || {}} />
+    </>
+  );
 }
 
 export const dynamic = "force-dynamic";
