@@ -11,7 +11,7 @@
       {
         "type": "HeadingBlock",
         "props": {
-          "title": "Edit this page by adding /edit to the end of the URL",
+          "title": "Example 2",
           "id": "HeadingBlock-1758048232366"
         }
       }
@@ -19,10 +19,10 @@
     "zones": {},
     "metadata": {
       "createdAt": "2025-09-16T18:43:52.968Z",
-      "createdBy": "admin",
-      "updatedAt": "2025-09-16T18:43:52.968Z",
+      "createdBy": "user",
+      "updatedAt": "2025-09-16T20:43:32.993Z",
       "updatedBy": "admin",
-      "version": 1
+      "version": 2
     }
   }
 }

@@ -66,12 +66,11 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
           description: description ?? "",
         },
       },
-      // initial content: you can include helpful starter blocks
       content: [
         {
           type: "HeadingBlock",
           props: {
-            title: "Edit this page by adding /edit to the end of the URL",
+            title: name,
             id: `HeadingBlock-${Date.now()}`,
           },
         },

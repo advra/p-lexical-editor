@@ -4,13 +4,13 @@ import fs from "fs";
 import { getUserFromCookie } from "@/lib/utils/auth";
 import { notFound } from "next/navigation";
 
-type Payload = {
-  data: any & {
-    metadata: any
+export type Payload = {
+  data: RecordData & {
+    metadata: Metadata
   }
 }
 
-type Metadata = {
+export type Metadata = {
   createdAt: string;
   createdBy: string;
   updatedAt: string;
@@ -18,10 +18,14 @@ type Metadata = {
   version: number;
 }
 
-function createProcMetadata(payload: any, record: any, username: string): Metadata {
+export type RecordData = {
+  metadata: Metadata;
+}
+
+function createProcMetadata(payload: Payload, record: RecordData, username: string): Metadata {
   const now = new Date().toISOString();
-  const incomingMeta = payload.data?.meta ?? {};
-  let meta = record?.meta ?? {};
+  const incomingMeta = payload.data?.metadata ?? {};
+  let meta = record?.metadata ?? {};
 
   // create metadata otherwise
   if (!record) {

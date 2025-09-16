@@ -45,11 +45,31 @@ export default async function Page({
     return notFound();
   }
 
+  const formatTimestamp = (isoString: string) => {
+    if (!isoString) return '';
+    const date = new Date(isoString);
+    const options = {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      timeZoneName: 'short',
+    };
+    // `toLocaleString` formats the date based on the user's browser settings
+    return date.toLocaleString(undefined, options);
+  };
+
+
   return (
     <div className="p-4">
       <div className="flex">
         <BackToDashboardButton />
-        <div className="ml-auto">
+        <div className="ml-auto flex gap-4 items-center">
+          <div className="flex flex-col">
+            <span className="text-xs text-gray-400">Created By: {data.metadata.createdBy}</span>
+            <span className="text-xs text-gray-400">Last Updated: {formatTimestamp(data.metadata.updatedAt)}</span>
+          </div>
           <EditButton path={path} />
         </div>
       </div>
