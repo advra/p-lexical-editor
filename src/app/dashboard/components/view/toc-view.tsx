@@ -1,6 +1,8 @@
 import Navbar from "@/components/common/navbar/Navbar"
 import ClientDashboardSidebar, { ProcMetadata } from "../ui/ClientDashboardSidebar";
 import ProcsTabbedTable, { Proc } from "../ui/ProcsTabbedTable";
+import { getUserFromCookie } from "@/lib/utils/auth";
+import { User } from "@/modules/auth/types";
 
 type Props = {
   links: ProcMetadata[]
@@ -14,6 +16,7 @@ const sampleProcs: Proc[] = [
 ];
 
 export const TocView = ({ links }: Props) => {
+  const user: User = getUserFromCookie();
   return (
     <>
       <div className="h-screen flex flex-col">
@@ -27,7 +30,7 @@ export const TocView = ({ links }: Props) => {
               <div className="font-semibold my-4">
                 Procedures
               </div>
-              <ProcsTabbedTable procs={sampleProcs} currentUser={"alice"} />
+              <ProcsTabbedTable procs={sampleProcs} currentUser={user.username} />
             </div>
           </main>
         </div>

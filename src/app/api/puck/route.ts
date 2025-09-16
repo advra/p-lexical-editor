@@ -1,6 +1,51 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import fs from "fs";
+import { getUserFromCookie } from "@/lib/utils/auth";
+import { notFound } from "next/navigation";
+
+type Payload = {
+  data: any & {
+    metadata: any
+  }
+}
+
+type Metadata = {
+  createdAt: string;
+  createdBy: string;
+  updatedAt: string;
+  updatedBy: string;
+  version: number;
+}
+
+function createProcMetadata(payload: any, record: any, username: string): Metadata {
+  const now = new Date().toISOString();
+  const incomingMeta = payload.data?.meta ?? {};
+  let meta = record?.meta ?? {};
+
+  // create metadata otherwise
+  if (!record) {
+    meta = {
+      ...(incomingMeta || {}),
+      createdAt: now,
+      createdBy: username,
+      updatedAt: now,
+      updatedBy: username,
+      version: 1,
+    };
+  } else {
+    meta = {
+      ...meta,
+      createdAt: meta.createdAt ?? incomingMeta.createdAt ?? now,
+      createdBy: meta.createdBy ?? incomingMeta.createdBy ?? username,
+      updatedAt: now,
+      updatedBy: username,
+      version: (meta.version ?? 0) + 1,
+    };
+  }
+
+  return meta
+}
 
 export async function POST(request: Request) {
   const payload = await request.json();
@@ -15,12 +60,35 @@ export async function POST(request: Request) {
       : "{}"
   );
 
-  const updatedData = {
-    ...existingData,
-    [payload.path]: payload.data,
+  // check user and create metadata
+  const user = await getUserFromCookie();
+  if (!user) {
+    return notFound();
+  }
+
+  const existingRecord = existingData[payload.path];
+  const metadata = createProcMetadata(payload, existingRecord, user.username)
+
+  const storedData = {
+    ...payload.data,
+    metadata,
   };
 
-  fs.writeFileSync(process.env.DB_JSON_PATH, JSON.stringify(updatedData));
+  const updatedData = {
+    ...existingData,
+    [payload.path]: storedData,
+  };
+
+  // fs.writeFileSync(process.env.DB_JSON_PATH, JSON.stringify(updatedData));
+  // Try to Atomic write first
+  try {
+    const tmpPath = `${process.env.DB_JSON_PATH}.tmp`;
+    fs.writeFileSync(tmpPath, JSON.stringify(updatedData, null, 2), "utf-8");
+    fs.renameSync(tmpPath, process.env.DB_JSON_PATH);
+  } catch (err) {
+    console.error("Failed to write DB JSON:", err);
+    return NextResponse.json({ status: "error", message: "Failed to write DB" }, { status: 500 });
+  }
 
   // Purge Next.js cache
   revalidatePath(payload.path);

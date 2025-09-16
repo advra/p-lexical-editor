@@ -16,6 +16,7 @@ import TextField from "@/components/common/TextField";
 
 import { default as CustomButton } from "@/components/common/buttons/Button"
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export type ProcPayload = {
   name: string;
@@ -36,6 +37,8 @@ export default function CreateNewProcDialog({
   onCreate,
   projectTags = [],
 }: Props) {
+  const router = useRouter()
+
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [projectTag, setProjectTag] = useState<string>("");
@@ -65,11 +68,10 @@ export default function CreateNewProcDialog({
     if (!validate()) return;
     setSubmitting(true);
     try {
-      await onCreate({ name: name.trim(), description: description.trim(), projectTag });
-      onClose();
+      const { id, path, data } = await onCreate({ name: name.trim(), description: description.trim(), projectTag });
       toast.success(`Successfully Created new Proc: ${name.trim()}`)
+      router.push(`/procs/${id}`);
     } catch (err) {
-      // handle create error (you can show toast/snackbar instead)
       console.error("Create proc failed", err);
       toast.error("Error creating Proc")
     } finally {

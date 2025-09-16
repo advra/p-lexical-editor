@@ -6,7 +6,6 @@ import AddIcon from '@mui/icons-material/Add';
 import Button from "@/components/common/buttons/Button";
 import CreateNewProcDialog from "./CreateNewProcDialog";
 import type { ProcPayload } from "./CreateNewProcDialog";
-import { useRouter } from "next/navigation";
 
 export type Proc = {
   id: string;
@@ -18,11 +17,11 @@ export type Proc = {
 
 type Props = {
   procs: Proc[];
-  currentUser: string;
+  currentUsername: string;
 };
 
-export default function ProcsTabbedTable({ procs, currentUser }: Props) {
-  const router = useRouter()
+export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
+
   const [showCreateNewProc, setShowCreateNewProc] = useState(false);
   const tabs = ["All", "My Procs", "Shared With Me"] as const;
   type Tab = (typeof tabs)[number];
@@ -35,10 +34,10 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
     let items = procs;
 
     if (active === "My Procs") {
-      items = procs.filter((p) => p.owner === currentUser);
+      items = procs.filter((p) => p.owner === currentUsername);
     } else if (active === "Shared with Me") {
       items = procs.filter(
-        (p) => p.owner !== currentUser && (p.sharedWith?.includes(currentUser) ?? false)
+        (p) => p.owner !== currentUsername && (p.sharedWith?.includes(currentUsername) ?? false)
       );
     }
 
@@ -50,7 +49,7 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
         p.owner.toLowerCase().includes(q) ||
         (p.sharedWith?.some((s) => s.toLowerCase().includes(q)) ?? false)
     );
-  }, [procs, query, active, currentUser]);
+  }, [procs, query, active, currentUsername]);
 
   const tryCreateNewProc = async ({ name, description, projectTag }: ProcPayload) => {
     // 1) generate id
@@ -62,8 +61,7 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
       root: {
         props: {
           title: name,
-          // add other meta if you want: owner/currentUser, projectTag...
-          owner: currentUser,
+          owner: currentUsername,
           projectTag: projectTag ?? null,
           description: description ?? "",
         },
@@ -96,20 +94,10 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
       // Optionally parse server response
       await res.json();
 
-      // Close the dialog
       setShowCreateNewProc(false);
-
-      // Optionally update local UI: either refetch from server or update local state
-      // Example: if you have local procs state, prepend a new proc item:
-      // setProcs(prev => [{ id, name, owner: currentUser, sharedWith: [], updatedAt: new Date().toISOString() }, ...prev]);
-
-      // Optionally navigate to the new proc page
-      router.push(`/procs/${id}`);
-
       return { id, path, data };
     } catch (error) {
       console.error("Failed to create proc", error);
-      // Show user-facing error (toast/snackbar) as needed
       throw error;
     }
   }

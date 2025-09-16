@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import path from 'path';
 import fs from 'fs';
+import { Session } from '@/modules/auth/types';
 
 export function readUsers() {
   const p = path.join(process.cwd(), 'data', 'users.json');
@@ -13,6 +14,7 @@ export function readUsers() {
 export async function POST(request: NextRequest) {
   const { username, password } = await request.json();
   const users = readUsers();
+  console.log("USERS", users)
   const user = users.find((u: { username: any; }) => u.username === username);
   if (!user) {
     return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
@@ -29,9 +31,9 @@ export async function POST(request: NextRequest) {
   const response = NextResponse.json({ message: 'Login successful' });
 
   // Set a single HTTP-only cookie with user info + session ID
-  const cookieData = {
+  const cookieData: Session = {
     username: user.username,
-    role: user.role,
+    roles: user.roles,
     sessionId,
   };
 

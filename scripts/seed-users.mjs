@@ -8,9 +8,9 @@ const outPath = path.join(process.cwd(), 'data', 'users.json');
 
 
 const rawUsers = [
-  { id: 'u1', username: 'admin', password: 'Admin123!', role: 'admin' },
-  { id: 'u2', username: 'user', password: 'User123!', role: 'operator' },
-  { id: 'u3', username: 'viewer', password: 'Viewer123!', role: 'viewer' },
+  { id: 'u1', username: 'admin', password: 'Admin123!', roles: 'admin' },
+  { id: 'u2', username: 'user', password: 'User123!', roles: 'operator' },
+  { id: 'u3', username: 'viewer', password: 'Viewer123!', roles: 'viewer' },
 ];
 
 const users = rawUsers.map((u) => {
@@ -19,7 +19,7 @@ const users = rawUsers.map((u) => {
     id: u.id,
     username: u.username,
     passwordHash,
-    role: u.role,
+    roles: u.roles,
   };
 });
 
