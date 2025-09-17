@@ -1,10 +1,18 @@
 // scripts/seed-users.js
+
+/*
+  This script is used to generated the pre-made users with salted passwords.
+  Generated users are stored in data/users.json
+  
+  These then will be used by the docker/init-user.sh to seed Users into the database
+*/
+
 import fs from 'fs';
 import path from 'path';
 import bcrypt from 'bcryptjs';
 import { SALT_NUMBER } from '../src/lib/constants.mjs';
 
-const outPath = path.join(process.cwd(), 'data', 'users.json');
+const outPath = path.join(process.cwd(), 'docker', 'users.json');
 
 
 const rawUsers = [

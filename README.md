@@ -36,13 +36,12 @@ npm run dev
 
 ### b. Running Against Mongo Instance
 Spin up your own docker container instance. By default it will create a docker container named `mongo-puck-{USER}`
-```bash
-./scripts/mongo-start.bash
-```
 
-Now copy the test configs and run you app.
+First Copy the test configs and run you app then run the docker
 ```bash
 cp .env.test.example .env.test
+
+./scripts/docker-up.bash
 
 # install packages if you havent already yet
 npm install

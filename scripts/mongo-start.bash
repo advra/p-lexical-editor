@@ -85,6 +85,7 @@ if [[ -n "$exists_id" ]]; then
 fi
 
 # Container not found -> create it
+# Note this will alos mount the seed scripts located in docker/ 
 info "Creating container '$name'..."
 container_id=$(docker run -d \
   --name "$name" \
@@ -92,6 +93,8 @@ container_id=$(docker run -d \
   -p 27017:27017 \
   -e MONGO_INITDB_ROOT_USERNAME=r00t \
   -e MONGO_INITDB_ROOT_PASSWORD=r00t \
+  -v "$(pwd)/docker":/docker-entrypoint-initdb.d:ro \
+  -v "${name}-data":/data/db \
   mongo:7 2>/dev/null || true)
 
 if [[ -n "${container_id:-}" ]]; then

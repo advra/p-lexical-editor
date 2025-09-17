@@ -43,3 +43,11 @@ next-env.d.ts
 
 # testdata
 /data/users.json
+
+
+# seeder sidecart container
+/seeder/node_modules
+/seeder/package-lock.json 
+
+# generated docker yaml file
+docker-compose.generated.yml

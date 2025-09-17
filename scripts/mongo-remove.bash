@@ -33,6 +33,10 @@ docker stop "$name" >/dev/null 2>&1 || true
 
 if docker rm -f "$name" >/dev/null; then
   ok "Removed container:'$name'"
+
+  # remove the volume 
+  docker volume rm "$name-data" || true
+  ok "volume removed successfully: '$name"
 else
   err "Failed to remove container: '$name'" >&2
   exit 1
