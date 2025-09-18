@@ -1,48 +1,70 @@
 import * as React from 'react';
 import type { ComponentConfig, Slot } from '@measured/puck';
 
-export type TwoColumnProps = {
+type ColCount = 2 | 3 | 4;
+
+export type ColumnsBlockProps = {
   gap?: number; // px
-  stackOnMobile?: boolean; // collapse to 1 col on small screens
-  leftColumn: Slot; // slot
-  rightColumn: Slot; // slot
+  numberOfColumns: ColCount; // 2 | 3 | 4
+  col1: Slot;
+  col2: Slot;
+  col3?: Slot;
+  col4?: Slot;
 };
 
-export const TwoColumnBlock: ComponentConfig<TwoColumnProps> = {
-  label: 'Two Columns',
+export const ColumnsBlock: ComponentConfig<ColumnsBlockProps> = {
+  label: 'Columns',
   fields: {
-    gap: { type: 'number', label: 'Gap (px)', placeholder: '16' },
-    // stackOnMobile: { type: 'checkbox', label: 'Stack on mobile' },
-    leftColumn: { type: 'slot', label: 'Left column' },
-    rightColumn: { type: 'slot', label: 'Right column' },
+    numberOfColumns: {
+      type: 'select',
+      label: 'Columns',
+      options: [
+        { label: '2', value: 2 },
+        { label: '3', value: 3 },
+        { label: '4', value: 4 },
+      ],
+    },
+    gap: { type: 'number', label: 'Gutter Gap (px)', placeholder: '16' },
+
+    // Slots (show only those needed)
+    col1: { type: 'slot', label: 'Column 1' },
+    col2: { type: 'slot', label: 'Column 2' },
+    col3: {
+      type: 'slot',
+      label: 'Column 3',
+      visible: ({ values }: any) => (values?.numberOfColumns ?? 2) >= 3,
+    },
+    col4: {
+      type: 'slot',
+      label: 'Column 4',
+      visible: ({ values }: any) => (values?.numberOfColumns ?? 2) >= 4,
+    },
   },
   defaultProps: {
+    numberOfColumns: 2,
     gap: 16,
   },
-  render: ({
-    gap = 16,
-    // stackOnMobile = true,
-    leftColumn: Left,
-    rightColumn: Right,
-  }) => {
+  render: ({ numberOfColumns, gap = 16, col1, col2, col3, col4 }) => {
+    const cols = [col1, col2, col3, col4].slice(0, numberOfColumns);
+
     const style: React.CSSProperties = {
       display: 'grid',
       gap,
-      gridTemplateColumns: '1fr 1fr',
+      gridTemplateColumns: `repeat(${numberOfColumns}, minmax(0, 1fr))`,
     };
 
     return (
       <section>
-        <div
-          style={style}
-          className="grid-cols-1 md:[grid-template-columns:1fr_1fr]"
-        >
-          <Left />
-          <Right />
+        <div style={style}>
+          {cols.map((SlotComp, i) => (
+            <div key={i} className="min-h-[60px]">
+              {SlotComp ? <SlotComp /> : null}
+            </div>
+          ))}
         </div>
       </section>
     );
   },
 };
 
-export default TwoColumnBlock;
+export default ColumnsBlock;

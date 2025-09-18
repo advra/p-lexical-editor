@@ -17,7 +17,7 @@ export const HeadingBlock: ComponentConfig<HeadingBlockProps> = {
     description: '',
   },
   render: ({ title, description }: HeadingBlockProps) => (
-    <div className="mt-16 text-center mx-16">
+    <div className="text-center mx-16">
       <span className="text-[42px] font-semibold">{title}</span>
       {description && <p>{description}</p>}
     </div>

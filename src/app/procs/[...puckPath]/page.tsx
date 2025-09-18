@@ -10,7 +10,7 @@
  * will invalidate the cache as the page is written in /api/puck/route.ts
  */
 
-import { Client } from './client';
+import { PuckPreview } from './ui/components/puck-preview';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { getPage } from '@/lib/get-page';
@@ -83,7 +83,7 @@ export default async function Page({
 
       {/* Paper render */}
       {/* <div className="min-h-screen px-16 py-24 mt-24 mb-32 mx-32 bg-white border border-gray-100 shadow-md"> */}
-      <Client data={data} />
+      <PuckPreview data={data} />
       {/* </div> */}
     </div>
   );

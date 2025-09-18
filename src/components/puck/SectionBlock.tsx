@@ -16,7 +16,7 @@ export const SectionBlock: ComponentConfig<SectionBlockProps> = {
     title: 'Heading',
   },
   render: ({ title }: SectionBlockProps) => (
-    <div className="mt-8 text-center mx-16">
+    <div className="text-center mx-16">
       <span className="text-[32px]">{title}</span>
     </div>
   ),
