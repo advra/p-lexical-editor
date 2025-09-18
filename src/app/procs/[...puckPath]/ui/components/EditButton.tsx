@@ -13,24 +13,15 @@ export const EditButton = ({ path }: Props) => {
   const router = useRouter();
   return (
     <>
-      {/* <Button
-        size="small"
-        variant="outlined"
-        startIcon={<EditIcon />}
-        aria-label="Edit"
-        onClick={() => {
-          router.push(`${path}/edit`)
-        }}>
-        Edit
-      </Button> */}
       <IconButton
+        color="inherit"
         aria-label="edit"
         size="large"
         onClick={() => {
           router.push(`${path}/edit`);
         }}
       >
-        <EditIcon />
+        <EditIcon className="text-amber-600" />
       </IconButton>
     </>
   );

@@ -9,6 +9,7 @@ import ColumnsBlock, { ColumnsBlockProps } from './components/puck/Columns';
 import TextBlock, { TextBlockProps } from './components/puck/TextBlock';
 import ToggleBlock, { ToggleBlockProps } from './components/puck/ToggleBlock';
 import { Avatar, Card, CardHeader } from '@mui/material';
+import classNames from 'classnames';
 // import rootPage from './components/puck/RootPage';
 
 type Props = {
@@ -28,8 +29,44 @@ type Props = {
 
 export const config: Config<Props> = {
   root: {
-    render: ({ children }) => {
-      return <div>{children}</div>;
+    fields: {
+      title: { type: 'text' }, // You need to redefine the `title` field if we want to retain it
+      description: { label: 'Description: (Not Displayed)', type: 'textarea' },
+      projectTag: { type: 'text' },
+      padding: {
+        type: 'select',
+        label: 'Padding',
+        options: [
+          { label: '0', value: 'p-0' },
+          { label: '4', value: 'p-4' },
+          { label: '6', value: 'p-6' },
+          { label: '8', value: 'p-8' },
+          { label: '10', value: 'p-10' },
+          { label: '12', value: 'p-12' },
+          { label: '16', value: 'p-16' },
+          { label: '18', value: 'p-18' },
+          { label: '20', value: 'p-20' },
+        ],
+      },
+    },
+    defaultProps: {
+      padding: 12,
+    },
+    render: ({ children, title, description, projectTag, padding }) => {
+      return (
+        <>
+          <div className="pl-5 pt-2 text-gray-500">
+            Project Tag: {projectTag || 'N/A'}
+          </div>
+          <div className={classNames(padding)}>
+            <div className="text-center">
+              <span className="text-4xl font-semibold">{title}</span>
+              <div className="mt-3 h-[1px] bg-black" />
+            </div>
+            {children}
+          </div>
+        </>
+      );
     },
   },
   components: {

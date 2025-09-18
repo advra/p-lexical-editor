@@ -46,33 +46,10 @@ export default async function Page({
     return notFound();
   }
 
-  const formatTimestamp = (isoString: string) => {
-    if (!isoString) return '';
-    const date = new Date(isoString);
-    const options = {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-      timeZoneName: 'short',
-    };
-    // `toLocaleString` formats the date based on the user's browser settings
-    return date.toLocaleString(undefined, options);
-  };
-
   return (
-    <div className="p-4 bg-white mx-auto max-w-screen">
-      <div className="flex">
+    <div className="mt-4 px-4 bg-white mx-auto max-w-screen">
+      <div className="flex items-center">
         <BackToDashboardButton />
-        <div className="flex flex-col ml-4 mt-2 align-middle">
-          <span className="text-xs text-gray-400">
-            Created By: {data.metadata.createdBy}
-          </span>
-          <span className="text-xs text-gray-400">
-            Last Updated: {formatTimestamp(data.metadata.updatedAt)}
-          </span>
-        </div>
         <div className="ml-auto flex gap-4 items-center">
           <div>
             <ExportPDFButton />
@@ -80,11 +57,7 @@ export default async function Page({
           </div>
         </div>
       </div>
-
-      {/* Paper render */}
-      {/* <div className="min-h-screen px-16 py-24 mt-24 mb-32 mx-32 bg-white border border-gray-100 shadow-md"> */}
       <PuckPreview data={data} />
-      {/* </div> */}
     </div>
   );
 }

@@ -1,8 +1,8 @@
 export type Payload = {
   data: RecordData & {
-    metadata: Metadata
-  }
-}
+    metadata: Metadata;
+  };
+};
 
 export type Metadata = {
   createdAt: string;
@@ -10,8 +10,8 @@ export type Metadata = {
   updatedAt: string;
   updatedBy: string;
   version: number;
-}
+};
 
 export type RecordData = {
   metadata: Metadata;
-}
+};
