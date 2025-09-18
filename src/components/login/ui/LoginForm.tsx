@@ -7,7 +7,6 @@ import { default as CustomTextField } from '@/components/common/TextField';
 import ErrorIcon from '@mui/icons-material/Error';
 import Button from '@/components/common/buttons/Button';
 import CircularProgress from '@mui/material/CircularProgress';
-import { useTheme } from 'next-themes';
 import { toast } from 'sonner';
 
 interface Props {
@@ -29,10 +28,7 @@ export const LoginForm = ({
   setPassword,
   handleSubmit,
 }: Props) => {
-  const { setTheme, resolvedTheme } = useTheme();
-
   const isDisabled = !username.trim() || !password.trim();
-  console.log('Theme is', resolvedTheme);
   return (
     <>
       <div className="max-w-md w-full bg-gray p-8 rounded-2xl shadow-xs border border-gray-100">

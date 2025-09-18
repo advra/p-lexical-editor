@@ -12,13 +12,7 @@ export default function SettingsButton({ handleClose }: Props) {
   const router = useRouter();
   const handleLogout = async () => {
     handleClose?.();
-
-    const res = await fetch('/api/logout', { method: 'POST' });
-    if (res.ok) {
-      router.push('/login');
-    } else {
-      alert('Logout failed');
-    }
+    router.push('/settings');
   };
 
   return (

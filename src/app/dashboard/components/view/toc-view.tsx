@@ -1,4 +1,3 @@
-import Navbar from '@/components/common/navbar/Navbar';
 import ClientDashboardSidebar, {
   ProcMetadata,
 } from '../ui/ClientDashboardSidebar';
@@ -20,7 +19,6 @@ export const TocView = ({ links }: Props) => {
   return (
     <>
       <div className="h-screen flex flex-col">
-        {/* <Navbar /> */}
         <div className="flex flex-1">
           {/* Sidebar */}
           <ClientDashboardSidebar links={links} />

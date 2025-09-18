@@ -17,13 +17,6 @@ export async function middleware(req: NextRequest) {
     */
 
     if (pathname.endsWith('/edit')) {
-      // const pathWithoutEdit = req.nextUrl.pathname.slice(
-      //   0,
-      //   req.nextUrl.pathname.length - 5,
-      // );
-      // const pathWithEditPrefix = `/puck${pathWithoutEdit}`;
-      // return NextResponse.rewrite(new URL(pathWithEditPrefix, req.url));
-
       const parts = pathname.split('/').filter(Boolean);
 
       if (parts[0] === 'procs' && parts[1]) {

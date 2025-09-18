@@ -1,5 +1,3 @@
-import Navbar from '@/components/common/navbar/Navbar';
-
 interface Props {
   children: React.ReactNode;
 }
