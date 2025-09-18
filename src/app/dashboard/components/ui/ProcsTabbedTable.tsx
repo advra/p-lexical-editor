@@ -62,21 +62,22 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
     const path = `/procs/${id}`;
 
     // 2) build the data object in the same shape your DB expects
-    const data = {
+    const initialData = {
       root: {
         props: {
           title: name,
           owner: currentUsername,
           projectTag: projectTag ?? null,
           description: description ?? '',
+          padding: 'p-16',
         },
       },
       content: [
         {
-          type: 'HeadingBlock',
+          type: 'TextBlock',
           props: {
-            title: name,
-            id: `HeadingBlock-${Date.now()}`,
+            text: 'This is your new page. Click edit to modify the contents.',
+            id: `TextBlock-${currentUsername}-${Date.now()}`,
           },
         },
       ],
@@ -87,7 +88,7 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
       const res = await fetch('/api/puck/publish', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path, data }),
+        body: JSON.stringify({ path, data: initialData }),
       });
 
       if (!res.ok) {
@@ -99,7 +100,7 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
       await res.json();
 
       setShowCreateNewProc(false);
-      return { id, path, data };
+      return { id, path, initialData };
     } catch (error) {
       console.error('Failed to create proc', error);
       throw error;

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -10,13 +10,13 @@ import {
   Box,
   MenuItem,
   IconButton,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import TextField from "@/components/common/TextField";
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import TextField from '@/components/common/TextField';
 
-import { default as CustomButton } from "@/components/common/buttons/Button"
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { default as CustomButton } from '@/components/common/buttons/Button';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 export type ProcPayload = {
   name: string;
@@ -37,20 +37,22 @@ export default function CreateNewProcDialog({
   onCreate,
   projectTags = [],
 }: Props) {
-  const router = useRouter()
+  const router = useRouter();
 
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [projectTag, setProjectTag] = useState<string>("");
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [projectTag, setProjectTag] = useState<string>('');
   const [submitting, setSubmitting] = useState(false);
-  const [errors, setErrors] = useState<{ name?: string; description?: string }>({});
+  const [errors, setErrors] = useState<{ name?: string; description?: string }>(
+    {},
+  );
 
   useEffect(() => {
     if (!open) {
       // reset fields when dialog closes
-      setName("");
-      setDescription("");
-      setProjectTag("");
+      setName('');
+      setDescription('');
+      setProjectTag('');
       setErrors({});
       setSubmitting(false);
     }
@@ -58,8 +60,8 @@ export default function CreateNewProcDialog({
 
   const validate = () => {
     const next: typeof errors = {};
-    if (!name.trim()) next.name = "Name is required";
-    if (!description.trim()) next.description = "Description is required";
+    if (!name.trim()) next.name = 'Name is required';
+    if (!description.trim()) next.description = 'Description is required';
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -68,25 +70,40 @@ export default function CreateNewProcDialog({
     if (!validate()) return;
     setSubmitting(true);
     try {
-      const { id, path, data } = await onCreate({ name: name.trim(), description: description.trim(), projectTag });
-      toast.success(`Successfully Created new Proc: ${name.trim()}`)
+      const { id, path, data } = await onCreate({
+        name: name.trim(),
+        description: description.trim(),
+        projectTag,
+      });
+      toast.success(`Successfully Created new Proc: ${name.trim()}`);
       router.push(`/procs/${id}`);
     } catch (err) {
-      console.error("Create proc failed", err);
-      toast.error("Error creating Proc")
+      console.error('Create proc failed', err);
+      toast.error('Error creating Proc');
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" aria-labelledby="create-proc-title">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="sm"
+      aria-labelledby="create-proc-title"
+    >
       <div className="p-4">
         <h3>Create New Proc</h3>
       </div>
 
       <div className="px-4 mb-8">
-        <Box component="form" noValidate autoComplete="off" sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <Box
+          component="form"
+          noValidate
+          autoComplete="off"
+          sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+        >
           <TextField
             label="Name"
             placeholder="Eg. Viasat-2 Boeing Launch"
@@ -108,7 +125,7 @@ export default function CreateNewProcDialog({
             // multiline
             // minRows={3}
             error={!!errors.description}
-          // helperText={errors.description ?? ""}
+            // helperText={errors.description ?? ""}
           />
 
           {/* Project tag: if you pass a list, show select otherwise show text input */}
@@ -119,7 +136,7 @@ export default function CreateNewProcDialog({
               // select
               value={projectTag}
               onChange={(e) => setProjectTag(e.target.value)}
-            // helperText="Assign a project tag"
+              // helperText="Assign a project tag"
             >
               <MenuItem value="">
                 <em>None</em>
@@ -137,7 +154,7 @@ export default function CreateNewProcDialog({
               placeholder="Assign a project tag"
               value={projectTag}
               onChange={(e) => setProjectTag(e.target.value)}
-            // helperText="Assign a project tag"
+              // helperText="Assign a project tag"
             />
           )}
         </Box>
@@ -159,7 +176,6 @@ export default function CreateNewProcDialog({
         >
           Create
         </CustomButton>
-
       </div>
     </Dialog>
   );

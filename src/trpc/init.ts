@@ -3,6 +3,7 @@ import { cache } from 'react';
 import superjson from 'superjson';
 import { headers as getHeaders } from 'next/headers';
 import dbConnect from '@/lib/db/mongodb';
+import { getUserFromCookie } from '@/lib/utils/auth';
 
 export const createTRPCContext = cache(async () => {
   /**
@@ -31,10 +32,10 @@ export const baseProcedure = t.procedure.use(async ({ next }) => {
 
 // procedures that require user login
 export const protectedProcedure = baseProcedure.use(async ({ ctx, next }) => {
-  const headers = await getHeaders();
-  const session = await ctx.db.auth({ headers });
+  // const headers = await getHeaders();
+  const session = await getUserFromCookie();
 
-  if (!session.user) {
+  if (!session || !session?.user) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
       message: 'Must be logged in',

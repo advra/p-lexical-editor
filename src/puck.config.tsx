@@ -13,6 +13,7 @@ import classNames from 'classnames';
 import ChecklistBlock, {
   ChecklistBlockProps,
 } from './components/puck/ChecklistBlock';
+import { PADDING_OPTIONS } from './components/puck/constants/padding';
 // import rootPage from './components/puck/RootPage';
 
 type Props = {
@@ -36,22 +37,15 @@ export const config: Config<Props> = {
   root: {
     fields: {
       title: { type: 'text' }, // You need to redefine the `title` field if we want to retain it
-      description: { label: 'Description: (Not Displayed)', type: 'textarea' },
+      description: {
+        label: 'Description: (Not displayed)',
+        type: 'textarea',
+      },
       projectTag: { type: 'text' },
       padding: {
         type: 'select',
-        label: 'Padding',
-        options: [
-          { label: '0', value: 'p-0' },
-          { label: '4', value: 'p-4' },
-          { label: '6', value: 'p-6' },
-          { label: '8', value: 'p-8' },
-          { label: '10', value: 'p-10' },
-          { label: '12', value: 'p-12' },
-          { label: '16', value: 'p-16' },
-          { label: '18', value: 'p-18' },
-          { label: '20', value: 'p-20' },
-        ],
+        label: 'Page Padding',
+        options: PADDING_OPTIONS,
       },
     },
     defaultProps: {
