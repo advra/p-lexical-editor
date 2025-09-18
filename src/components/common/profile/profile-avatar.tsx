@@ -1,10 +1,11 @@
 'use client';
 import * as React from 'react';
 import { Avatar, IconButton, Menu, MenuItem } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useRouter } from 'next/navigation';
+
 import LogoutButton from '../buttons/LogoutButton';
 import LoginButton from '../buttons/LoginButton';
+import SettingsButton from '../buttons/SettingButton';
 
 type Props = {
   username: string | null;
@@ -68,7 +69,7 @@ export default function ProfileAvatarMenu({
                 await router.push('/settings');
               }}
             >
-              Settings
+              <SettingsButton handleClose={() => setAnchorEl(null)} />
             </MenuItem>
             <MenuItem>
               <LogoutButton handleClose={() => setAnchorEl(null)} />

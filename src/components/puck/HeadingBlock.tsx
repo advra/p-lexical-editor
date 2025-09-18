@@ -2,21 +2,23 @@
   Basic Title component
 */
 
-import React from "react";
-import type { ComponentConfig } from "@measured/puck";
+import type { ComponentConfig } from '@measured/puck';
 
-export type HeadingBlockProps = { title: string };
+export type HeadingBlockProps = { title: string; description?: string };
 
 export const HeadingBlock: ComponentConfig<HeadingBlockProps> = {
   fields: {
-    title: { type: "text" },
+    title: { type: 'text' },
+    description: { type: 'textarea' },
   },
   defaultProps: {
-    title: "Heading",
+    title: 'Heading',
+    description: '',
   },
-  render: ({ title }: HeadingBlockProps) => (
-    <div className="mt-8 text-center">
-      <h2>{title}</h2>
+  render: ({ title, description }: HeadingBlockProps) => (
+    <div className="mt-16 text-center mx-16">
+      <span className="text-[42px] font-semibold">{title}</span>
+      {description && <p>{description}</p>}
     </div>
   ),
 };

@@ -2,30 +2,30 @@
   This dynamically renders the puck editor in the path: ex: /procs/34uerj
 */
 
-"use client";
+'use client';
 
-import type { Data } from "@measured/puck";
-import { Puck } from "@measured/puck";
-import config from "../../../puck.config";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import type { Data } from '@measured/puck';
+import { Puck } from '@measured/puck';
+import config from '../../../puck.config';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 export function Client({ path, data }: { path: string; data: Partial<Data> }) {
-  const router = useRouter()
+  const router = useRouter();
   return (
     <Puck
       config={config}
       data={data}
       onPublish={async (data) => {
         try {
-          await fetch("/api/puck", {
-            method: "post",
+          await fetch('/api/puck/publish', {
+            method: 'post',
             body: JSON.stringify({ data, path }),
           });
-          toast.success("Changes saved!")
-          router.push(path)
+          toast.success('Changes saved!');
+          router.push(path);
         } catch {
-          toast.error("Error saving, try again...")
+          toast.error('Error saving, try again...');
         }
       }}
     />

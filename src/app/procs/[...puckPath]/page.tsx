@@ -10,12 +10,12 @@
  * will invalidate the cache as the page is written in /api/puck/route.ts
  */
 
-import { Client } from "./client";
-import { notFound } from "next/navigation";
-import { Metadata } from "next";
-import { getPage } from "@/lib/get-page";
-import { BackToDashboardButton } from "./ui/components/BackToDashboardButton";
-import { EditButton } from "./ui/components/EditButton";
+import { Client } from './client';
+import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
+import { getPage } from '@/lib/get-page';
+import { BackToDashboardButton } from './ui/components/BackToDashboardButton';
+import { EditButton } from './ui/components/EditButton';
 
 export async function generateMetadata({
   params,
@@ -23,7 +23,7 @@ export async function generateMetadata({
   params: Promise<{ puckPath: string[] }>;
 }): Promise<Metadata> {
   const { puckPath = [] } = await params;
-  const path = `/${puckPath.join("/")}`;
+  const path = `/${puckPath.join('/')}`;
 
   return {
     title: getPage(path)?.root.props?.title,
@@ -36,10 +36,10 @@ export default async function Page({
   params: Promise<{ puckPath: string[] }>;
 }) {
   const { puckPath = [] } = await params;
-  const path = `/procs/${puckPath.join("/")}`;
-  console.log("path is ", path)
+  const path = `/procs/${puckPath.join('/')}`;
+  console.log('path is ', path);
   const data = getPage(path);
-  console.log("data is ", data)
+  console.log('data is ', data);
 
   if (!data) {
     return notFound();
@@ -60,24 +60,31 @@ export default async function Page({
     return date.toLocaleString(undefined, options);
   };
 
-
   return (
-    <div className="p-4">
+    <div className="p-4 bg-white mx-auto max-w-screen">
       <div className="flex">
         <BackToDashboardButton />
         <div className="ml-auto flex gap-4 items-center">
           <div className="flex flex-col">
-            <span className="text-xs text-gray-400">Created By: {data.metadata.createdBy}</span>
-            <span className="text-xs text-gray-400">Last Updated: {formatTimestamp(data.metadata.updatedAt)}</span>
+            <span className="text-xs text-gray-400">
+              Created By: {data.metadata.createdBy}
+            </span>
+            <span className="text-xs text-gray-400">
+              Last Updated: {formatTimestamp(data.metadata.updatedAt)}
+            </span>
           </div>
           <EditButton path={path} />
         </div>
       </div>
-      <Client data={data} />
+
+      {/* Paper render */}
+      <div className="min-h-screen py-24 mt-24 mb-32 mx-32 bg-white border border-gray-100 shadow-md">
+        <Client data={data} />
+      </div>
     </div>
   );
 }
 
 // Force Next.js to produce static pages: https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
 // Delete this if you need dynamic rendering, such as access to headers or cookies
-export const dynamic = "force-static";
+export const dynamic = 'force-static';
