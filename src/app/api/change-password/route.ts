@@ -1,28 +1,20 @@
 // app/api/change-password/route.ts (server)
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import path from 'path';
-import fs from 'fs';
+import z from 'zod';
+import { trpc } from '@/trpc/server';
+import dbConnect from '@/lib/db/mongodb';
+import { UserModel } from '@/modules/user/models/user-model';
 
-function usersPath() {
-  return path.join(process.cwd(), 'data', 'users.json');
-}
-function readUsers() {
-  const p = usersPath();
-  if (!fs.existsSync(p)) return [];
-  return JSON.parse(fs.readFileSync(p, 'utf8'));
-}
-function writeUsers(users: any[]) {
-  const p = usersPath(),
-    tmp = p + '.tmp';
-  fs.writeFileSync(tmp, JSON.stringify(users, null, 2), 'utf8');
-  fs.renameSync(tmp, p);
-}
+const bodySchema = z.object({
+  oldPassword: z.string().min(1),
+  newPassword: z.string().min(8),
+});
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { oldPassword, newPassword } = body ?? {};
+    const json = await req.json();
+    const { oldPassword, newPassword } = bodySchema.parse(json);
 
     // Get the user from the cookie/session instead of client-supplied username
     const cookie = req.cookies.get('user-session')?.value;
@@ -41,27 +33,60 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Missing fields' }, { status: 400 });
     }
 
-    const users = readUsers();
-    const idx = users.findIndex((u: any) => u.username === username);
-    if (idx === -1)
+    // connect to mongo and select passwords for compare
+    await dbConnect();
+    const userDocument = await UserModel.findOne({ username }).select(
+      '+password',
+    );
+    if (!userDocument?.password) {
       return NextResponse.json(
         { message: 'Invalid credentials' },
         { status: 401 },
       );
+    }
 
-    const user = users[idx];
-    const ok = await bcrypt.compare(oldPassword, user.password);
+    const ok = await bcrypt.compare(oldPassword, userDocument.password);
     if (!ok)
       return NextResponse.json(
         { message: 'Invalid credentials' },
         { status: 401 },
       );
 
-    const newHashedPassword = await bcrypt.hash(newPassword, 10);
-    users[idx] = { ...user, password: newHashedPassword };
-    writeUsers(users);
+    const SALT_ROUNDS = Number(process.env.BCRYPT_SALT_ROUNDS ?? 10) || 10;
+    userDocument.password = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    await userDocument.save();
+
+    // rotate cookie session for user
+    const newSessionId = crypto.randomUUID();
+    const newCookie = {
+      username: userDocument.username,
+      roles: Array.isArray(userDocument.roles)
+        ? userDocument.roles
+        : userDocument.roles
+          ? [userDocument.roles]
+          : [],
+      sessionId: newSessionId,
+    };
+
+    const res = NextResponse.json(
+      { message: 'Password changed' },
+      { status: 200 },
+    );
+    res.cookies.set('user-session', JSON.stringify(newCookie), {
+      httpOnly: true,
+      path: '/',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24,
+    });
+
     return NextResponse.json({ message: 'Password changed' }, { status: 200 });
   } catch (err) {
+    if (err?.name === 'ZodError') {
+      return NextResponse.json(
+        { message: 'Invalid input', issues: err.issues },
+        { status: 400 },
+      );
+    }
     console.error(err);
     return NextResponse.json({ message: 'Server error' }, { status: 500 });
   }

@@ -1,22 +1,35 @@
 import { MongoClient } from 'mongodb';
 import bcrypt from 'bcryptjs';
-// import dotenv from "dotenv";
+import dotenv from 'dotenv';
 
-// dotenv.config();
+// databae to connect to for import
+const DEFAULT_URI =
+  'mongodb://r00t:r00t@localhost:27017/eproc?authSource=admin';
+// salt the passwords in database
+const DEFAULT_SALT = 10;
 
-// const uri = "mongodb://r00t:r00t@mongo:27017/eproc?authSource=admin";
-const uri = 'mongodb://r00t:r00t@mongo:27017/eproc?authSource=admin';
-// const SALT_NUMBER = parseInt(process.env.SALT_NUMBER || "10", 10);
-const SALT_NUMBER = 10;
+// load the correct env file
+// e.g. NODE_ENV=development loads .env.development
+dotenv.config({
+  path: `.env${process.env.NODE_ENV ? `.${process.env.NODE_ENV}` : ''}`,
+});
+
+const MONGODB_URL = process.env.MONGODB_URL?.trim() || DEFAULT_URI;
+const SALT_NUMBER =
+  Number(process.env.SALT_NUMBER ?? DEFAULT_SALT) || DEFAULT_SALT;
+
+if (!MONGODB_URL) {
+  throw new Error('Missing MONGODB_URL and no fallback provided');
+}
 
 const rawUsers = [
-  { username: 'admin', password: 'Admin123!', roles: 'admin' },
-  { username: 'user', password: 'User123!', roles: 'operator' },
-  { username: 'viewer', password: 'Viewer123!', roles: 'viewer' },
+  { username: 'admin', password: 'Admin123!', roles: ['admin'] },
+  { username: 'user', password: 'User123!', roles: ['operator'] },
+  { username: 'viewer', password: 'Viewer123!', roles: ['viewer'] },
 ];
 
 async function seed() {
-  const client = new MongoClient(uri);
+  const client = new MongoClient(MONGODB_URL);
   try {
     await client.connect();
     const db = client.db(); // will use the database specified in the URI (eproc)

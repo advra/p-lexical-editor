@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { appRouter } from '@/trpc/routers/_app';
 import bcrypt from 'bcryptjs';
 import path from 'path';
 import fs from 'fs';
 import { Session } from '@/modules/auth/types';
+import { createTRPCContext } from '@/trpc/init';
 
 export function readUsers() {
   const p = path.join(process.cwd(), 'data', 'users.json');
@@ -13,24 +15,8 @@ export function readUsers() {
 
 export async function POST(request: NextRequest) {
   const { username, password } = await request.json();
-  const users = readUsers();
-  console.log('USERS', users);
-  const user = users.find((u: { username: any }) => u.username === username);
-  if (!user) {
-    return NextResponse.json(
-      { message: 'Invalid credentials' },
-      { status: 401 },
-    );
-  }
-
-  const ok = await bcrypt.compare(password, user.password);
-  if (!ok) {
-    return NextResponse.json(
-      { message: 'Invalid credentials' },
-      { status: 401 },
-    );
-  }
-
+  const caller = appRouter.createCaller(await createTRPCContext());
+  const user = await caller.users.login({ username, password });
   const sessionId = crypto.randomUUID();
 
   // For now, we'll just set a cookie with the username and role
@@ -43,14 +29,14 @@ export async function POST(request: NextRequest) {
     sessionId,
   };
 
-  console.log(`XXXXX LOGIN sessionId ${sessionId}`);
-
   response.cookies.set('user-session', JSON.stringify(cookieData), {
     httpOnly: true,
     path: '/',
     secure: process.env.NODE_ENV === 'production',
     maxAge: 60 * 60 * 24, // 1 day
   });
+
+  console.log(`XXXXX LOGIN sessionId ${sessionId}`);
 
   return response;
 }

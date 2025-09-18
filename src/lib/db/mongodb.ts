@@ -7,9 +7,10 @@ declare global {
 
 if (!process.env.MONGODB_URL) {
   throw new Error(
-    'Please define the MONGODB_URL environment variable inside .env.local'
+    'Please define the MONGODB_URL environment variable inside .env.local',
   );
 }
+console.log('MONGODB_URL IS: ', process.env.MONGODB_URL);
 
 let cached = global.mongoose;
 
@@ -20,7 +21,7 @@ if (!cached) {
 async function dbConnect() {
   if (!process.env.MONGODB_URL) {
     throw new Error(
-      'Please define the MONGODB_URL environment variable inside .env.local'
+      'Please define the MONGODB_URL environment variable inside .env.local',
     );
   }
 
@@ -31,9 +32,11 @@ async function dbConnect() {
     const opts = {
       bufferCommands: false,
     };
-    cached.promise = mongoose.connect(process.env.MONGODB_URL, opts).then((mongoose) => {
-      return mongoose;
-    });
+    cached.promise = mongoose
+      .connect(process.env.MONGODB_URL, opts)
+      .then((mongoose) => {
+        return mongoose;
+      });
   }
   try {
     cached.conn = await cached.promise;
