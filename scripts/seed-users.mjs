@@ -21,11 +21,11 @@ const rawUsers = [
 ];
 
 const users = rawUsers.map((u) => {
-  const passwordHash = bcrypt.hashSync(u.password, SALT_NUMBER);
+  const password = bcrypt.hashSync(u.password, SALT_NUMBER);
   return {
     id: u.id,
     username: u.username,
-    passwordHash,
+    password,
     roles: u.roles,
   };
 });

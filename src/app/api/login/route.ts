@@ -14,15 +14,21 @@ export function readUsers() {
 export async function POST(request: NextRequest) {
   const { username, password } = await request.json();
   const users = readUsers();
-  console.log("USERS", users)
-  const user = users.find((u: { username: any; }) => u.username === username);
+  console.log('USERS', users);
+  const user = users.find((u: { username: any }) => u.username === username);
   if (!user) {
-    return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
+    return NextResponse.json(
+      { message: 'Invalid credentials' },
+      { status: 401 },
+    );
   }
 
-  const ok = await bcrypt.compare(password, user.passwordHash);
+  const ok = await bcrypt.compare(password, user.password);
   if (!ok) {
-    return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
+    return NextResponse.json(
+      { message: 'Invalid credentials' },
+      { status: 401 },
+    );
   }
 
   const sessionId = crypto.randomUUID();
@@ -37,7 +43,7 @@ export async function POST(request: NextRequest) {
     sessionId,
   };
 
-  console.log(`XXXXX LOGIN sessionId ${sessionId}`)
+  console.log(`XXXXX LOGIN sessionId ${sessionId}`);
 
   response.cookies.set('user-session', JSON.stringify(cookieData), {
     httpOnly: true,

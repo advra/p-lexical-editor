@@ -15,7 +15,7 @@ const EnvConfigs = z.object({
   DB_JSON_PATH: z.string().optional(),
   USERS_JSON_PATH: z.string().optional(),
   DATABASE_URL: z.string().optional(),
-})
+});
 
 const envConfig = EnvConfigs.parse({
   DATA_SOURCE: process.env.DATA_SOURCE,
@@ -28,14 +28,14 @@ const envConfig = EnvConfigs.parse({
 type UserInternal = {
   id: string;
   username: string;
-  passwordHash: string;
-}
+  password: string;
+};
 
 async function loadJson<T>(p: string | undefined): Promise<T> {
-  if (!p) throw new Error("Missing JSON path env");
-  const file = path.resolve(process.cwd(), p)
+  if (!p) throw new Error('Missing JSON path env');
+  const file = path.resolve(process.cwd(), p);
 
-  return JSON.parse(await fs.readFile(file, 'utf8')) as T
+  return JSON.parse(await fs.readFile(file, 'utf8')) as T;
 }
 
 // local json implementation
@@ -45,19 +45,22 @@ async function fromJson() {
 
   return {
     getProcs: procs.data,
-    getUserByUsername: async (username: string) => users.find(u => u.username === username) ?? null
-  }
+    getUserByUsername: async (username: string) =>
+      users.find((u) => u.username === username) ?? null,
+  };
 }
 
 // mongo implementation
 let mongoClient: MongoClient | null = null;
 async function getMongo() {
-  if (!env.DATABASE_URL) throw new Error("Missing DATABASE_URL");
+  if (!env.DATABASE_URL) throw new Error('Missing DATABASE_URL');
   try {
     mongoClient = new MongoClient(env.DATABASE_URL);
     await mongoClient?.connect();
   } catch (e) {
-    throw new Error('DB_CONNECT_FAILED', { cause: e instanceof Error ? e : undefined })
+    throw new Error('DB_CONNECT_FAILED', {
+      cause: e instanceof Error ? e : undefined,
+    });
   }
 
   const db = mongoClient.db();
@@ -67,23 +70,29 @@ async function getMongo() {
       try {
         return (await db.collection<Payload>('procs').find({})).toArray();
       } catch (e) {
-        throw new Error('DB_QUERY_FAILED:getUserByUsername', { cause: e instanceof Error ? e : undefined })
+        throw new Error('DB_QUERY_FAILED:getUserByUsername', {
+          cause: e instanceof Error ? e : undefined,
+        });
       }
     },
 
     getUserByUsername: async (username: string) => {
       try {
-        return (await db.collection<UserInternal>('users').findOne({
-          username
-        })) ?? null;
+        return (
+          (await db.collection<UserInternal>('users').findOne({
+            username,
+          })) ?? null
+        );
       } catch (e) {
-        throw new Error('DB_QUERY_FAILED:getUserByUsername', { cause: e instanceof Error ? e : undefined })
+        throw new Error('DB_QUERY_FAILED:getUserByUsername', {
+          cause: e instanceof Error ? e : undefined,
+        });
       }
-    }
-  }
+    },
+  };
 }
 
 export async function getDataSources() {
-  console.log(`Connected to ${env.DATA_SOURCE}`)
-  return env.DATA_SOURCE === 'local-json' ? fromJson() : getMongo()
+  console.log(`Connected to ${env.DATA_SOURCE}`);
+  return env.DATA_SOURCE === 'local-json' ? fromJson() : getMongo();
 }
