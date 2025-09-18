@@ -1,8 +1,9 @@
 // components/TocClient.tsx
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState } from 'react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 import SearchIcon from '@mui/icons-material/Search';
 
@@ -55,7 +56,7 @@ interface Props {
 
 export default function ClientDashboardSidebar({ links }: Props) {
   const router = useRouter();
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const [showOptions, setShowOptions] = useState(false);
   const [compact, setCompact] = useState(true);
 
@@ -64,7 +65,8 @@ export default function ClientDashboardSidebar({ links }: Props) {
     const q = query.trim().toLowerCase();
     if (!q) return links;
     return links.filter(
-      (l) => l.label.toLowerCase().includes(q) || l.href.toLowerCase().includes(q)
+      (l) =>
+        l.label.toLowerCase().includes(q) || l.href.toLowerCase().includes(q),
     );
   }, [links, query]);
 
@@ -78,6 +80,17 @@ export default function ClientDashboardSidebar({ links }: Props) {
         <div className="px-4 py-3 flex items-center justify-between">
           {/* <h2 className="text-sm font-semibold">Contents</h2> */}
 
+          <div className="flex items-center justify-center align-middle my-4 ml-3">
+            <div className="relative w-18 h-18">
+              <Image
+                src="/EprocLogo.png"
+                alt="EProc Logo"
+                fill
+                className="object-contain"
+              />
+            </div>
+            <span className="font-bold text-3xl">EPROC</span>
+          </div>
           {/* Option toggle */}
           {/* <button
             aria-expanded={showOptions}
@@ -105,7 +118,6 @@ export default function ClientDashboardSidebar({ links }: Props) {
               aria-label="Search contents"
             />
           </div>
-
         </div>
 
         <div className="border-b border-gray-700"></div>
@@ -137,7 +149,7 @@ export default function ClientDashboardSidebar({ links }: Props) {
           ) : (
             <>
               <span className="ml-2 text-gray-300 text-sm">Procedures:</span>
-              <ul className={`space-y-1 ${compact ? "text-xs" : "text-sm"}`}>
+              <ul className={`space-y-1 ${compact ? 'text-xs' : 'text-sm'}`}>
                 {filtered.map((link) => (
                   <li key={link.href}>
                     <button
@@ -170,13 +182,11 @@ export default function ClientDashboardSidebar({ links }: Props) {
             >
               Clear search
             </button> */}
-            <div>
-
-            </div>
+            <div></div>
 
             <button
               onClick={() => {
-                router.push("/help");
+                router.push('/help');
               }}
               className="text-xs bg-blue-700/80 hover:bg-blue-700 px-2 py-1 rounded hover:cursor-pointer"
             >

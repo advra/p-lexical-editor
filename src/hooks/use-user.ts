@@ -1,7 +1,11 @@
 'use client';
+import { User } from '@/modules/auth/types';
 import useSWR from 'swr';
 
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+type MeResponse = { user: User | null };
+
+const fetcher = (url: string) =>
+  fetch(url).then((r) => r.json() as Promise<MeResponse>);
 
 export default function useUser() {
   const { data, error, mutate } = useSWR('/api/auth/me', fetcher);

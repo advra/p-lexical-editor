@@ -1,14 +1,14 @@
 'use client';
 
-import React from "react";
-import Image from 'next/image'
+import React from 'react';
+import Image from 'next/image';
 
-import { default as CustomTextField } from "@/components/common/TextField";
+import { default as CustomTextField } from '@/components/common/TextField';
 import ErrorIcon from '@mui/icons-material/Error';
-import Button from "@/components/common/buttons/Button";
-import CircularProgress from "@mui/material/CircularProgress";
-import { useTheme } from "next-themes";
-import { toast } from "sonner";
+import Button from '@/components/common/buttons/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import { useTheme } from 'next-themes';
+import { toast } from 'sonner';
 
 interface Props {
   username: string;
@@ -20,27 +20,39 @@ interface Props {
   handleSubmit: (event: React.FormEvent) => void;
 }
 
-export const LoginForm = ({ username, password, error, isLoading, setUsername, setPassword, handleSubmit }: Props) => {
+export const LoginForm = ({
+  username,
+  password,
+  error,
+  isLoading,
+  setUsername,
+  setPassword,
+  handleSubmit,
+}: Props) => {
   const { setTheme, resolvedTheme } = useTheme();
 
   const isDisabled = !username.trim() || !password.trim();
-  console.log("Theme is", resolvedTheme)
+  console.log('Theme is', resolvedTheme);
   return (
     <>
       <div className="max-w-md w-full bg-gray p-8 rounded-2xl shadow-xs border border-gray-100">
         <div className="flex items-center justify-center align-middle mb-8">
-          <div className="relative w-24 h-24">
+          <div className="relative w-28 h-28">
             <Image
               src="/EprocLogoWhite.png"
-              alt="Eproc Logo"
+              alt="EProc Logo"
               fill
               className="object-contain"
             />
           </div>
         </div>
-        <h4 className="text-center font-extralight">Welcome to Eproc! The procedure tasking suite.</h4>
+        <div className="text-center font-medium">
+          Welcome to EProc! Your tailored Electronic Procedure tasking suite!
+        </div>
 
-        <p className="text-center text-gray-600">Enter your login credentials below to use the app</p>
+        <p className="text-center text-gray-600">
+          Enter your login credentials below to use the app
+        </p>
         <form onSubmit={handleSubmit} className="space-y-5 mt-4">
           <CustomTextField
             className="w-full text-black "
@@ -49,7 +61,8 @@ export const LoginForm = ({ username, password, error, isLoading, setUsername, s
             onChange={(e) => setUsername(e.target.value)}
             required
           />
-          <CustomTextField className="w-full text-black"
+          <CustomTextField
+            className="w-full text-black"
             placeholder="Password"
             type="password"
             value={password}
@@ -57,27 +70,33 @@ export const LoginForm = ({ username, password, error, isLoading, setUsername, s
             required
           />
 
-          {isLoading ? <>
-            <Button
-              disabled
-              className="w-full h-8 py-5 my-2 text-blue-300 font-semibold bg-blue-700 hover:bg-blue-600">
-              <div className="flex gap-2">
-                <CircularProgress size="1.5rem" color="inherit" />
-              </div>
-            </Button>
-          </> : <>
-            <Button
-              disabled={isDisabled}
-              type="submit"
-              className="w-full h-8 py-5 my-2 text-white font-semibold bg-blue-700 hover:bg-blue-600">
-              Login
-            </Button>
-          </>}
+          {isLoading ? (
+            <>
+              <Button
+                disabled
+                className="w-full h-8 py-5 my-2 text-blue-300 font-semibold bg-blue-700 hover:bg-blue-600"
+              >
+                <div className="flex gap-2">
+                  <CircularProgress size="1.5rem" color="inherit" />
+                </div>
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                disabled={isDisabled}
+                type="submit"
+                className="w-full h-8 py-5 my-2 text-white font-semibold bg-blue-700 hover:bg-blue-600"
+              >
+                Login
+              </Button>
+            </>
+          )}
           <div className="text-gray-600 text-right">
             <span
               className="hover:underline hover:cursor-pointer"
               onClick={() => {
-                toast("Please contact an Administrator for a password reset")
+                toast('Please contact an Administrator for a password reset');
               }}
             >
               Forgot Password?
@@ -93,7 +112,6 @@ export const LoginForm = ({ username, password, error, isLoading, setUsername, s
           )}
         </form>
       </div>
-
     </>
-  )
-}
+  );
+};

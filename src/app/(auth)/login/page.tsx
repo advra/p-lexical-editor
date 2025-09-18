@@ -62,7 +62,15 @@ export default function LoginPage() {
 
   return (
     <>
-      <LoginView username={username} password={password} error={error} isLoading={isLoading} setUsername={setUsername} setPassword={setPassword} handleSubmit={handleSubmit} />
+      <LoginView
+        username={username}
+        password={password}
+        error={error}
+        isLoading={isLoading}
+        setUsername={setUsername}
+        setPassword={setPassword}
+        handleSubmit={handleSubmit}
+      />
     </>
   );
 }

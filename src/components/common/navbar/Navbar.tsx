@@ -1,5 +1,4 @@
-import { NavbarContainer } from "./NavbarContainer";
-import useUser from "@/hooks/use-user";
+import { NavbarContainer } from './NavbarContainer';
 
 export default async function Navbar() {
   return <NavbarContainer />;

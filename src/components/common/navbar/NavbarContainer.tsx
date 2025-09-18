@@ -1,12 +1,11 @@
 'use client';
-import Link from "next/link";
-import Image from "next/image";
-import ClientMenu from "./ClientMenu"
-import useUser from "@/hooks/use-user";
+import Link from 'next/link';
+import Image from 'next/image';
+import ClientMenu from './ClientMenu';
+import useUser from '@/hooks/use-user';
 
 export const NavbarContainer = () => {
   const { user } = useUser();
-  console.log("user is ", user);
 
   return (
     <>
@@ -25,9 +24,7 @@ export const NavbarContainer = () => {
             </div>
             <div>
               <Link href="/dashboard" className="text-white">
-                <div className="mr-4 font-semibold">
-                  EPROC
-                </div>
+                <div className="mr-4 font-semibold">EPROC</div>
               </Link>
             </div>
           </div>
@@ -36,7 +33,7 @@ export const NavbarContainer = () => {
             <ClientMenu username={user?.username ?? null} />
           </div>
         </div>
-      </div >
+      </div>
     </>
-  )
-}
+  );
+};
