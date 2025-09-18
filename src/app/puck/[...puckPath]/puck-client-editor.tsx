@@ -23,6 +23,7 @@ export function PuckClientEditor({
       <Puck
         config={config}
         data={data}
+        // custom publish call
         onPublish={async (data) => {
           try {
             await fetch('/api/puck/publish', {
@@ -35,7 +36,7 @@ export function PuckClientEditor({
             toast.error('Error saving, try again...');
           }
         }}
-      />
+      ></Puck>
     </>
   );
 }

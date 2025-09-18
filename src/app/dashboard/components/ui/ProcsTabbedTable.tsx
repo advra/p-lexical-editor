@@ -6,6 +6,8 @@ import AddIcon from '@mui/icons-material/Add';
 import Button from '@/components/common/buttons/Button';
 import CreateNewProcDialog from './CreateNewProcDialog';
 import type { ProcPayload } from './CreateNewProcDialog';
+import { initialProcsData } from '@/app/procs/utils/initialData';
+import { title } from 'process';
 
 export type Proc = {
   id: string;
@@ -62,27 +64,12 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
     const path = `/procs/${id}`;
 
     // 2) build the data object in the same shape your DB expects
-    const initialData = {
-      root: {
-        props: {
-          title: name,
-          owner: currentUsername,
-          projectTag: projectTag ?? null,
-          description: description ?? '',
-          padding: 'p-16',
-        },
-      },
-      content: [
-        {
-          type: 'TextBlock',
-          props: {
-            text: 'This is your new page. Click edit to modify the contents.',
-            id: `TextBlock-${currentUsername}-${Date.now()}`,
-          },
-        },
-      ],
-      zones: {},
-    };
+    const initialData = initialProcsData({
+      title: name,
+      owner: currentUsername,
+      projectTag: projectTag ?? null,
+      description: description ?? null,
+    });
 
     try {
       const res = await fetch('/api/puck/publish', {

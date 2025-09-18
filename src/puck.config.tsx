@@ -23,7 +23,7 @@ type Props = {
   SectionBlock: SectionBlockProps;
   ColumnsBlock: ColumnsBlockProps;
   TextBlock: TextBlockProps;
-  Grid: {};
+  Grid: GridProps;
   Card: {
     title: string;
     subtitle: string;
@@ -76,19 +76,27 @@ export const config: Config<Props> = {
     ColumnsBlock,
     TextBlock,
     Grid: {
-      render: () => {
-        // Render a Grid DropZone where users are able to drag and drop components
-        return (
-          <DropZone
-            zone="my-grid"
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-              gap: '16px',
-            }}
-          />
-        );
+      label: 'Grid',
+      fields: {
+        columns: { type: 'number', label: 'Columns', placeholder: '3' },
+        gap: { type: 'number', label: 'Gap (px)', placeholder: '16' },
+        content: { type: 'slot', label: 'Grid content' },
       },
+      defaultProps: {
+        columns: 3,
+        gap: 16,
+      },
+      render: ({ content: Content, columns = 3, gap = 16 }) => (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+            gap,
+          }}
+        >
+          <Content />
+        </div>
+      ),
     },
     Card: {
       // Add the fields for the title, description and padding
