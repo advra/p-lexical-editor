@@ -109,15 +109,78 @@
           "title": "asddas",
           "id": "HeadingBlock-1758204468984"
         }
+      },
+      {
+        "type": "Card",
+        "props": {
+          "title": "Card Title",
+          "subtitle": "Card Subtitle",
+          "description": "Example Description",
+          "padding": 16,
+          "id": "Card-12573321-7b8a-42ee-8b5d-fe4c529eb3b5"
+        }
+      },
+      {
+        "type": "Card",
+        "props": {
+          "title": "Card Title",
+          "subtitle": "Card Subtitle",
+          "description": "Example Description",
+          "padding": 16,
+          "id": "Card-4f40a085-98cb-4934-b27d-bc6a152e1b71"
+        }
+      },
+      {
+        "type": "Grid",
+        "props": {
+          "id": "Grid-aecd69eb-4c91-414e-99d5-b5c095ec4155"
+        }
+      },
+      {
+        "type": "ToggleBlock",
+        "props": {
+          "details": [],
+          "summary": "Toggle Block (Click to edit)",
+          "id": "ToggleBlock-7307464f-8c6b-4c61-8918-fc00d2f9205d"
+        }
       }
     ],
-    "zones": {},
+    "zones": {
+      "Grid-aecd69eb-4c91-414e-99d5-b5c095ec4155:my-grid": [
+        {
+          "type": "Card",
+          "props": {
+            "title": "Card Title",
+            "subtitle": "Card Subtitle",
+            "description": "Example Description",
+            "padding": 16,
+            "id": "Card-35c4c64f-241a-4886-ae96-cbaad7132095"
+          }
+        },
+        {
+          "type": "ToggleBlock",
+          "props": {
+            "details": [
+              {
+                "type": "TextBlock",
+                "props": {
+                  "text": "Hellooooo",
+                  "id": "TextBlock-e08d35c9-b31e-491d-9b90-e0d1eca60c98"
+                }
+              }
+            ],
+            "summary": "Toggle Block (Click to edit)",
+            "id": "ToggleBlock-d0268ff0-27e8-48c7-af96-4745c8ca3f40"
+          }
+        }
+      ]
+    },
     "metadata": {
       "createdAt": "2025-09-18T14:07:49.165Z",
       "createdBy": "admin",
-      "updatedAt": "2025-09-18T14:07:49.165Z",
+      "updatedAt": "2025-09-18T16:20:33.000Z",
       "updatedBy": "admin",
-      "version": 1
+      "version": 5
     }
   }
 }

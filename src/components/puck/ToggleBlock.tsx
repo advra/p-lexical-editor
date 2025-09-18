@@ -12,7 +12,7 @@ import { useEffect, useRef } from 'react';
 export type ToggleBlockProps = { summary: string; details?: Slot };
 
 export const HeadingBlock: ComponentConfig<ToggleBlockProps> = {
-  label: 'Toggle',
+  label: 'Toggle Block',
   fields: {
     summary: { type: 'text', contentEditable: true },
     details: { type: 'slot' },
