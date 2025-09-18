@@ -143,6 +143,43 @@
           "summary": "Toggle Block (Click to edit)",
           "id": "ToggleBlock-7307464f-8c6b-4c61-8918-fc00d2f9205d"
         }
+      },
+      {
+        "type": "FlexContainer",
+        "props": {
+          "id": "FlexContainer-8eb51475-5a5a-4159-88fb-36b5b404a555"
+        }
+      },
+      {
+        "type": "Grid",
+        "props": {
+          "id": "Grid-e8c81168-7d9d-4294-b800-aa1117ec9876"
+        }
+      },
+      {
+        "type": "HeadingBlock",
+        "props": {
+          "title": "Heading",
+          "description": "",
+          "id": "HeadingBlock-86472a81-fac1-415e-8f8c-8107229d088c"
+        }
+      },
+      {
+        "type": "Card",
+        "props": {
+          "title": "Card Title",
+          "subtitle": "Card Subtitle",
+          "description": "Example Description",
+          "padding": 16,
+          "id": "Card-bbb4da73-f62c-4875-806d-676efe209a82"
+        }
+      },
+      {
+        "type": "TextBlock",
+        "props": {
+          "text": "Enter your text here",
+          "id": "TextBlock-395c4c56-1974-4728-90da-5a04bd4cc600"
+        }
       }
     ],
     "zones": {
@@ -173,14 +210,56 @@
             "id": "ToggleBlock-d0268ff0-27e8-48c7-af96-4745c8ca3f40"
           }
         }
+      ],
+      "FlexContainer-8eb51475-5a5a-4159-88fb-36b5b404a555:flex-zone": [
+        {
+          "type": "Card",
+          "props": {
+            "title": "Card Title",
+            "subtitle": "Card Subtitle",
+            "description": "Example Description",
+            "padding": 16,
+            "id": "Card-f562ee57-b814-4037-a8b7-ce19b1e72ab9"
+          }
+        },
+        {
+          "type": "Card",
+          "props": {
+            "title": "Card Title",
+            "subtitle": "Card Subtitle",
+            "description": "Example De\nasd\ndas\nas\nas\ndas\nfasfasfsafsafasfasfasfsafasfasfasdsadasdasdasdscription",
+            "padding": 16,
+            "id": "Card-562d15cd-8b8c-4082-b412-8c8768db8016"
+          }
+        },
+        {
+          "type": "Card",
+          "props": {
+            "title": "Card Title",
+            "subtitle": "Card Subtitle",
+            "description": "Example Description",
+            "padding": 16,
+            "id": "Card-48ab9582-eb8d-4237-9a61-5eed10d1e339"
+          }
+        }
+      ],
+      "Grid-e8c81168-7d9d-4294-b800-aa1117ec9876:my-grid": [
+        {
+          "type": "ToggleBlock",
+          "props": {
+            "details": [],
+            "summary": "Toggle Block (Click to edit)",
+            "id": "ToggleBlock-2a38e815-e743-4428-a32f-fee840c81bcd"
+          }
+        }
       ]
     },
     "metadata": {
       "createdAt": "2025-09-18T14:07:49.165Z",
       "createdBy": "admin",
-      "updatedAt": "2025-09-18T17:44:30.926Z",
+      "updatedAt": "2025-09-18T17:56:30.780Z",
       "updatedBy": "admin",
-      "version": 12
+      "version": 16
     }
   }
 }

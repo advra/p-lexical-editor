@@ -47,18 +47,25 @@ export default async function Page({
   }
 
   return (
-    <div className="mt-4 px-4 bg-white mx-auto max-w-screen">
-      <div className="flex items-center">
-        <BackToDashboardButton />
-        <div className="ml-auto flex gap-4 items-center">
-          <div>
-            <ExportPDFButton />
-            <EditButton path={path} />
+    <>
+      <div
+        className="sticky top-0 z-40 bg-white/80 backdrop-blur 
+        supports-[backdrop-filter]:bg-white/60 shadow-sm"
+      >
+        <div className="px-4 mx-auto max-w-screen">
+          <div className="flex items-center h-12">
+            <BackToDashboardButton />
+            <div className="ml-auto flex gap-4 items-center">
+              <ExportPDFButton />
+              <EditButton path={path} />
+            </div>
           </div>
         </div>
       </div>
-      <PuckPreview data={data} />
-    </div>
+      <div className="mt-4 px-4 bg-white mx-auto max-w-screen">
+        <PuckPreview data={data} />
+      </div>
+    </>
   );
 }
 

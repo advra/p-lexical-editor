@@ -10,9 +10,13 @@ import TextBlock, { TextBlockProps } from './components/puck/TextBlock';
 import ToggleBlock, { ToggleBlockProps } from './components/puck/ToggleBlock';
 import { Avatar, Card, CardHeader } from '@mui/material';
 import classNames from 'classnames';
+import ChecklistBlock, {
+  ChecklistBlockProps,
+} from './components/puck/ChecklistBlock';
 // import rootPage from './components/puck/RootPage';
 
 type Props = {
+  ChecklistBlock: ChecklistBlockProps;
   ToggleBlock: ToggleBlockProps;
   HeadingBlock: HeadingBlockProps;
   SectionBlock: SectionBlockProps;
@@ -25,6 +29,7 @@ type Props = {
     description: string;
     padding: number;
   };
+  FlexContainer: {};
 };
 
 export const config: Config<Props> = {
@@ -70,6 +75,7 @@ export const config: Config<Props> = {
     },
   },
   components: {
+    ChecklistBlock,
     ToggleBlock,
     HeadingBlock,
     SectionBlock,
@@ -119,6 +125,19 @@ export const config: Config<Props> = {
             />
             <p>{description}</p>
           </div>
+        );
+      },
+    },
+    FlexContainer: {
+      render: () => {
+        return (
+          <DropZone
+            zone="flex-zone"
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+            }}
+          />
         );
       },
     },
