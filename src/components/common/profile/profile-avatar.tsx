@@ -61,25 +61,26 @@ export default function ProfileAvatarMenu({
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         slotProps={{ paper: { sx: { minWidth: 200 } } }}
       >
-        {username ? (
-          <>
-            <MenuItem
-              onClick={async () => {
-                setAnchorEl(null);
-                await router.push('/settings');
-              }}
-            >
-              <SettingsButton handleClose={() => setAnchorEl(null)} />
-            </MenuItem>
-            <MenuItem>
-              <LogoutButton handleClose={() => setAnchorEl(null)} />
-            </MenuItem>
-          </>
-        ) : (
-          <MenuItem>
-            <LoginButton handleClose={() => setAnchorEl(null)} />
-          </MenuItem>
-        )}
+        {username
+          ? [
+              <MenuItem
+                key="settings"
+                onClick={() => {
+                  setAnchorEl(null);
+                  router.push('/settings'); // no need to await
+                }}
+              >
+                <SettingsButton handleClose={() => setAnchorEl(null)} />
+              </MenuItem>,
+              <MenuItem key="logout">
+                <LogoutButton handleClose={() => setAnchorEl(null)} />
+              </MenuItem>,
+            ]
+          : [
+              <MenuItem key="login">
+                <LoginButton handleClose={() => setAnchorEl(null)} />
+              </MenuItem>,
+            ]}
       </Menu>
     </div>
   );

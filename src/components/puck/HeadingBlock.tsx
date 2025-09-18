@@ -7,6 +7,7 @@ import type { ComponentConfig } from '@measured/puck';
 export type HeadingBlockProps = { title: string; description?: string };
 
 export const HeadingBlock: ComponentConfig<HeadingBlockProps> = {
+  label: 'Heading',
   fields: {
     title: { type: 'text' },
     description: { type: 'textarea' },

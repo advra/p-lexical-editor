@@ -16,6 +16,7 @@ import { Metadata } from 'next';
 import { getPage } from '@/lib/get-page';
 import { BackToDashboardButton } from './ui/components/BackToDashboardButton';
 import { EditButton } from './ui/components/EditButton';
+import { ExportPDFButton } from './ui/components/ExportPDFButton';
 
 export async function generateMetadata({
   params,
@@ -64,21 +65,24 @@ export default async function Page({
     <div className="p-4 bg-white mx-auto max-w-screen">
       <div className="flex">
         <BackToDashboardButton />
+        <div className="flex flex-col ml-4 mt-2 align-middle">
+          <span className="text-xs text-gray-400">
+            Created By: {data.metadata.createdBy}
+          </span>
+          <span className="text-xs text-gray-400">
+            Last Updated: {formatTimestamp(data.metadata.updatedAt)}
+          </span>
+        </div>
         <div className="ml-auto flex gap-4 items-center">
-          <div className="flex flex-col">
-            <span className="text-xs text-gray-400">
-              Created By: {data.metadata.createdBy}
-            </span>
-            <span className="text-xs text-gray-400">
-              Last Updated: {formatTimestamp(data.metadata.updatedAt)}
-            </span>
+          <div>
+            <ExportPDFButton />
+            <EditButton path={path} />
           </div>
-          <EditButton path={path} />
         </div>
       </div>
 
       {/* Paper render */}
-      <div className="min-h-screen py-24 mt-24 mb-32 mx-32 bg-white border border-gray-100 shadow-md">
+      <div className="min-h-screen px-16 py-24 mt-24 mb-32 mx-32 bg-white border border-gray-100 shadow-md">
         <Client data={data} />
       </div>
     </div>
