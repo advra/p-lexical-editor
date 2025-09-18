@@ -1,36 +1,55 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
 
-import type { NextRequest } from "next/server";
+import type { NextRequest } from 'next/server';
+
+const protectedPaths = ['/settings', '/dashboard', '/app'];
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
 
-  if (req.method === "GET") {
-    // Rewrite routes that match "/[...puckPath]/edit" to "/puck/[...puckPath]"
-    if (req.nextUrl.pathname.endsWith("/edit")) {
-      const pathWithoutEdit = req.nextUrl.pathname.slice(
-        0,
-        req.nextUrl.pathname.length - 5
-      );
-      const pathWithEditPrefix = `/puck${pathWithoutEdit}`;
+  if (req.method === 'GET') {
+    const { pathname } = req.nextUrl;
 
-      return NextResponse.rewrite(new URL(pathWithEditPrefix, req.url));
+    /*
+      Redirect when users go to /edit 
+      Rewrite routes that match "/[...puckPath]/edit" to "/puck/[...puckPath]"
+      Note guard this so that it only works when it contains /procs/some-id-link/edit
+    */
+
+    if (pathname.endsWith('/edit')) {
+      // const pathWithoutEdit = req.nextUrl.pathname.slice(
+      //   0,
+      //   req.nextUrl.pathname.length - 5,
+      // );
+      // const pathWithEditPrefix = `/puck${pathWithoutEdit}`;
+      // return NextResponse.rewrite(new URL(pathWithEditPrefix, req.url));
+
+      const parts = pathname.split('/').filter(Boolean);
+
+      if (parts[0] === 'procs' && parts[1]) {
+        const id = parts[1]; // ← your ID
+        const isEdit = parts[parts.length - 1] === 'edit';
+
+        if (isEdit) {
+          // rewrite /procs/:id/.../edit → /puck/procs/:id/... (drop /edit)
+          const withoutEdit = pathname.replace(/\/edit\/?$/, ''); // or string slice
+          return NextResponse.rewrite(new URL(`/puck${withoutEdit}`, req.url));
+        }
+      }
     }
 
     // Disable "/puck/[...puckPath]"
-    if (req.nextUrl.pathname.startsWith("/puck")) {
+    if (pathname.startsWith('/puck')) {
       console.error('Error fetching data:');
-      return NextResponse.redirect(new URL("/", req.url));
+      return NextResponse.redirect(new URL('/', req.url));
     }
 
     /*
       Protect many routes by ensuring users are logged in.
-      TODO: Do we want to guard pages?
     */
 
     // define protected prefixes
     const url = req.nextUrl.clone();
-    const protectedPaths = ['/settings', '/dashboard', '/app'];
     const isProtected = protectedPaths.some((p) => url.pathname.startsWith(p));
 
     if (isProtected) {

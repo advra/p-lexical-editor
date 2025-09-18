@@ -14,7 +14,6 @@ import { SALT_NUMBER } from '../src/lib/constants.mjs';
 
 const outPath = path.join(process.cwd(), 'docker', 'users.json');
 
-
 const rawUsers = [
   { id: 'u1', username: 'admin', password: 'Admin123!', roles: 'admin' },
   { id: 'u2', username: 'user', password: 'User123!', roles: 'operator' },
