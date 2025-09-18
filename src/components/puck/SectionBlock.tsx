@@ -10,7 +10,7 @@ export type SectionBlockProps = { title: string };
 export const SectionBlock: ComponentConfig<SectionBlockProps> = {
   label: 'Section',
   fields: {
-    title: { type: 'text' },
+    title: { type: 'text', contentEditable: true },
   },
   defaultProps: {
     title: 'Heading',

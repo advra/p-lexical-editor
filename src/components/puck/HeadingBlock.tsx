@@ -9,8 +9,8 @@ export type HeadingBlockProps = { title: string; description?: string };
 export const HeadingBlock: ComponentConfig<HeadingBlockProps> = {
   label: 'Heading',
   fields: {
-    title: { type: 'text' },
-    description: { type: 'textarea' },
+    title: { type: 'text', contentEditable: true },
+    description: { type: 'textarea', contentEditable: true },
   },
   defaultProps: {
     title: 'Heading',

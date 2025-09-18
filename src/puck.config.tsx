@@ -7,8 +7,10 @@ import SectionBlock, {
 } from './components/puck/SectionBlock';
 import ColumnsBlock, { ColumnsBlockProps } from './components/puck/Columns';
 import TextBlock, { TextBlockProps } from './components/puck/TextBlock';
+import ToggleBlock, { ToggleBlockProps } from './components/puck/ToggleBlock';
 
 type Props = {
+  ToggleBlock: ToggleBlockProps;
   HeadingBlock: HeadingBlockProps;
   SectionBlock: SectionBlockProps;
   ColumnsBlock: ColumnsBlockProps;
@@ -17,6 +19,7 @@ type Props = {
 
 export const config: Config<Props> = {
   components: {
+    ToggleBlock,
     HeadingBlock,
     SectionBlock,
     ColumnsBlock,
@@ -27,7 +30,7 @@ export const config: Config<Props> = {
       components: ['HeadingBlock', 'TextBlock'],
     },
     formatting: {
-      components: ['ColumnsBlock'],
+      components: ['ColumnsBlock', 'ToggleBlock'],
     },
   },
 };

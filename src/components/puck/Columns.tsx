@@ -18,7 +18,6 @@ export const TwoColumnBlock: ComponentConfig<TwoColumnProps> = {
   },
   defaultProps: {
     gap: 16,
-    // stackOnMobile: true,
   },
   render: ({
     gap = 16,

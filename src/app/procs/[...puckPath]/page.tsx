@@ -82,9 +82,9 @@ export default async function Page({
       </div>
 
       {/* Paper render */}
-      <div className="min-h-screen px-16 py-24 mt-24 mb-32 mx-32 bg-white border border-gray-100 shadow-md">
-        <Client data={data} />
-      </div>
+      {/* <div className="min-h-screen px-16 py-24 mt-24 mb-32 mx-32 bg-white border border-gray-100 shadow-md"> */}
+      <Client data={data} />
+      {/* </div> */}
     </div>
   );
 }

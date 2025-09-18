@@ -67,15 +67,31 @@
           "title": "Heading",
           "id": "SectionBlock-c58bf4c5-538f-401d-a9f6-27a466453866"
         }
+      },
+      {
+        "type": "ToggleBlock",
+        "props": {
+          "details": [
+            {
+              "type": "TextBlock",
+              "props": {
+                "text": "And in here we will have some more!",
+                "id": "TextBlock-97f9a8b0-68cc-4ce5-b41a-01cffed8de41"
+              }
+            }
+          ],
+          "summary": "Toggle Block (Click to edit)",
+          "id": "ToggleBlock-f9849a4f-8279-485b-a035-4ce8ffaa78da"
+        }
       }
     ],
     "zones": {},
     "metadata": {
       "createdAt": "2025-09-18T06:12:31.977Z",
       "createdBy": "admin",
-      "updatedAt": "2025-09-18T06:53:45.134Z",
+      "updatedAt": "2025-09-18T13:59:07.272Z",
       "updatedBy": "admin",
-      "version": 7
+      "version": 11
     }
   }
 }
