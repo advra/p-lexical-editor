@@ -49,13 +49,14 @@ export default async function Page({
   return (
     <>
       <div
-        className="sticky top-0 z-40 bg-white/80 backdrop-blur 
+        className="sticky top-0 z-40 py-1 bg-white/80 backdrop-blur 
         supports-[backdrop-filter]:bg-white/60 shadow-sm"
       >
         <div className="px-4 mx-auto max-w-screen">
           <div className="flex items-center h-12">
             <BackToDashboardButton />
-            <div className="ml-auto flex gap-4 items-center">
+            <div className="ml-auto text-gray-600"></div>
+            <div className="ml-auto flex">
               <ExportPDFButton />
               <EditButton path={path} />
             </div>
