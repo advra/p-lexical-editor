@@ -13,21 +13,7 @@
 
 import '@measured/puck/puck.css';
 import { PuckClientEditor } from './puck-client-editor';
-import { Metadata } from 'next';
 import { getPage } from '../../../lib/get-page';
-
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ puckPath: string[] }>;
-}): Promise<Metadata> {
-  const { puckPath = [] } = await params;
-  const path = `/${puckPath.join('/')}`;
-
-  return {
-    title: 'Puck: ' + path,
-  };
-}
 
 export default async function Page({
   params,
@@ -36,7 +22,8 @@ export default async function Page({
 }) {
   const { puckPath = [] } = await params;
   const path = `/${puckPath.join('/')}`;
-  const data = getPage(path);
+  const slug = puckPath[puckPath.length - 1];
+  const data = await getPage(slug);
 
   return (
     <>

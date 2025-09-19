@@ -1,5 +1,5 @@
 export type User = {
-  id: string;
+  // id: string; // not used?
   username: string;
   roles: string[] | null;
 };

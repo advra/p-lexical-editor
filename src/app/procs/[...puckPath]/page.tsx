@@ -18,19 +18,6 @@ import { BackToDashboardButton } from './ui/components/BackToDashboardButton';
 import { EditButton } from './ui/components/EditButton';
 import { ExportPDFButton } from './ui/components/ExportPDFButton';
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ puckPath: string[] }>;
-}): Promise<Metadata> {
-  const { puckPath = [] } = await params;
-  const path = `/${puckPath.join('/')}`;
-
-  return {
-    title: getPage(path)?.root.props?.title,
-  };
-}
-
 export default async function Page({
   params,
 }: {
@@ -38,9 +25,8 @@ export default async function Page({
 }) {
   const { puckPath = [] } = await params;
   const path = `/procs/${puckPath.join('/')}`;
-  console.log('path is ', path);
-  const data = getPage(path);
-  console.log('data is ', data);
+  const slug = puckPath[puckPath.length - 1];
+  const data = await getPage(slug);
 
   if (!data) {
     return notFound();
@@ -72,4 +58,4 @@ export default async function Page({
 
 // Force Next.js to produce static pages: https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
 // Delete this if you need dynamic rendering, such as access to headers or cookies
-export const dynamic = 'force-static';
+// export const dynamic = 'force-static';

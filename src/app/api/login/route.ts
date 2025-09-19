@@ -24,8 +24,11 @@ export async function POST(request: NextRequest) {
 
   // Set a single HTTP-only cookie with user info + session ID
   const cookieData: Session = {
-    username: user.username,
-    roles: user.roles,
+    user: {
+      // id: user.id ?? '', // or make id optional in your type
+      username: user.username,
+      roles: user.roles ?? null,
+    },
     sessionId,
   };
 

@@ -42,7 +42,7 @@ export function initialProcsData({
       {
         type: 'TextBlock',
         props: {
-          text: 'This is your new page. Click edit to modify the contents.',
+          text: `This is your new page. Click the Edit Button at the top right to modify this page's contents.`,
           id: genId(`TextBlock-${owner}`),
         },
       },

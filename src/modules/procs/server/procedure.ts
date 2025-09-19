@@ -60,16 +60,26 @@ export const procRouter = createTRPCRouter({
     .input(procGetOneInput)
     .query(async ({ ctx, input }) => {
       const username = ctx.session?.user?.username;
-      const filter =
-        'id' in input
-          ? { _id: input.id }
-          : { owner: input.owner, slug: input.slug.toLowerCase() };
+
+      let filter: Record<string, unknown>;
+      switch (input.by) {
+        case 'id':
+          filter = { _id: input.id };
+          break;
+        case 'ownerSlug':
+          filter = { owner: input.owner, slug: input.slug.toLowerCase() };
+          break;
+        case 'slug':
+          filter = { slug: input.slug };
+          break;
+      }
+
+      console.log('FILTER IS\n', JSON.stringify(filter, null, 2));
 
       const doc = await ProcModel.findOne(filter).lean();
       if (!doc)
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Proc not found' });
 
-      // Access control: owner or sharedWith includes the requesting user
       const canRead =
         doc.owner === username ||
         doc.sharedWith?.includes(username) ||

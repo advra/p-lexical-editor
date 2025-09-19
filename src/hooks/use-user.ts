@@ -9,6 +9,7 @@ const fetcher = (url: string) =>
 
 export default function useUser() {
   const { data, error, mutate } = useSWR('/api/auth/me', fetcher);
+  console.log('%%%%%%', data);
   return {
     user: data?.user ?? null,
     loading: !error && !data,

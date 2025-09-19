@@ -10,6 +10,7 @@ import config from '@/puck.config';
 import { formatTimestamp } from '@/lib/utils/dateformat';
 
 export function PuckPreview({ data }: { data: Data }) {
+  console.log('DATA IS', data);
   return (
     <div className="mt-12 px-16 mx-32">
       <div className="flex flex-col m-2 align-middle text-right">

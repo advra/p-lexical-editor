@@ -51,8 +51,13 @@ export const procUpdateInput = z.object({
 });
 
 export const procGetOneInput = z.union([
-  z.object({ id: z.string().min(1) }),
-  z.object({ owner: z.string().min(1), slug: z.string().min(1) }),
+  z.object({ by: z.literal('id'), id: z.string().min(1) }),
+  z.object({
+    by: z.literal('ownerSlug'),
+    owner: z.string().min(1),
+    slug: z.string().min(1),
+  }),
+  z.object({ by: z.literal('slug'), slug: z.string().min(1) }),
 ]);
 
 export const procListMineInput = z.object({

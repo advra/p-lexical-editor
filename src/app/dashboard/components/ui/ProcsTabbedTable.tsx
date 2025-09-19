@@ -59,6 +59,9 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
     description,
     projectTag,
   }: ProcPayload) => {
+    console.log(
+      `Creating: name: ${name} desc: ${description} tag: ${projectTag}`,
+    );
     // 1) generate id
     const id = crypto.randomUUID();
     const path = `/procs/${id}`;

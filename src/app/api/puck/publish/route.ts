@@ -19,19 +19,18 @@ export async function POST(request: Request) {
   );
   const { title, description, tags } = createProcRequest.data.root;
   const path = createProcRequest.path;
-  // if (!title) {
-  //   return NextResponse.json(
-  //     { status: 'error', message: 'Title is required' },
-  //     { status: 400 },
-  //   );
-  // }
+
+  // Extract just the UUID part from the path for the slug
+  // Path format: /procs/{uuid}
+  const pathParts = path.split('/');
+  const slug = pathParts[pathParts.length - 1]; // Get the last part (UUID)
 
   const proc = await caller.procs.create({
     data: createProcRequest.data,
     title: title ?? 'New',
     description: description ?? undefined,
     tags: tags ?? [],
-    slug: path,
+    slug: slug,
   });
 
   if (!proc) {

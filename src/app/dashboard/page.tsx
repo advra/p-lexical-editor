@@ -1,74 +1,30 @@
-// src/app/toc/page.tsx  (server component)
-import fs from "fs";
-import path from "path";
-import { ProcMetadata } from "./components/ui/ClientDashboardSidebar";
-import { DatabaseError } from "./components/DatabaseError";
-import { TocView } from "./components/view/toc-view";
+// src/app/dashboard/page.tsx  (server component)
+import { TocView } from './components/view/toc-view';
+import { appRouter } from '@/trpc/routers/_app';
+import { createTRPCContext } from '@/trpc/init';
+import { PuckPageData } from '../puck/types';
 
-interface PageData {
-  root: { props?: { title?: string } };
-  content: any[];
-  zones: Record<string, any[]>;
-}
-type DatabaseSchema = Record<string, PageData>;
-
-export default function Page() {
-  const dbRelative = process.env.DB_JSON_PATH ?? "";
-
-  const getNavLinks = (dbPathOrRelative: string): ProcMetadata[] => {
-    if (!dbPathOrRelative) {
-      throw new Error("DB_JSON_PATH not configured");
-    }
-
-    // Candidate absolute paths to try
-    const candidates = [
-      dbPathOrRelative, // maybe already absolute
-      path.join(process.cwd(), dbPathOrRelative), // relative to project root
-      path.join(process.cwd(), "src", dbPathOrRelative.replace(/^\.\//, "")), // relative to src/
-      path.resolve(dbPathOrRelative), // resolved from current CWD
-    ];
-
-    // Find the first candidate that exists
-    const found = candidates.find((p) => {
-      try {
-        return fs.existsSync(p) && fs.statSync(p).isFile();
-      } catch {
-        return false;
-      }
+export default async function Page() {
+  try {
+    const caller = appRouter.createCaller(await createTRPCContext());
+    const { procs } = await caller.procs.listAll({
+      limit: 50,
     });
 
-    if (!found) {
-      // helpful error with all tried candidates
-      throw new Error(
-        `DB file not found. Tried:\n${candidates.map((c) => ` - ${c}`).join("\n")}`
-      );
-    }
+    // Build links for the sidebar from the actual procs data
+    const links = procs.map((proc) => {
+      const p = proc.data as PuckPageData;
 
-    const raw = fs.readFileSync(found, "utf8");
-    let database: DatabaseSchema;
-    try {
-      database = JSON.parse(raw) as DatabaseSchema;
-    } catch (err) {
-      throw new Error(`Failed to parse DB JSON at ${found}: ${(err as Error).message}`);
-    }
+      return {
+        href: `/procs/${proc.slug}`,
+        label: p.root?.props?.title ?? 'Untitled',
+      };
+    });
 
-    const links: ProcMetadata[] = Object.keys(database).map((p) => ({
-      href: p,
-      label: p === "/" ? "Home" : p.replace(/^\//, ""),
-    }));
-
-    return links;
-  };
-
-  try {
-    const links = getNavLinks(dbRelative);
-    return (
-      <>
-        <TocView links={links} />
-      </>
-    )
-  } catch (err) {
-    console.error("Error loading database:", err);
-    return <DatabaseError />;
+    return <TocView links={links} />;
+  } catch (error) {
+    console.error('Error loading procs:', error);
+    // Return empty links if there's an error (e.g., database not connected)
+    return <TocView links={[]} />;
   }
 }
