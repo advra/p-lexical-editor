@@ -3,20 +3,21 @@
 import ProfileAvatarMenu from '@/components/common/profile/profile-avatar';
 import ProcsTabbedTable, { Proc } from './ProcsTabbedTable';
 import useUser from '@/hooks/use-user';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { getSessionFromCookie } from '@/lib/utils/auth';
 import { useTRPC } from '@/trpc/client';
 import { useQuery } from '@tanstack/react-query';
+import { ProcsTabbedTableSkeleton } from './ClientDashboardSkeleton';
 
-export const ClientDashboard = () => {
+export const ClientDashboard = ({ procs }) => {
   const { user, loading: userLoading, error: userError } = useUser();
-  const trpc = useTRPC();
-  const { data, isLoading, error } = useQuery(
-    trpc.procs.listAll.queryOptions({ limit: 50 }),
-  );
+  // const trpc = useTRPC();
+  // const { data, isLoading, error } = useQuery(
+  //   trpc.procs.listAll.queryOptions({ limit: 50 }),
+  // );
 
   const [procsLoading, setProcsLoading] = useState(false);
-  const [procsError, setProcsError] = useState<string | null>(null);
+  // const [procsError, setProcsError] = useState<string | null>(null);
 
   const username = user?.username ?? 'Guest';
 
@@ -46,29 +47,9 @@ export const ClientDashboard = () => {
             </div>
           </div>
 
-          {/* If you want to block the table until we know who the user is */}
-          {userError && (
-            <div className="text-red-600 text-sm">Failed to load user.</div>
-          )}
-
-          {isLoading && (
-            <div className="text-gray-600 text-sm">Loading procedures...</div>
-          )}
-
-          {procsError && (
-            <div className="text-red-600 text-sm">
-              Failed to load procedures: {procsError}
-            </div>
-          )}
-
-          {!isLoading && !procsError ? (
-            // <ProcsTabbedTable procs={data} currentUsername={username} />
-            <>LOADED: {JSON.stringify(data, null, 2)}</>
-          ) : (
-            <>
-              <div className="w-full animate-pulse bg-gray-500 h-full"></div>
-            </>
-          )}
+          <Suspense fallback={<ProcsTabbedTableSkeleton />}>
+            <ProcsTabbedTable procs={procs} currentUsername={username} />
+          </Suspense>
         </div>
       </main>
     </>

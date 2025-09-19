@@ -8,13 +8,18 @@ import CreateNewProcDialog from './CreateNewProcDialog';
 import type { ProcPayload } from './CreateNewProcDialog';
 import { initialProcsData } from '@/app/procs/utils/initialData';
 import { title } from 'process';
+import { PuckPageData } from '@/app/puck/types';
+import Link from 'next/link';
 
 export type Proc = {
-  id: string;
+  _id: string;
+  slug: string;
+  tags?: string[];
   name: string;
   owner: string;
   sharedWith?: string[]; // usernames/emails
-  updatedAt?: string;
+  updatedAt?: string | Date;
+  data: PuckPageData;
 };
 
 type Props = {
@@ -22,7 +27,11 @@ type Props = {
   currentUsername: string;
 };
 
+const formatWhen = (v?: string | Date) =>
+  v ? new Date(v).toLocaleString() : '—';
+
 export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
+  console.log('saidusaid: ', procs);
   const [showCreateNewProc, setShowCreateNewProc] = useState(false);
   const tabs = ['All', 'My Procs', 'Shared With Me'] as const;
   type Tab = (typeof tabs)[number];
@@ -45,6 +54,8 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
     }
 
     if (!q) return items;
+
+    console.log('ITEMS: ', items);
 
     return items.filter(
       (p) =>
@@ -197,9 +208,11 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
                 </tr>
               ) : (
                 filtered.map((p) => (
-                  <tr key={p.id} className="hover:bg-gray-50 ">
+                  <tr key={p._id} className="hover:bg-gray-50 ">
                     <td className="px-3 py-3 font-medium text-gray-800">
-                      {p.name}
+                      <Link href={`procs/${p.slug}`}>
+                        {p.data.metadata.title}
+                      </Link>
                     </td>
                     <td className="px-3 py-3 text-gray-600">{p.owner}</td>
                     <td className="px-3 py-3 text-gray-600 ">
@@ -224,7 +237,7 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
                       )}
                     </td>
                     <td className="px-3 py-3 text-gray-600">
-                      {p.updatedAt ?? '—'}
+                      {formatWhen(p.updatedAt)}
                     </td>
                     <td className="px-3 py-3">
                       <div className="flex gap-2">
