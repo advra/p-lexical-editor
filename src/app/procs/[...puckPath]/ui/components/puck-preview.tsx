@@ -8,8 +8,9 @@ import type { Data } from '@measured/puck';
 import { Render } from '@measured/puck';
 import config from '@/puck.config';
 import { formatTimestamp } from '@/lib/utils/dateformat';
+import { PuckPageData } from '@/app/puck/types';
 
-export function PuckPreview({ data }: { data: Data }) {
+export function PuckPreview({ data }: { data: PuckPageData }) {
   console.log('DATA IS', data);
   return (
     <div className="mt-12 px-16 mx-32">

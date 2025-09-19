@@ -88,7 +88,7 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
     console.log('initialData: ', initialData);
 
     try {
-      const res = await fetch('/api/puck/publish', {
+      const res = await fetch('/api/puck/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ path, data: initialData }),

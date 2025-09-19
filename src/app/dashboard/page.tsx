@@ -9,6 +9,9 @@ export default async function Page() {
     const { procs, total, nextCursor } = await caller.procs.listAll({
       limit: 50,
     });
+    {
+      JSON.stringify(procs, null, 2);
+    }
     return <TocView procs={procs} total={total} nextCursor={nextCursor} />;
   } catch (err) {
     console.error('Error loading procs:', err);

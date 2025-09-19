@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { Card, CardContent, Divider, List, TextField } from '@mui/material';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+
 import { toast } from 'sonner';
 import cn from 'classnames';
 
@@ -11,6 +13,7 @@ import Button from '@/components/common/buttons/Button';
 import Link from 'next/link';
 import { ErrorMessage } from '@/components/common/notifications/ErrorMessage';
 import { useRouter } from 'next/navigation';
+import { BackToDashboardButton } from '@/app/procs/[...puckPath]/ui/components/BackToDashboardButton';
 
 type SettingItem = {
   active?: boolean;
@@ -93,14 +96,7 @@ export default function Page() {
     <>
       <div className="mx-auto max-w-4xl p-4">
         <div className="mb-4">
-          <span
-            className="hover:underline hover:cursor-pointer"
-            onClick={() => {
-              router.back();
-            }}
-          >
-            Back to EPROC
-          </span>
+          <BackToDashboardButton />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 ">
           <div className="col-span-1">
