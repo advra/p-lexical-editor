@@ -36,7 +36,7 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
 
     if (active === 'My Procs') {
       items = procs.filter((p) => p.owner === currentUsername);
-    } else if (active === 'Shared with Me') {
+    } else if (active === 'Shared With Me') {
       items = procs.filter(
         (p) =>
           p.owner !== currentUsername &&
@@ -70,6 +70,8 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
       projectTag: projectTag ?? null,
       description: description ?? null,
     });
+
+    console.log('initialData: ', initialData);
 
     try {
       const res = await fetch('/api/puck/publish', {

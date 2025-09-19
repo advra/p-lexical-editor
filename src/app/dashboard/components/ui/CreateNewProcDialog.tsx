@@ -21,7 +21,7 @@ import { useRouter } from 'next/navigation';
 export type ProcPayload = {
   name: string;
   description: string;
-  projectTag?: string;
+  projectTag?: string[];
 };
 
 type Props = {

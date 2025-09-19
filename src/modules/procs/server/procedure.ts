@@ -1,10 +1,16 @@
 import { TRPCError } from '@trpc/server';
-import { baseProcedure, createTRPCRouter } from '@/trpc/init';
+import {
+  baseProcedure,
+  createTRPCRouter,
+  protectedProcedure,
+} from '@/trpc/init';
 import { ProcModel } from '../models/proc-model';
 import {
   procCreateInput,
   procGetOneInput,
   procListMineInput,
+  procListSharedInput,
+  procListAllInput,
   procPublicSchema,
   procUpdateInput,
 } from './schemas';
@@ -19,20 +25,12 @@ function slugify(s: string) {
     .slice(0, 120);
 }
 
-// helper to get username from ctx; adjust to your auth
-function requireUsername(ctx: any): string {
-  const u = ctx?.session?.username || ctx?.user?.username || ctx?.username;
-  if (!u)
-    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Login required' });
-  return u as string;
-}
-
 export const procRouter = createTRPCRouter({
   // Create a new proc
-  create: baseProcedure
+  create: protectedProcedure
     .input(procCreateInput)
     .mutation(async ({ ctx, input }) => {
-      const owner = requireUsername(ctx);
+      const owner = ctx.session?.user?.username;
       const slug = input.slug ?? slugify(input.title);
 
       // Create
@@ -58,59 +56,167 @@ export const procRouter = createTRPCRouter({
     }),
 
   // Get a proc by id OR (owner, slug)
-  getOne: baseProcedure.input(procGetOneInput).query(async ({ ctx, input }) => {
-    const username = requireUsername(ctx);
-    const filter =
-      'id' in input
-        ? { _id: input.id }
-        : { owner: input.owner, slug: input.slug.toLowerCase() };
+  getOne: protectedProcedure
+    .input(procGetOneInput)
+    .query(async ({ ctx, input }) => {
+      const username = ctx.session?.user?.username;
+      const filter =
+        'id' in input
+          ? { _id: input.id }
+          : { owner: input.owner, slug: input.slug.toLowerCase() };
 
-    const doc = await ProcModel.findOne(filter).lean();
-    if (!doc)
-      throw new TRPCError({ code: 'NOT_FOUND', message: 'Proc not found' });
+      const doc = await ProcModel.findOne(filter).lean();
+      if (!doc)
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Proc not found' });
 
-    // Access control: owner or sharedWith includes the requesting user
-    const canRead =
-      doc.owner === username ||
-      doc.sharedWith?.includes(username) ||
-      doc.published;
-    if (!canRead)
-      throw new TRPCError({ code: 'FORBIDDEN', message: 'Forbidden' });
+      // Access control: owner or sharedWith includes the requesting user
+      const canRead =
+        doc.owner === username ||
+        doc.sharedWith?.includes(username) ||
+        doc.published;
+      if (!canRead)
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Forbidden' });
 
-    return procPublicSchema.parse({
-      ...doc,
-      _id: doc._id.toString(),
-      createdAt: doc.createdAt,
-      updatedAt: doc.updatedAt,
-    });
-  }),
+      return procPublicSchema.parse({
+        ...doc,
+        _id: doc._id.toString(),
+        createdAt: doc.createdAt,
+        updatedAt: doc.updatedAt,
+      });
+    }),
 
-  // List my procs (owner = me)
-  listMine: baseProcedure
+  // List my procs (owner = me) with pagination
+  listMine: protectedProcedure
     .input(procListMineInput)
     .query(async ({ ctx, input }) => {
-      const owner = requireUsername(ctx);
+      const owner = ctx.session?.user?.username;
       const limit = input.limit ?? 20;
+      const skip = input.cursor ? parseInt(input.cursor) : 0;
 
-      const q = ProcModel.find({ owner }).sort({ updatedAt: -1 }).limit(limit);
+      const docs = await ProcModel.find({ owner })
+        .sort({ updatedAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean();
 
-      const docs = await q.lean();
+      const total = await ProcModel.countDocuments({ owner });
 
-      return docs.map((d) =>
-        procPublicSchema.parse({
-          ...d,
-          _id: d._id.toString(),
-          createdAt: d.createdAt,
-          updatedAt: d.updatedAt,
-        }),
-      );
+      return {
+        procs: docs.map((d) =>
+          procPublicSchema.parse({
+            ...d,
+            _id: d._id.toString(),
+            createdAt: d.createdAt,
+            updatedAt: d.updatedAt,
+          }),
+        ),
+        nextCursor:
+          skip + limit < total ? (skip + limit).toString() : undefined,
+        total,
+      };
+    }),
+
+  // List procs shared with me with pagination
+  listShared: protectedProcedure
+    .input(procListSharedInput)
+    .query(async ({ ctx, input }) => {
+      const username = ctx.session?.user?.username;
+      const limit = input.limit ?? 20;
+      const skip = input.cursor ? parseInt(input.cursor) : 0;
+
+      const docs = await ProcModel.find({
+        sharedWith: username,
+        owner: { $ne: username }, // Exclude own procs
+      })
+        .sort({ updatedAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean();
+
+      const total = await ProcModel.countDocuments({
+        sharedWith: username,
+        owner: { $ne: username },
+      });
+
+      return {
+        procs: docs.map((d) =>
+          procPublicSchema.parse({
+            ...d,
+            _id: d._id.toString(),
+            createdAt: d.createdAt,
+            updatedAt: d.updatedAt,
+          }),
+        ),
+        nextCursor:
+          skip + limit < total ? (skip + limit).toString() : undefined,
+        total,
+      };
+    }),
+
+  // List all procs (mine + shared + public) with search and pagination
+  listAll: protectedProcedure
+    .input(procListAllInput)
+    .query(async ({ ctx, input }) => {
+      // const username = requireUsername(ctx);
+      const limit = input.limit ?? 20;
+      const skip = input.cursor ? parseInt(input.cursor) : 0;
+      const searchQuery = input.query?.trim().toLowerCase();
+
+      // Build the query for accessible procs
+      const accessibleQuery = {
+        $or: [
+          { owner: ctx.session?.user?.username }, // My procs
+          { sharedWith: ctx.session?.user?.username }, // Shared with me
+          { published: true }, // Public procs
+        ],
+      };
+
+      let query: any = accessibleQuery;
+
+      // Add search filter if provided
+      if (searchQuery) {
+        query = {
+          $and: [
+            accessibleQuery,
+            {
+              $or: [
+                { title: { $regex: searchQuery, $options: 'i' } },
+                { description: { $regex: searchQuery, $options: 'i' } },
+                { tags: { $in: [searchQuery] } },
+              ],
+            },
+          ],
+        };
+      }
+
+      const docs = await ProcModel.find(query)
+        .sort({ updatedAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean();
+
+      const total = await ProcModel.countDocuments(query);
+
+      return {
+        procs: docs.map((d) =>
+          procPublicSchema.parse({
+            ...d,
+            _id: d._id.toString(),
+            createdAt: d.createdAt,
+            updatedAt: d.updatedAt,
+          }),
+        ),
+        nextCursor:
+          skip + limit < total ? (skip + limit).toString() : undefined,
+        total,
+      };
     }),
 
   // Update (only owner)
-  update: baseProcedure
+  update: protectedProcedure
     .input(procUpdateInput)
     .mutation(async ({ ctx, input }) => {
-      const owner = requireUsername(ctx);
+      const owner = ctx.session?.user?.username;
 
       const existing = await ProcModel.findById(input.id).lean();
       if (!existing)
@@ -143,7 +249,7 @@ export const procRouter = createTRPCRouter({
     }),
 
   // Delete (only owner)
-  delete: baseProcedure
+  delete: protectedProcedure
     .input(
       // simple input schema inline—could move to schemas.ts
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
@@ -152,7 +258,7 @@ export const procRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const owner = requireUsername(ctx);
+      const owner = ctx.session.user?.username;
       const doc = await ProcModel.findById(input.id).lean();
       if (!doc)
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Proc not found' });

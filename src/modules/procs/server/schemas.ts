@@ -12,7 +12,7 @@ export const slugSchema = z
 
 export const procBaseSchema = z.object({
   title: z.string().min(1).max(200),
-  slug: slugSchema,
+  slug: z.string().min(1),
   description: z.string().max(1000).optional(),
   tags: z.array(z.string().min(1)).optional().default([]),
   sharedWith: z.array(z.string().min(1)).optional().default([]), // usernames
@@ -31,7 +31,8 @@ export const procPublicSchema = procBaseSchema.extend({
 export const procCreateInput = procBaseSchema.omit({ published: true }).extend({
   // owner from ctx; do not accept from client
   // slug optional: derive if missing
-  slug: slugSchema.optional(),
+  // slug: slugSchema.optional(),
+  slug: z.string().min(1),
   published: z.boolean().optional(), // allow publishing on create, default false
 });
 
@@ -39,7 +40,8 @@ export const procUpdateInput = z.object({
   id: z.string().min(1),
   patch: z.object({
     title: z.string().min(1).max(200).optional(),
-    slug: slugSchema.optional(),
+    // slug: slugSchema.optional(),
+    slug: z.string().min(1),
     description: z.string().max(1000).optional(),
     tags: z.array(z.string().min(1)).optional(),
     sharedWith: z.array(z.string().min(1)).optional(),
@@ -50,10 +52,21 @@ export const procUpdateInput = z.object({
 
 export const procGetOneInput = z.union([
   z.object({ id: z.string().min(1) }),
-  z.object({ owner: z.string().min(1), slug: slugSchema }),
+  z.object({ owner: z.string().min(1), slug: z.string().min(1) }),
 ]);
 
 export const procListMineInput = z.object({
   limit: z.number().int().min(1).max(100).optional().default(20),
-  cursor: z.string().optional(), // simple cursor by updatedAt ISO or _id if you prefer
+  cursor: z.string().optional(), // cursor for pagination
+});
+
+export const procListSharedInput = z.object({
+  limit: z.number().int().min(1).max(100).optional().default(20),
+  cursor: z.string().optional(), // cursor for pagination
+});
+
+export const procListAllInput = z.object({
+  limit: z.number().int().min(1).max(100).optional().default(20),
+  cursor: z.string().optional(), // cursor for pagination
+  query: z.string().optional(), // search query
 });

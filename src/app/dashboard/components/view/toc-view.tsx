@@ -2,7 +2,7 @@ import ClientDashboardSidebar, {
   ProcMetadata,
 } from '../ui/ClientDashboardSidebar';
 import ProcsTabbedTable, { Proc } from '../ui/ProcsTabbedTable';
-import { getUserFromCookie } from '@/lib/utils/auth';
+// import { getSessionFromCookie } from '@/lib/utils/auth';
 import { User } from '@/modules/auth/types';
 import ProfileAvatarMenu, {
   ProfileAvatar,
