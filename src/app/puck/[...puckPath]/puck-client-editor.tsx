@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { slugSchema } from '@/modules/procs/server/schemas';
 import { DiscardChangesButton } from '@/components/puck/ui/DiscardChangesButton';
-import { BackToDashboardButton } from '@/app/procs/[puckPath]/ui/components/BackToDashboardButton';
+import { BackToDashboardButton } from '@/app/procs/ui/components/BackToDashboardButton';
 import { PublishChangesButton } from '@/components/puck/ui/PublishChangesButton';
 
 function HeaderBar({ onPublish, slug }) {
