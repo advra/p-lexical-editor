@@ -47,7 +47,7 @@ export default function ProcPageClient({
     if (rootRef.current) await waitForImages(rootRef.current);
 
     const prev = document.title;
-    document.title = `Eproc - ${(data?.metadata?.title ?? slug) as string}`;
+    document.title = `Eproc - Procedure: ${(data?.metadata?.title ?? slug) as string}`;
     window.print();
     setTimeout(() => {
       document.title = prev;
@@ -71,8 +71,14 @@ export default function ProcPageClient({
           </div>
         </PaperPage>
       </div>
-
-      <PuckPreview ref={rootRef} data={data} preview={preview} page="letter" />
+      <div>
+        <PuckPreview
+          ref={rootRef}
+          data={data}
+          preview={preview}
+          page="letter"
+        />
+      </div>
     </>
   );
 }
