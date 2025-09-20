@@ -63,31 +63,36 @@ export function PuckClientEditor({
         config={config}
         data={data}
         onPublish={handlePublish}
-        overrides={
-          {
-            // Render a custom element for each item in the component list
-            // drawerItem: ({ name }) => (
-            //   <div style={{ backgroundColor: 'hotpink' }}>{name}</div>
-            // ),
-            // header: ({ actions, children }) => {
-            //   const puck = usePuck();
-            //   console.log('PUCK DATA:', puck.appState);
-            //   return (
-            //     <>
-            //       <div className="flex h-12 w-full items-center justify-between p-2">
-            //         <BackToDashboardButton />
-            //         <div className="flex items-center">
-            //           <DiscardChangesButton slug={slug} />
-            //           <PublishChangesButton
-            //             onPublish={() => handlePublish(puck.appState.data)}
-            //           />
-            //         </div>
-            //       </div>
-            //     </>
-            //   );
-            // },
-          }
-        }
+        overrides={{
+          headerActions: ({ children }) => (
+            <>
+              <DiscardChangesButton slug={slug} />
+              {children}
+            </>
+          ),
+
+          // Render a custom element for each item in the component list
+          // drawerItem: ({ name }) => (
+          //   <div style={{ backgroundColor: 'hotpink' }}>{name}</div>
+          // ),
+          // header: ({ actions, children }) => {
+          //   const puck = usePuck();
+          //   console.log('PUCK DATA:', puck.appState);
+          //   return (
+          //     <>
+          //       <div className="flex h-12 w-full items-center justify-between p-2">
+          //         <BackToDashboardButton />
+          //         <div className="flex items-center">
+          //           <DiscardChangesButton slug={slug} />
+          //           <PublishChangesButton
+          //             onPublish={() => handlePublish(puck.appState.data)}
+          //           />
+          //         </div>
+          //       </div>
+          //     </>
+          //   );
+          // },
+        }}
       ></Puck>
     </>
   );
