@@ -22,11 +22,16 @@ import { PaperPage } from './ui/components/PaperPage';
 export default async function Page({
   params,
 }: {
-  params: Promise<{ puckPath: string[] }>;
+  params: { puckPath?: string | string[] };
 }) {
-  const { puckPath = [] } = await params;
-  const path = `/procs/${puckPath.join('/')}`;
-  const slug = puckPath[puckPath.length - 1];
+  const parts = Array.isArray(params.puckPath)
+    ? params.puckPath
+    : params.puckPath
+      ? [params.puckPath]
+      : [];
+
+  const path = `/procs/${parts.join('/')}`;
+  const slug = parts.at(-1);
   const data = await getPage(slug);
 
   if (!data) {
@@ -35,18 +40,20 @@ export default async function Page({
 
   return (
     <>
-      <PaperPage>
-        <div className="px-4 mx-auto max-w-screen">
-          <div className="flex items-center h-12">
-            <BackToDashboardButton />
-            <div className="ml-auto text-gray-600"></div>
-            <div className="ml-auto flex">
-              <ExportPDFButton />
-              <EditButton path={path} />
+      <div className="no-print">
+        <PaperPage>
+          <div className="px-4 mx-auto max-w-screen">
+            <div className="flex items-center h-12">
+              <BackToDashboardButton />
+              <div className="ml-auto text-gray-600"></div>
+              <div className="ml-auto flex">
+                <ExportPDFButton href={`/procs/${slug}/print`} />
+                <EditButton path={path} />
+              </div>
             </div>
           </div>
-        </div>
-      </PaperPage>
+        </PaperPage>
+      </div>
       <div className="mt-4 px-4 bg-white mx-auto max-w-screen">
         <PuckPreview data={data} />
       </div>

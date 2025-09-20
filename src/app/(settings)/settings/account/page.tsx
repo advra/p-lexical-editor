@@ -13,7 +13,7 @@ import Button from '@/components/common/buttons/Button';
 import Link from 'next/link';
 import { ErrorMessage } from '@/components/common/notifications/ErrorMessage';
 import { useRouter } from 'next/navigation';
-import { BackToDashboardButton } from '@/app/procs/[...puckPath]/ui/components/BackToDashboardButton';
+import { BackToDashboardButton } from '@/app/procs/[puckPath]/ui/components/BackToDashboardButton';
 
 type SettingItem = {
   active?: boolean;

@@ -1,6 +1,6 @@
 /* src/app/global.css */
 
-@import "tailwindcss";
+@import 'tailwindcss';
 
 h1 {
   @apply scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance;
@@ -24,4 +24,77 @@ p {
 
 blockquote {
   @apply mt-6 border-l-2 pl-6 italic;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  } /* or 'letter' */
+  body * {
+    visibility: hidden;
+  }
+  #printable,
+  #printable * {
+    visibility: visible;
+  }
+  #printable {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .avoid-break {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .page-break {
+    break-before: page;
+    page-break-before: always;
+  }
+}
+
+@media print {
+  .avoid-break {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .page-break {
+    break-before: page;
+    page-break-before: always;
+  }
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  @page {
+    size: letter; /* 8.5in x 11in */
+    margin: 0.5in; /* page margins in print */
+  }
+  body * {
+    visibility: hidden;
+  }
+  #printable,
+  #printable * {
+    visibility: visible;
+  }
+  #printable {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+  }
+  .no-print {
+    display: none !important;
+  }
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 }
