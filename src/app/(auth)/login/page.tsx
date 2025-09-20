@@ -13,7 +13,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setLoading] = useState(false);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleLoginOnSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
 
@@ -69,7 +69,7 @@ export default function LoginPage() {
         isLoading={isLoading}
         setUsername={setUsername}
         setPassword={setPassword}
-        handleSubmit={handleSubmit}
+        handleSubmit={handleLoginOnSubmit}
       />
     </>
   );

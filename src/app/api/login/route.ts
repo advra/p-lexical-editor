@@ -15,6 +15,7 @@ export function readUsers() {
 
 export async function POST(request: NextRequest) {
   const { username, password } = await request.json();
+  console.log(`username ${username} password ${password}`);
   const caller = appRouter.createCaller(await createTRPCContext());
   const user = await caller.users.login({ username, password });
   const sessionId = crypto.randomUUID();
@@ -31,6 +32,8 @@ export async function POST(request: NextRequest) {
     },
     sessionId,
   };
+
+  console.log('cookieData', cookieData);
 
   response.cookies.set('user-session', JSON.stringify(cookieData), {
     httpOnly: true,
