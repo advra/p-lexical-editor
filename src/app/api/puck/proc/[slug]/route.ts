@@ -19,7 +19,7 @@ type PutBody = {
 */
 export async function GET(_req: Request, { params }: CtxParams) {
   const caller = appRouter.createCaller(await createTRPCContext());
-  const proc = await caller.procs.getOne({ by: 'id', id: params.slug });
+  const proc = await caller.procs.getOne({ by: 'slug', id: params.slug });
   return NextResponse.json(proc);
 }
 
@@ -29,10 +29,11 @@ export async function GET(_req: Request, { params }: CtxParams) {
 export async function PUT(req: Request, { params }: CtxParams) {
   try {
     const caller = appRouter.createCaller(await createTRPCContext());
-    const slug = params.slug;
+    const { slug } = await params;
+
     const { data, description, tags, published }: PutBody = await req.json();
 
-    // Ensure metadata.title
+    // Build metadata
     const titleFromRoot = (data as any)?.root?.title as string | undefined;
     const metadata = {
       ...data.metadata,
@@ -45,14 +46,13 @@ export async function PUT(req: Request, { params }: CtxParams) {
     // Upsert by slug
     let existingId: string | null = null;
     try {
-      const existing = await caller.procs.getOne({ by: 'slug', slug });
+      const existing = await caller.procs.getOne({ by: 'slug', slug }); // ✅ by slug
       existingId = existing._id;
     } catch (e) {
       if (!(e instanceof TRPCError && e.code === 'NOT_FOUND')) throw e;
     }
 
     if (existingId) {
-      // PUT should replace the full resource — include all fields you persist
       await caller.procs.update({
         id: existingId,
         patch: {
@@ -64,7 +64,6 @@ export async function PUT(req: Request, { params }: CtxParams) {
         },
       });
     } else {
-      // Create new
       await caller.procs.create({
         slug,
         description: description ?? '',
