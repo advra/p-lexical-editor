@@ -23,17 +23,20 @@ export function PuckClientEditor({
       <Puck
         config={config}
         data={data}
-        // custom publish call
         onPublish={async (data) => {
+          const slug = path.split('/').filter(Boolean).pop()!;
           try {
-            await fetch('/api/puck/publish', {
-              method: 'post',
-              body: JSON.stringify({ data, path }),
+            const res = await fetch(`/api/puck/proc/${slug}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                data,
+              }),
             });
             toast.success('Changes saved!');
             router.push(path);
           } catch {
-            toast.error('Error saving, try again...');
+            toast.error('Error saving, please try again...');
           }
         }}
       ></Puck>

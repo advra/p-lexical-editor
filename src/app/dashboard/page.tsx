@@ -1,7 +1,7 @@
 // app/dashboard/page.tsx
 import { appRouter } from '@/trpc/routers/_app';
 import { createTRPCContext } from '@/trpc/init';
-import TocView from './components/view/toc-view';
+import DashboardView from './components/view/dashboard-view';
 
 export default async function Page() {
   try {
@@ -12,9 +12,11 @@ export default async function Page() {
     {
       JSON.stringify(procs, null, 2);
     }
-    return <TocView procs={procs} total={total} nextCursor={nextCursor} />;
+    return (
+      <DashboardView procs={procs} total={total} nextCursor={nextCursor} />
+    );
   } catch (err) {
     console.error('Error loading procs:', err);
-    return <TocView procs={[]} total={0} nextCursor={undefined} />;
+    return <DashboardView procs={[]} total={0} nextCursor={undefined} />;
   }
 }

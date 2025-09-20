@@ -58,7 +58,19 @@ npm install
 npm run dev:test
 ```
 
-### III. Troubleshooting
+### III. Seeded Data
+
+User and seeded data can be found in the /seeder/seed-users.js. Below is a table of pre-seeded users:
+
+```
+const rawUsers = [
+  { username: 'admin', password: 'Admin123!', roles: ['admin'] },
+  { username: 'user', password: 'User123!', roles: ['operator'] },
+  { username: 'viewer', password: 'Viewer123!', roles: ['viewer'] },
+];
+```
+
+### IV. Troubleshooting
 
 a. package install issues
 

@@ -26,7 +26,7 @@ type Props = {
   nextCursor?: string;
 };
 
-export default function TocView({ procs, total }: Props) {
+export default function DashboardView({ procs, total }: Props) {
   // Build links for the sidebar from the actual procs data
   const links = procs.map((proc) => {
     const p = proc.data as PuckPageData;
@@ -40,7 +40,6 @@ export default function TocView({ procs, total }: Props) {
     <>
       <div className="h-screen flex flex-col">
         <div className="flex flex-1">
-          {/* Sidebar */}
           <ClientDashboardSidebar links={links} />
           <ClientDashboard procs={procs} />
         </div>

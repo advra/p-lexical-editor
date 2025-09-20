@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 import SearchIcon from '@mui/icons-material/Search';
+import Link from 'next/link';
 
 export interface ProcMetadata {
   href: string;
@@ -82,14 +83,18 @@ export default function ClientDashboardSidebar({ links }: Props) {
 
           <div className="flex items-center justify-center align-middle my-4 ml-3">
             <div className="relative w-18 h-18">
-              <Image
-                src="/EprocLogo.png"
-                alt="EProc Logo"
-                fill
-                className="object-contain"
-              />
+              <Link href="/dashboard">
+                <Image
+                  src="/EprocLogo.png"
+                  alt="EProc Logo"
+                  fill
+                  className="object-contain"
+                />
+              </Link>
             </div>
-            <span className="font-bold text-3xl">EPROC</span>
+            <Link href="/dashboard">
+              <span className="font-bold text-3xl">EPROC</span>
+            </Link>
           </div>
           {/* Option toggle */}
           {/* <button
