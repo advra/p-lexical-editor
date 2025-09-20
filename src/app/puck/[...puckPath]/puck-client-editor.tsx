@@ -14,6 +14,23 @@ import { DiscardChangesButton } from '@/components/puck/ui/DiscardChangesButton'
 import { BackToDashboardButton } from '@/app/procs/[...puckPath]/ui/components/BackToDashboardButton';
 import { PublishChangesButton } from '@/components/puck/ui/PublishChangesButton';
 
+function HeaderBar({ onPublish, slug }) {
+  const puck = usePuck();
+  return (
+    <>
+      <div className="flex h-[48px] w-full items-center justify-between p-2 border-b-1 border-b-gray-300 shadow-xs">
+        <BackToDashboardButton />
+        <div className="flex items-center">
+          <DiscardChangesButton slug={slug} />
+          <PublishChangesButton
+            onPublish={() => onPublish(puck.appState.data)}
+          />
+        </div>
+      </div>
+    </>
+  );
+}
+
 export function PuckClientEditor({
   path,
   data,
@@ -45,33 +62,33 @@ export function PuckClientEditor({
       <Puck
         config={config}
         data={data}
-        // onPublish={handlePublish}
-        overrides={{
-          // Render a custom element for each item in the component list
-          // drawerItem: ({ name }) => (
-          //   <div style={{ backgroundColor: 'hotpink' }}>{name}</div>
-          // ),
-          header: ({ actions, children }) => {
-            const puck = usePuck();
-            console.log('PUCK DATA:', puck.appState);
-            return (
-              <>
-                <div className="flex h-12 w-full items-center justify-between p-2">
-                  <BackToDashboardButton />
-                  <div className="flex items-center">
-                    <DiscardChangesButton slug={slug} />
-                    <PublishChangesButton
-                      onPublish={() => handlePublish(puck.appState.data)}
-                    />
-                  </div>
-                </div>
-              </>
-            );
-          },
-        }}
-      >
-        <Puck.Preview />
-      </Puck>
+        onPublish={handlePublish}
+        overrides={
+          {
+            // Render a custom element for each item in the component list
+            // drawerItem: ({ name }) => (
+            //   <div style={{ backgroundColor: 'hotpink' }}>{name}</div>
+            // ),
+            // header: ({ actions, children }) => {
+            //   const puck = usePuck();
+            //   console.log('PUCK DATA:', puck.appState);
+            //   return (
+            //     <>
+            //       <div className="flex h-12 w-full items-center justify-between p-2">
+            //         <BackToDashboardButton />
+            //         <div className="flex items-center">
+            //           <DiscardChangesButton slug={slug} />
+            //           <PublishChangesButton
+            //             onPublish={() => handlePublish(puck.appState.data)}
+            //           />
+            //         </div>
+            //       </div>
+            //     </>
+            //   );
+            // },
+          }
+        }
+      ></Puck>
     </>
   );
 }

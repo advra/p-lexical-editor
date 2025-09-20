@@ -17,6 +17,7 @@ import { getPage } from '@/lib/get-page';
 import { BackToDashboardButton } from './ui/components/BackToDashboardButton';
 import { EditButton } from './ui/components/EditButton';
 import { ExportPDFButton } from './ui/components/ExportPDFButton';
+import { PaperPage } from './ui/components/PaperPage';
 
 export default async function Page({
   params,
@@ -34,10 +35,7 @@ export default async function Page({
 
   return (
     <>
-      <div
-        className="sticky top-0 z-40 py-1 bg-white/80 backdrop-blur 
-        supports-[backdrop-filter]:bg-white/60 shadow-sm"
-      >
+      <PaperPage>
         <div className="px-4 mx-auto max-w-screen">
           <div className="flex items-center h-12">
             <BackToDashboardButton />
@@ -48,7 +46,7 @@ export default async function Page({
             </div>
           </div>
         </div>
-      </div>
+      </PaperPage>
       <div className="mt-4 px-4 bg-white mx-auto max-w-screen">
         <PuckPreview data={data} />
       </div>
