@@ -258,14 +258,15 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
                     <td className="px-3 py-3">
                       <div className="flex gap-2">
                         <button className="text-sm text-blue-600 hover:underline hover:cursor-pointer">
-                          View
+                          <Link href={`procs/${p.slug}`}> View</Link>
                         </button>
                         <button className="text-sm text-blue-600 hover:underline hover:cursor-pointer">
-                          Edit
+                          <Link href={`procs/${p.slug}/edit`}> Edit</Link>
                         </button>
-                        <button className="text-sm text-gray-600 hover:underline hover:cursor-pointer">
+                        {/* TODO: Add Delete, Edit Metadata, Manage Permissions */}
+                        {/* <button className="text-sm text-gray-600 hover:underline hover:cursor-pointer">
                           More
-                        </button>
+                        </button> */}
                       </div>
                     </td>
                   </tr>
