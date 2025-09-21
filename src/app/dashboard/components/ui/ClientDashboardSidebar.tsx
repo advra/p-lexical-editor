@@ -148,8 +148,17 @@ export default function ClientDashboardSidebar({ links }: Props) {
         )} */}
 
         {/* Menu / Links */}
-        <span className="ml-2 text-gray-300 text-sm m-2">Procedures:</span>
-        <nav className="px-1 flex-1 overflow-auto">
+        <span className="pl-4 py-4">Menu</span>
+        <div className="mb-auto flex flex-col">
+          <span className="pl-4 p-2 text-gray-300 text-sm hover:cursor-pointer hover:bg-white/10">
+            <Link href="/"> Dashboard</Link>
+          </span>
+          <span className="pl-4 p-2 text-gray-300 text-sm hover:cursor-pointer hover:bg-white/10">
+            <Link href="/settings"> Settings</Link>
+          </span>
+        </div>
+        {/* <span className="ml-2 text-gray-300 text-sm m-2">Procedures:</span> */}
+        {/* <nav className="px-1 flex-1 overflow-auto">
           {filtered.length === 0 ? (
             <div className="px-3 py-2 text-sm text-blue-200">No matches</div>
           ) : (
@@ -164,7 +173,6 @@ export default function ClientDashboardSidebar({ links }: Props) {
                       className="w-full text-left px-3 py-2 hover:bg-blue-800/60 rounded flex items-center gap-2 hover:cursor-pointer"
                       title={link.label}
                     >
-                      {/* small bullet icon */}
                       <span className="w-2 h-2 rounded-full bg-blue-300/80 inline-block shrink-0" />
                       <span className="truncate">{link.label}</span>
                     </button>
@@ -173,7 +181,7 @@ export default function ClientDashboardSidebar({ links }: Props) {
               </ul>
             </>
           )}
-        </nav>
+        </nav> */}
 
         {/* Spacer / Footer area */}
         <div className="px-3 pb-4 pt-4 border-t border-gray-700">
