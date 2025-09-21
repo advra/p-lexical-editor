@@ -29,18 +29,7 @@ npm install
 
 You can run a local application using a mocked json database located in the data directory. To run this configuration run the following:
 
-```bash
-cp .env.local.example .env.local
-
-# install packages if you havent already yet
-npm install
-
-# Run seed script to pr-seed the local database with default users (admin etc)
-node scripts/seed-users.mjs
-npm run dev
-```
-
-### b. Running Against Mongo Instance
+### Running Against Mongo Instance Locally
 
 Spin up your own docker container instance. By default it will create a docker container named `mongo-puck-{USER}`
 
@@ -56,6 +45,11 @@ npm install
 
 # start the app against our mongodb container
 npm run dev:test
+
+# For the first time running the docker instance there will be no data. To seed the database with users and data
+# run the script below
+
+node seeder/seed-users.js
 ```
 
 ### III. Seeded Data
@@ -88,4 +82,12 @@ If you go into mongo and see it is not seeded you can manually seed it running t
 
 ```bash
 NODE_ENV=development node seeder/seed-users.js
+```
+
+### V. Cleanup
+
+You can permanently clear your local deploy running the following script.
+
+```bash
+./scripts/docker-cleanup.bash
 ```
