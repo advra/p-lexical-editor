@@ -132,7 +132,8 @@ export default function CreateNewProcDialog({
           {projectTags && projectTags.length > 0 ? (
             <TextField
               className="w-full"
-              label="Project Tag"
+              label="Project Tag (Optional)"
+              placeholder="Assign a project tag"
               // select
               value={projectTag}
               onChange={(e) => setProjectTag(e.target.value)}
@@ -151,7 +152,7 @@ export default function CreateNewProcDialog({
             <TextField
               className="w-full"
               label="Project Tag"
-              placeholder="Assign a project tag"
+              placeholder="Assign a project tag (Optional)"
               value={projectTag}
               onChange={(e) => setProjectTag(e.target.value)}
               // helperText="Assign a project tag"

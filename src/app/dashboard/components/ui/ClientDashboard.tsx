@@ -29,8 +29,7 @@ export const ClientDashboard = ({ procs }) => {
           <div className="flex items-center">
             <div className="font-semibold my-4 text-2xl">Procedures</div>
 
-            <div className="ml-auto mr-4">
-              {/* Show a tiny skeleton while loading (optional) */}
+            <div className="ml-auto">
               {userLoading ? (
                 <div className="flex items-center gap-2">
                   <div className="h-9 w-40 animate-pulse rounded bg-gray-200" />
@@ -47,8 +46,7 @@ export const ClientDashboard = ({ procs }) => {
               )}
             </div>
           </div>
-          {/* Content area fills remaining height */}+{' '}
-          <div className="container mx-auto px-4 flex-1 min-h-0">
+          <div className="container mx-auto flex-1 min-h-0">
             <Suspense fallback={<ProcsTabbedTableSkeleton />}>
               <div className="h-full">
                 <ProcsTabbedTable procs={procs} currentUsername={username} />

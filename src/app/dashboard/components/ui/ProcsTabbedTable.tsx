@@ -3,6 +3,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import SkipNextIcon from '@mui/icons-material/SkipNext';
+import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import Button from '@/components/common/buttons/Button';
 import CreateNewProcDialog from './CreateNewProcDialog';
 import type { ProcPayload } from './CreateNewProcDialog';
@@ -37,6 +41,8 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
 
   const [active, setActive] = useState<Tab>('All');
   const [query, setQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -62,6 +68,18 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
     );
   }, [procs, query, active, currentUsername]);
 
+  // Pagination logic
+  const totalItems = filtered.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+  const paginatedItems = filtered.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query, active, filtered.length]);
+
   const tryCreateNewProc = async ({
     name,
     description,
@@ -78,8 +96,8 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
     const initialData = initialProcsData({
       title: name,
       owner: currentUsername,
-      projectTag: projectTag ?? null,
-      description: description ?? null,
+      projectTag: projectTag ? [projectTag] : undefined,
+      description: description || undefined,
     });
 
     console.log('initialData: ', initialData);
@@ -100,7 +118,8 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
       await res.json();
 
       setShowCreateNewProc(false);
-      return { id, path, initialData };
+      // The dialog expects this return value to navigate to the new proc
+      return { id, path, initialData } as any;
     } catch (error) {
       console.error('Failed to create proc', error);
       throw error;
@@ -108,7 +127,7 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
   };
 
   return (
-    <div className="bg-white rounded-md shadow-xs border border-gray-300 flex flex-col h-full min-h-[400px]">
+    <div className="bg-white rounded-md shadow-xs border border-gray-300 flex flex-col h-full min-h-[800px]">
       {/* Tabs */}
       <div className="pt-2">
         <nav
@@ -194,7 +213,7 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
             </thead>
 
             <tbody className="divide-y">
-              {filtered.length === 0 ? (
+              {paginatedItems.length === 0 ? (
                 <tr>
                   <td
                     colSpan={5}
@@ -204,7 +223,7 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
                   </td>
                 </tr>
               ) : (
-                filtered.map((p) => (
+                paginatedItems.map((p) => (
                   <tr key={p._id} className="hover:bg-gray-50 ">
                     <td className="px-3 py-3 font-medium text-gray-800">
                       <Link href={`procs/${p.slug}`}>
@@ -256,6 +275,79 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
           </table>
         </div>
       </div>
+
+      {/* Pagination */}
+      {totalItems > 0 && (
+        <div className="px-4 py-3 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
+          <div className="text-sm text-gray-600">
+            Showing {startIndex + 1}-{endIndex} of {totalItems} Procs
+          </div>
+
+          <div className="flex items-center gap-1">
+            <Button
+              size="none"
+              className="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded"
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+            >
+              <SkipPreviousIcon sx={{ fontSize: 16 }} />
+            </Button>
+
+            <Button
+              size="none"
+              className="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded"
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 5))}
+              disabled={currentPage <= 5}
+            >
+              -5
+            </Button>
+
+            <Button
+              size="none"
+              className="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded"
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeftIcon sx={{ fontSize: 16 }} />
+            </Button>
+
+            <span className="px-2 py-1 text-sm text-gray-600">
+              Page {currentPage} of {totalPages}
+            </span>
+
+            <Button
+              size="none"
+              className="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded"
+              onClick={() =>
+                setCurrentPage(Math.min(totalPages, currentPage + 1))
+              }
+              disabled={currentPage === totalPages}
+            >
+              <ChevronRightIcon sx={{ fontSize: 16 }} />
+            </Button>
+
+            <Button
+              size="none"
+              className="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded"
+              onClick={() =>
+                setCurrentPage(Math.min(totalPages, currentPage + 5))
+              }
+              disabled={currentPage + 5 > totalPages}
+            >
+              +5
+            </Button>
+
+            <Button
+              size="none"
+              className="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded"
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages}
+            >
+              <SkipNextIcon sx={{ fontSize: 16 }} />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Render NewProcDialog */}
       {showCreateNewProc && (
