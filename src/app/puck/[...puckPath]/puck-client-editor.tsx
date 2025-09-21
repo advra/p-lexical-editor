@@ -71,6 +71,20 @@ export function PuckClientEditor({
             </>
           ),
 
+          // custom fields
+          fieldTypes: {
+            checkbox: ({ field, name, value, onChange }) => (
+              <label>
+                <input
+                  type="checkbox"
+                  checked={value}
+                  onChange={(e) => onChange(e.target.checked)}
+                />
+                {field.label || name}
+              </label>
+            ),
+          },
+
           // Render a custom element for each item in the component list
           // drawerItem: ({ name }) => (
           //   <div style={{ backgroundColor: 'hotpink' }}>{name}</div>

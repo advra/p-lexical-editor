@@ -8,18 +8,12 @@ export default async function Page({
 }: {
   params: { puckPath?: string | string[] };
 }) {
-  const parts = Array.isArray(params.puckPath)
-    ? params.puckPath
-    : params.puckPath
-      ? [params.puckPath]
-      : [];
-  const slug = parts.at(-1);
+  const slug = await params.puckPath;
+  console.log('PARTS', slug);
   if (!slug) return notFound();
 
   const data = await getPage(slug);
   if (!data) return notFound();
 
-  const path = `/procs/${parts.join('/')}`;
-
-  return <ProcPageClient data={data} slug={slug} path={path} />;
+  return <ProcPageClient data={data} slug={slug} path={`/procs/${slug}`} />;
 }

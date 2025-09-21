@@ -1,53 +1,62 @@
-/*
-  Checklist / Procedures component
-  - Great for flight checklists or simple to-do lists
-  - Enter one item per line in the editor
-*/
+'use client';
 
-import React from 'react';
 import type { ComponentConfig } from '@measured/puck';
+
+type ListType = 'dash' | 'bullet' | 'numbered' | 'checklist';
 
 export type ChecklistBlockProps = {
   title?: string;
-  items: string; // one per line
-  numbered?: boolean; // ordered vs unordered
-  showCheckboxes?: boolean;
+  listType?: ListType;
+  items?: { text: string }[]; // array-driven, add/remove items in the editor
 };
 
 export const ChecklistBlock: ComponentConfig<ChecklistBlockProps> = {
   label: 'Checklist',
   fields: {
-    title: { type: 'text' },
-    items: {
-      type: 'textarea',
-      props: {
-        rows: 8,
-        placeholder:
-          'One item per line\nMixture — RICH\nFuel Pump — ON\nFlaps — SET',
-      },
+    title: { type: 'text', label: 'Title (optional)' },
+    listType: {
+      type: 'select',
+      options: [
+        { label: 'Checklist', value: 'checklist' },
+        { label: 'Bullet', value: 'bullet' },
+        { label: 'Numbered', value: 'numbered' },
+        { label: 'Dash', value: 'dash' },
+      ],
     },
-    numbered: { type: 'checkbox', label: 'Use numbered list' },
-    showCheckboxes: { type: 'checkbox', label: 'Show checkboxes' },
+    items: {
+      type: 'array',
+      arrayFields: {
+        text: { type: 'text', label: 'Item' },
+      },
+      defaultItemProps: { text: '' },
+      getItemSummary: (item) => item.text || 'Item',
+    },
   },
   defaultProps: {
     title: 'Pre-Flight Checklist',
+    listType: 'checklist',
     items: [
-      'Documents — CHECK',
-      'Fuel Quantity — CHECK',
-      'Oil — CHECK',
-      'Pitot Cover — REMOVE',
-      'Control Lock — REMOVE',
-    ].join('\n'),
-    numbered: false,
-    showCheckboxes: true,
+      { text: 'Vehicle power up' },
+      { text: 'Ground systems checkout' },
+      { text: 'Flight software load & config' },
+      { text: 'Avionics built-in tests Pass' },
+    ],
   },
-  render: ({ title, items, numbered, showCheckboxes }: ChecklistBlockProps) => {
-    const lines = (items || '')
-      .split(/\r?\n/)
-      .map((s) => s.trim())
-      .filter(Boolean);
+  render: ({ title, listType = 'checklist', items = [] }) => {
+    const hasItems = items.length > 0;
+    if (!title && !hasItems) return null;
 
-    const ListTag = numbered ? 'ol' : 'ul';
+    const isNumbered = listType === 'numbered';
+    const isChecklist = listType === 'checklist';
+    const isBullet = listType === 'bullet';
+    const isDash = listType === 'dash';
+
+    const ListTag = (isNumbered ? 'ol' : 'ul') as 'ol' | 'ul';
+    const listStyle = isNumbered
+      ? 'list-decimal'
+      : isBullet
+        ? 'list-disc'
+        : 'list-none';
 
     return (
       <section className="my-8">
@@ -55,26 +64,41 @@ export const ChecklistBlock: ComponentConfig<ChecklistBlockProps> = {
           <h3 className="mb-3 text-xl font-semibold tracking-tight">{title}</h3>
         )}
 
-        <ListTag
-          className={`${numbered ? 'list-decimal' : 'list-disc'} pl-6 space-y-2`}
-        >
-          {lines.map((line, i) => (
-            <li key={i} className="flex items-start gap-2">
-              {showCheckboxes && (
-                <input
-                  type="checkbox"
-                  className="mt-1 h-4 w-4 cursor-pointer"
-                  onChange={() => {}}
-                  // purely cosmetic in the rendered page (no state saved)
-                />
-              )}
-              <span className="leading-6">{line}</span>
-            </li>
-          ))}
-        </ListTag>
+        {hasItems && (
+          <ListTag className={`${listStyle} pl-6 space-y-2`}>
+            {items.map((it, i) => (
+              <li key={i} className="flex items-start gap-2">
+                {isChecklist && (
+                  <input
+                    type="checkbox"
+                    className="mt-1 h-4 w-4 cursor-default"
+                    defaultChecked={false}
+                    readOnly
+                    tabIndex={-1}
+                    aria-hidden="true"
+                  />
+                )}
+                {isDash && (
+                  <span className="select-none" aria-hidden="true">
+                    -
+                  </span>
+                )}
+                {isBullet && (
+                  <span className="select-none" aria-hidden="true">
+                    •
+                  </span>
+                )}
+                {isNumbered && (
+                  <span className="select-none" aria-hidden="true">
+                    {i + 1}.
+                  </span>
+                )}
+                <span className="leading-6">{it.text}</span>
+              </li>
+            ))}
+          </ListTag>
+        )}
       </section>
     );
   },
 };
-
-export default ChecklistBlock;

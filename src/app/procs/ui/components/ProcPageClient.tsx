@@ -7,6 +7,8 @@ import { BackToDashboardButton } from './BackToDashboardButton';
 import { ExportPDFButton } from './ExportPDFButton';
 import { EditButton } from './EditButton';
 import { PuckPreview } from './puck-preview';
+import { Header } from './Header';
+import { PuckPageData } from '@/app/puck/types';
 
 function waitForImages(root: HTMLElement) {
   const imgs = Array.from(root.querySelectorAll('img'));
@@ -28,7 +30,7 @@ export default function ProcPageClient({
   slug,
   path,
 }: {
-  data: any;
+  data: PuckPageData;
   slug: string;
   path: string;
 }) {
@@ -58,19 +60,12 @@ export default function ProcPageClient({
 
   return (
     <>
-      <div className="no-print">
-        <PaperPage>
-          <div className="px-4 mx-auto max-w-screen">
-            <div className="flex items-center h-12">
-              <BackToDashboardButton />
-              <div className="ml-auto flex gap-2">
-                <ExportPDFButton handlePreviewPrint={handlePreviewPrint} />
-                <EditButton path={path} />
-              </div>
-            </div>
-          </div>
-        </PaperPage>
-      </div>
+      <Header
+        executionMode={false}
+        handlePreviewPrint={handlePreviewPrint}
+        path={path}
+        metadata={data?.metadata}
+      />
       <div>
         <PuckPreview
           ref={rootRef}

@@ -10,10 +10,11 @@ import TextBlock, { TextBlockProps } from './components/puck/TextBlock';
 import ToggleBlock, { ToggleBlockProps } from './components/puck/ToggleBlock';
 import { Avatar, Card, CardHeader } from '@mui/material';
 import classNames from 'classnames';
-import ChecklistBlock, {
+import { PADDING_OPTIONS } from './components/puck/constants/padding';
+import {
+  ChecklistBlock,
   ChecklistBlockProps,
 } from './components/puck/ChecklistBlock';
-import { PADDING_OPTIONS } from './components/puck/constants/padding';
 // import rootPage from './components/puck/RootPage';
 
 type Props = {
