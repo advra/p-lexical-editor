@@ -31,7 +31,6 @@ const formatWhen = (v?: string | Date) =>
   v ? new Date(v).toLocaleString() : '—';
 
 export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
-  console.log('saidusaid: ', procs);
   const [showCreateNewProc, setShowCreateNewProc] = useState(false);
   const tabs = ['All', 'My Procs', 'Shared With Me'] as const;
   type Tab = (typeof tabs)[number];
@@ -54,8 +53,6 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
     }
 
     if (!q) return items;
-
-    console.log('ITEMS: ', items);
 
     return items.filter(
       (p) =>
@@ -111,7 +108,7 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
   };
 
   return (
-    <div className="bg-white rounded-md shadow-xs border border-gray-300">
+    <div className="bg-white rounded-md shadow-xs border border-gray-300 flex flex-col h-full min-h-[400px]">
       {/* Tabs */}
       <div className="pt-2">
         <nav
@@ -183,10 +180,10 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
       </div>
 
       {/* Table */}
-      <div className="px-4 pb-4">
-        <div className="overflow-x-auto">
+      <div className="px-4 flex-1 min-h-0">
+        <div className="h-full overflow-y-auto">
           <table className="min-w-full text-left text-sm">
-            <thead className="text-xs text-gray-500 uppercase">
+            <thead className="text-xs text-gray-500 uppercase sticky top-0 bg-white">
               <tr>
                 <th className="px-3 py-2">Name</th>
                 <th className="px-3 py-2">Owner</th>

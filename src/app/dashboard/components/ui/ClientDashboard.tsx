@@ -23,8 +23,9 @@ export const ClientDashboard = ({ procs }) => {
 
   return (
     <>
-      <main className="flex-1 bg-gray-50">
-        <div className="container mx-auto mt-8 gap-4 px-4">
+      <div className="h-full flex flex-col min-h-0">
+        {/* Header */}
+        <div className="container mx-auto mt-8 px-4">
           <div className="flex items-center">
             <div className="font-semibold my-4 text-2xl">Procedures</div>
 
@@ -46,12 +47,16 @@ export const ClientDashboard = ({ procs }) => {
               )}
             </div>
           </div>
-
-          <Suspense fallback={<ProcsTabbedTableSkeleton />}>
-            <ProcsTabbedTable procs={procs} currentUsername={username} />
-          </Suspense>
+          {/* Content area fills remaining height */}+{' '}
+          <div className="container mx-auto px-4 flex-1 min-h-0">
+            <Suspense fallback={<ProcsTabbedTableSkeleton />}>
+              <div className="h-full">
+                <ProcsTabbedTable procs={procs} currentUsername={username} />
+              </div>
+            </Suspense>
+          </div>
         </div>
-      </main>
+      </div>
     </>
   );
 };

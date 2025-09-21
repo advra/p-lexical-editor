@@ -74,11 +74,11 @@ export default function ClientDashboardSidebar({ links }: Props) {
   return (
     <>
       <aside
-        className="bg-[#162640] text-white w-[250px] overflow-auto shadow-lg flex flex-col"
+        className="max-h-screen h-full bg-[#162640] text-white w-[250px] overflow-auto shadow-lg flex flex-col"
         aria-label="Table of contents sidebar"
       >
         {/* Header */}
-        <div className="px-4 py-3 flex items-center justify-between">
+        <div className="px-4 flex items-center justify-between">
           {/* <h2 className="text-sm font-semibold">Contents</h2> */}
 
           <div className="flex items-center justify-center align-middle my-4 ml-3">
@@ -108,7 +108,7 @@ export default function ClientDashboardSidebar({ links }: Props) {
         </div>
 
         {/* Search */}
-        <div className="px-3 py-2">
+        <div className="px-3">
           <label htmlFor="toc-search" className="sr-only">
             Search contents
           </label>
@@ -148,12 +148,12 @@ export default function ClientDashboardSidebar({ links }: Props) {
         )} */}
 
         {/* Menu / Links */}
-        <nav className="px-1 py-2 flex-1 overflow-auto">
+        <span className="ml-2 text-gray-300 text-sm m-2">Procedures:</span>
+        <nav className="px-1 flex-1 overflow-auto">
           {filtered.length === 0 ? (
             <div className="px-3 py-2 text-sm text-blue-200">No matches</div>
           ) : (
             <>
-              <span className="ml-2 text-gray-300 text-sm">Procedures:</span>
               <ul className={`space-y-1 ${compact ? 'text-xs' : 'text-sm'}`}>
                 {filtered.map((link) => (
                   <li key={link.href}>
@@ -176,7 +176,7 @@ export default function ClientDashboardSidebar({ links }: Props) {
         </nav>
 
         {/* Spacer / Footer area */}
-        <div className="px-3 py-3 border-t border-gray-700">
+        <div className="px-3 pb-4 pt-4 border-t border-gray-700">
           {/* <div className="text-xs text-blue-200">Space</div> */}
           <div className="mt-2 flex items-center justify-between">
             {/* <button

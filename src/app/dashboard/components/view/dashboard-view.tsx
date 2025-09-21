@@ -39,9 +39,13 @@ export default function DashboardView({ procs, total }: Props) {
   return (
     <>
       <div className="h-screen flex flex-col">
-        <div className="flex flex-1">
+        <div className="flex flex-1 min-h-0">
           <ClientDashboardSidebar links={links} />
-          <ClientDashboard procs={procs} />
+          <div className="flex-1 min-h-0 min-w-0 overflow-hidden">
+            {/* <div className="h-[90dvh]"> */}
+            <ClientDashboard procs={procs} />
+            {/* </div> */}
+          </div>
         </div>
       </div>
     </>
