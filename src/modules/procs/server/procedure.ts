@@ -15,6 +15,7 @@ import {
   procUpdateInput,
 } from './schemas';
 import z from 'zod';
+import { DEFAULT_LIMIT, MAX_LIMIT } from '@/lib/constants.mjs';
 
 // naive slugify helper (keeps a-z0-9- only)
 function slugify(s: string) {
@@ -205,7 +206,7 @@ export const procRouter = createTRPCRouter({
       const username = ctx.session?.user?.username;
       if (!username) throw new TRPCError({ code: 'UNAUTHORIZED' });
 
-      const limit = input.limit ?? 20;
+      const limit = Math.min(input.limit, MAX_LIMIT) ?? DEFAULT_LIMIT;
       const skip = parseCursor(input.cursor);
       const search = input.query?.trim();
 

@@ -36,7 +36,7 @@ Spin up your own docker container instance. By default it will create a docker c
 First Copy the test configs and run you app then run the docker
 
 ```bash
-cp .env.test.example .env.test
+cp .env.local.example .env.local
 
 ./scripts/docker-up.bash
 
@@ -44,7 +44,7 @@ cp .env.test.example .env.test
 npm install
 
 # start the app against our mongodb container
-npm run dev:test
+npm run dev
 
 # For the first time running the docker instance there will be no data. To seed the database with users and data
 # run the script below

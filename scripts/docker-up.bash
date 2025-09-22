@@ -19,7 +19,6 @@ user=$(whoami | tr '[:upper:]' '[:lower:]')
 VOLUME_NAME="mongo-eproc-${user}-data"
 
 cat > "$OUT" <<EOF
-version: "3.9"
 services:
   mongo:
     image: mongo:7

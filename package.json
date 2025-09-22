@@ -4,9 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "dev:test": "NODE_ENV=development next dev --turbopack ",
-    "build": "next build --turbopack",
     "start": "next start",
+    "build": "next build --turbopack",
     "lint": "eslint"
   },
   "dependencies": {
