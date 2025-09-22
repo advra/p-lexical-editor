@@ -48,6 +48,8 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
     const q = query.trim().toLowerCase();
     let items = procs;
 
+    console.log('ALL PROCS: ', procs);
+
     if (active === 'My Procs') {
       items = procs.filter((p) => p.owner === currentUsername);
     } else if (active === 'Shared With Me') {
@@ -60,12 +62,17 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
 
     if (!q) return items;
 
-    return items.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.owner.toLowerCase().includes(q) ||
-        (p.sharedWith?.some((s) => s.toLowerCase().includes(q)) ?? false),
-    );
+    // Guard for missing fields and support title vs name
+    return items.filter((p) => {
+      const title = (p.title ?? p.name ?? '').toLowerCase();
+      const owner = (p.owner ?? '').toLowerCase();
+      const shared = (p.sharedWith ?? []).map((s) => s.toLowerCase());
+      return (
+        title.includes(q) ||
+        owner.includes(q) ||
+        shared.some((s) => s.includes(q))
+      );
+    });
   }, [procs, query, active, currentUsername]);
 
   // Pagination logic
@@ -160,7 +167,7 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
             >
               <div className="flex items-center">
                 <AddIcon sx={{ fontSize: 24 }} />{' '}
-                <span className="text-sm">New Proc</span>
+                <span className="text-sm">Create</span>
               </div>
             </Button>
           </div>
@@ -225,9 +232,14 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
               ) : (
                 paginatedItems.map((p) => (
                   <tr key={p._id} className="hover:bg-gray-50 ">
-                    <td className="px-3 py-3 font-medium text-gray-800">
+                    <td className="flex px-3 py-3 text-gray-800">
                       <Link href={`procs/${p.slug}`}>
-                        {p.data.metadata.title}
+                        <span className="font-medium">
+                          {p.data.metadata.title}
+                        </span>
+                        {/* {!p.published && (
+                          <span className="text-gray-500"> (DRAFT)</span>
+                        )} */}
                       </Link>
                     </td>
                     <td className="px-3 py-3 text-gray-600">{p.owner}</td>

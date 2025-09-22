@@ -86,7 +86,9 @@ export const procRouter = createTRPCRouter({
         },
       };
 
-      const nowPublished = !!input.published;
+      // TODO: Enable drafts for now this is always set to true for published
+      // const nowPublished = !!input.published;
+      const nowPublished = true;
 
       const doc = await ProcModel.create({
         title: metaTitle,
