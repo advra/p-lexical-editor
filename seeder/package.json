@@ -1,0 +1,13 @@
+{
+  "name": "seeder",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "dotenv": "^17.2.2",
+    "mongodb": "^6.19.0"
+  },
+  "scripts": {
+    "seed": "node seed-users.js"
+  }
+}
