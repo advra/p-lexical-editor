@@ -32,7 +32,7 @@ export default function DashboardView({ procs, total }: Props) {
     const p = proc.data as PuckPageData;
     return {
       href: `/procs/${proc.slug}`,
-      label: p?.root?.props?.title ?? proc.title ?? 'Untitled',
+      label: p?.root?.props?.title ?? proc.title,
     };
   });
 

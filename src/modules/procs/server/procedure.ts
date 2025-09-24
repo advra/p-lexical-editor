@@ -56,7 +56,7 @@ function toPublic(doc: any) {
       owner: doc.owner || 'unknown',
       status: 'draft',
       version: 1,
-      title: doc.title || 'Untitled',
+      title: doc.title,
       description: doc.description || '',
       tags: [],
       data: { root: { props: {} } },
@@ -81,14 +81,14 @@ export const procRouter = createTRPCRouter({
       const owner = ctx.session?.user?.username;
       if (!owner) throw new TRPCError({ code: 'UNAUTHORIZED' });
 
-      const title = input.title ?? input.data?.root?.props?.title;
+      const title = input.title;
       if (!title)
         throw new TRPCError({
           code: 'BAD_REQUEST',
           message: 'title is required',
         });
 
-      const slug = await uniqueSlugForTitle(input.title, ProcModel);
+      const slug = await uniqueSlugForTitle(title, ProcModel);
 
       const publishNow = !!input.publishNow;
       const now = new Date().toISOString();

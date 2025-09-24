@@ -18,16 +18,16 @@ import InfoIcon from '@mui/icons-material/Info';
 import { default as CustomButton } from '@/components/common/buttons/Button';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { Metadata } from '@/app/puck/types';
+import { Metadata } from '@measured/puck';
 
 export type MetadataInfo = {
-  name: string;
+  title: string;
   description: string;
-  projectTag?: string[];
+  tags?: string[];
 };
 
 type Props = {
-  metadata: Metadata;
+  metadata: MetadataInfo;
   open: boolean;
   onClose: () => void;
   onUpdate: (newData: MetadataInfo) => Promise<void> | void;
@@ -41,20 +41,22 @@ export default function ProcMetadataDialog({
 }: Props) {
   const router = useRouter();
 
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [projectTag, setProjectTag] = useState<string>('');
+  const [name, setName] = useState(metadata.title);
+  const [description, setDescription] = useState(metadata.description);
+  const [tags, setTags] = useState<string[]>(metadata.tags ?? []);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; description?: string }>(
     {},
   );
 
+  console.log('metadata', metadata);
+
   useEffect(() => {
     if (!open) {
       // reset fields when dialog closes
-      setName('');
-      setDescription('');
-      setProjectTag('');
+      // setName('');
+      // setDescription('');
+      // setTags('');
       setErrors({});
       setSubmitting(false);
     }
@@ -86,6 +88,12 @@ export default function ProcMetadataDialog({
     //   setSubmitting(false);
     // }
   };
+
+  const toCsv = (vals: (string | null | undefined)[]) =>
+    vals
+      .map((v) => (v ?? '').trim())
+      .filter(Boolean)
+      .join(',');
 
   return (
     <Dialog
@@ -136,9 +144,9 @@ export default function ProcMetadataDialog({
           <TextField
             disabled
             className="w-full"
-            label="Project Tag"
-            placeholder={metadata?.tag}
-            value={description}
+            label="Tags"
+            placeholder={metadata?.tags?.join(',')}
+            value={tags}
             onChange={(e) => setDescription(e.target.value)}
             required
             // multiline

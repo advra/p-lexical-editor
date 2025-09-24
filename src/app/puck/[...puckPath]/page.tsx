@@ -14,6 +14,7 @@
 import '@measured/puck/puck.css';
 import { PuckClientEditor } from './puck-client-editor';
 import { getPage } from '../../../lib/get-page';
+import { Data } from '@measured/puck';
 
 export default async function Page({
   params,
@@ -23,8 +24,8 @@ export default async function Page({
   const { puckPath = [] } = await params;
   const path = `/${puckPath.join('/')}`;
   const slug = puckPath[puckPath.length - 1];
-  const data = await getPage(slug);
-
+  const proc = await getPage(slug);
+  const data = proc.data as Data;
   return (
     <>
       <PuckClientEditor path={path} data={data || {}} />

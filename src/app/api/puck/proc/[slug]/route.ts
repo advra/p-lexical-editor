@@ -34,10 +34,11 @@ export async function PUT(req: Request, { params }: CtxParams) {
     const { data, description, tags, published }: PutBody = await req.json();
 
     // Build metadata
-    const titleFromRoot = (data as any)?.root?.title as string | undefined;
+    const titleFromRoot = (data as any)?.root?.proos?.title as
+      | string
+      | undefined;
     const metadata = {
-      ...data.metadata,
-      title: data.metadata?.title ?? titleFromRoot ?? 'Untitled',
+      title: titleFromRoot ?? 'Untitled',
       version: (data.metadata?.version ?? 0) + 1,
       updatedAt: new Date().toISOString(),
     };

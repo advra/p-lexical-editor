@@ -14,8 +14,13 @@ export const PuckPreview = forwardRef<
     data: PuckPageData;
     preview?: boolean; // screen vs print-preview
     page?: 'letter' | 'a4';
+    owner: string;
+    updatedAt: string;
   }
->(function PuckPreview({ data, preview = false, page = 'letter' }, ref) {
+>(function PuckPreview(
+  { data, preview = false, page = 'letter', owner, updatedAt },
+  ref,
+) {
   const size =
     page === 'a4'
       ? 'w-[210mm] min-h-[297mm] p-[12mm]'
@@ -38,11 +43,9 @@ export const PuckPreview = forwardRef<
       )}
     >
       <div className="flex flex-col text-right">
+        <span className="text-sm text-gray-400">Created By: {owner}</span>
         <span className="text-sm text-gray-400">
-          Created By: {data.metadata.createdBy}
-        </span>
-        <span className="text-sm text-gray-400">
-          Last Updated: {formatTimestamp(data.metadata.updatedAt)}
+          Last Updated: {formatTimestamp(updatedAt)}
         </span>
       </div>
 

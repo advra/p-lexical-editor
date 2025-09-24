@@ -12,8 +12,8 @@ export default async function Page({
   console.log('PARTS', slug);
   if (!slug) return notFound();
 
-  const data = await getPage(slug);
-  if (!data) return notFound();
+  const proc = await getPage(slug);
+  if (!proc) return notFound();
 
-  return <ProcPageClient data={data} slug={slug} path={`/procs/${slug}`} />;
+  return <ProcPageClient proc={proc} slug={slug} path={`/procs/${slug}`} />;
 }
