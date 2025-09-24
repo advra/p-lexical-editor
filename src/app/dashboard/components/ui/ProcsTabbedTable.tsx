@@ -116,7 +116,7 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
       }
 
       // Optionally parse server response
-      await res.json();
+      const { id, path } = await res.json();
 
       setShowCreateNewProc(false);
       // The dialog expects this return value to navigate to the new proc
@@ -362,7 +362,7 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
           open={showCreateNewProc}
           onClose={() => setShowCreateNewProc(false)}
           onCreate={tryCreateNewProc}
-          projectTags={['Viasat', 'Northrop', 'Qualcomm']}
+          tags={['Viasat', 'Northrop', 'Qualcomm']}
         />
       )}
     </div>

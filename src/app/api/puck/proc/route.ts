@@ -37,6 +37,14 @@ export async function POST(request: Request) {
     data: createProcRequest.data,
   });
 
+  // `proc` should be your ProcPublic (includes `_id` and `slug`)
+  const body = {
+    id: proc._id,
+    slug: proc.slug,
+    path: `/procs/${proc.slug}`,
+    proc, // optional: include the whole proc if you want it on the client
+  };
+
   if (!proc) {
     return NextResponse.json(
       { status: 'error', message: 'Failed to write DB' },
@@ -47,5 +55,12 @@ export async function POST(request: Request) {
   // Purge Next.js cache
   // revalidatePath(`/procs/${proc.slug}`);
 
-  return NextResponse.json({ status: 'ok' });
+  // return NextResponse.json({ status: 'ok' });
+  return new NextResponse(JSON.stringify(body), {
+    status: 201,
+    headers: {
+      'Content-Type': 'application/json',
+      Location: body.path, // nice-to-have
+    },
+  });
 }

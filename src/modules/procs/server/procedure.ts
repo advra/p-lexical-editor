@@ -30,13 +30,41 @@ function slugify(s: string) {
 
 // map a Mongo doc -> validated public shape (normalizes _id & dates via zod)
 function toPublic(doc: any) {
-  return procPublicSchema.parse({
+  // Ensure required fields have default values if missing
+  const normalizedDoc = {
     ...doc,
     _id: String(doc._id),
+    status: doc.status || 'draft', // Default to 'draft' if missing
+    version: doc.version || 1, // Default to 1 if missing
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
     publishedAt: doc.publishedAt,
-  });
+    tags: doc.tags || [], // Default to empty array if missing
+    data: doc.data || { root: { props: {} } }, // Default to empty data structure
+  };
+
+  try {
+    return procPublicSchema.parse(normalizedDoc);
+  } catch (error) {
+    console.error('Validation error in toPublic:', error);
+    console.error('Problematic document:', doc);
+
+    // Fallback: return a minimal valid structure
+    return {
+      _id: String(doc._id),
+      slug: doc.slug || 'unknown',
+      owner: doc.owner || 'unknown',
+      status: 'draft',
+      version: 1,
+      title: doc.title || 'Untitled',
+      description: doc.description || '',
+      tags: [],
+      data: { root: { props: {} } },
+      createdAt: doc.createdAt || new Date().toISOString(),
+      updatedAt: doc.updatedAt || new Date().toISOString(),
+      publishedAt: doc.publishedAt || null,
+    };
+  }
 }
 
 // tiny helper to parse cursor safely
@@ -103,7 +131,7 @@ export const procRouter = createTRPCRouter({
       const username = ctx.session?.user?.username;
       if (!username) throw new TRPCError({ code: 'UNAUTHORIZED' });
 
-      let filter: Record<string, unknown>;
+      let filter: Record<string, unknown> = {};
       switch (input.by) {
         case 'id':
           filter = { _id: input.id };
@@ -115,6 +143,11 @@ export const procRouter = createTRPCRouter({
           // if you intend slug to be globally unique, this is fine; if not, consider scoping by owner
           filter = { slug: input.slug.toLowerCase() };
           break;
+        default:
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Invalid filter type',
+          });
       }
 
       const doc = await ProcModel.findOne(filter).lean();
@@ -178,7 +211,10 @@ export const procRouter = createTRPCRouter({
       const limit = input.limit ?? 20;
       const skip = parseCursor(input.cursor);
 
-      const baseFilter = { sharedWith: username, owner: { $ne: username } };
+      const baseFilter = {
+        'sharedWith.userId': username,
+        owner: { $ne: username },
+      };
 
       const [docs, total] = await Promise.all([
         ProcModel.find(baseFilter)
@@ -207,14 +243,18 @@ export const procRouter = createTRPCRouter({
       const skip = parseCursor(input.cursor);
       const search = input.query?.trim();
 
-      // base access filter
+      // base access filter - fix sharedWith query to match the schema
       const accessible = {
         $or: [
           { owner: username },
-          { sharedWith: username },
+          { 'sharedWith.userId': username },
           { status: 'published' },
         ],
       } as const;
+
+      if (accessible) {
+        console.log('HAS ACCESS');
+      }
 
       const query: any = search
         ? {
