@@ -4,10 +4,15 @@ import { PuckPageData } from '@/app/puck/types';
 import { appRouter } from '@/trpc/routers/_app';
 import { createTRPCContext } from '@/trpc/init';
 import { TRPCError } from '@trpc/server';
+import { PuckPageDataInput } from '@/modules/procs/server/schemas';
+import { slugify } from '@/modules/procs/utils/title-generator';
 
 type createRequestProps = {
-  path: string;
-  data: PuckPageData;
+  // title: string;
+  // description?: string;
+  // tags?: string[];
+  // path: string;
+  data: PuckPageDataInput;
 };
 
 /*
@@ -17,17 +22,19 @@ export async function POST(request: Request) {
   const createProcRequest: createRequestProps = await request.json();
   const caller = appRouter.createCaller(await createTRPCContext());
 
-  const { title, description, tags } = createProcRequest.data.root;
-  const path = createProcRequest.path;
+  const { title, description, tags } = createProcRequest.data.root.props;
+  // const path = createProcRequest.path;
 
   // Extract just the UUID part from the path for the slug
   // Path format: /procs/{uuid}
-  const pathParts = path.split('/');
-  const slug = pathParts[pathParts.length - 1];
+  // const pathParts = path.split('/');
+  // const slug = pathParts[pathParts.length - 1];
 
   const proc = await caller.procs.create({
+    title: title,
+    description: description,
+    tags: tags,
     data: createProcRequest.data,
-    slug: slug,
   });
 
   if (!proc) {
@@ -38,7 +45,7 @@ export async function POST(request: Request) {
   }
 
   // Purge Next.js cache
-  revalidatePath(createProcRequest.path);
+  // revalidatePath(`/procs/${proc.slug}`);
 
   return NextResponse.json({ status: 'ok' });
 }

@@ -21,21 +21,21 @@ import { useRouter } from 'next/navigation';
 export type ProcPayload = {
   name: string;
   description: string;
-  projectTag?: string[];
+  tags?: string[];
 };
 
 type Props = {
   open: boolean;
   onClose: () => void;
   onCreate: (payload: ProcPayload) => Promise<void> | void;
-  projectTags?: string[]; // optional list of tags to show in a select
+  tags?: string[]; // optional list of tags to show in a select
 };
 
 export default function CreateNewProcDialog({
   open,
   onClose,
   onCreate,
-  projectTags = [],
+  tags = [],
 }: Props) {
   const router = useRouter();
 
@@ -73,7 +73,7 @@ export default function CreateNewProcDialog({
       const { id, path, data } = await onCreate({
         name: name.trim(),
         description: description.trim(),
-        projectTag,
+        tags,
       });
       toast.success(`Successfully Created new Proc: ${name.trim()}`);
       router.push(`/procs/${id}`);
@@ -129,7 +129,7 @@ export default function CreateNewProcDialog({
           />
 
           {/* Project tag: if you pass a list, show select otherwise show text input */}
-          {projectTags && projectTags.length > 0 ? (
+          {tags && tags.length > 0 ? (
             <TextField
               className="w-full"
               label="Project Tag (Optional)"
@@ -142,7 +142,7 @@ export default function CreateNewProcDialog({
               <MenuItem value="">
                 <em>None</em>
               </MenuItem>
-              {projectTags.map((tag) => (
+              {tags.map((tag) => (
                 <MenuItem key={tag} value={tag}>
                   {tag}
                 </MenuItem>

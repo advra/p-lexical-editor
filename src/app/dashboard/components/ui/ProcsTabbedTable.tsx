@@ -87,24 +87,18 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
     setCurrentPage(1);
   }, [query, active, filtered.length]);
 
-  const tryCreateNewProc = async ({
-    name,
-    description,
-    projectTag,
-  }: ProcPayload) => {
-    console.log(
-      `Creating: name: ${name} desc: ${description} tag: ${projectTag}`,
-    );
+  const tryCreateNewProc = async ({ name, description, tags }: ProcPayload) => {
+    console.log(`Creating: name: ${name} desc: ${description} tag: ${tags}`);
     // 1) generate id
-    const id = crypto.randomUUID();
-    const path = `/procs/${id}`;
+    // const id = crypto.randomUUID();
+    // const path = `/procs/${id}`;
 
     // 2) build the data object in the same shape your DB expects
     const initialData = initialProcsData({
-      title: name,
       owner: currentUsername,
-      projectTag: projectTag ? [projectTag] : undefined,
+      title: name,
       description: description || undefined,
+      tags: tags ? [] : undefined,
     });
 
     console.log('initialData: ', initialData);
@@ -113,7 +107,7 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
       const res = await fetch('/api/puck/proc', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path, data: initialData }),
+        body: JSON.stringify({ data: initialData }),
       });
 
       if (!res.ok) {
