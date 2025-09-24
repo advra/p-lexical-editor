@@ -10,18 +10,17 @@ export const HeadingBlock: ComponentConfig<HeadingBlockProps> = {
   label: 'Heading',
   fields: {
     title: { type: 'text', contentEditable: true },
-    description: { type: 'textarea', contentEditable: true },
   },
   defaultProps: {
     title: 'Heading',
-    description: '',
   },
-  render: ({ title, description }: HeadingBlockProps) => (
-    <div className="text-center mx-16">
-      <span className="text-[42px] font-semibold">{title}</span>
-      {description && <p>{description}</p>}
-    </div>
-  ),
+  render: ({ title, description }: HeadingBlockProps) => {
+    return (
+      <div className="text-center mx-16">
+        <span className="text-[42px] font-semibold">{title}</span>
+      </div>
+    );
+  },
 };
 
 export default HeadingBlock;

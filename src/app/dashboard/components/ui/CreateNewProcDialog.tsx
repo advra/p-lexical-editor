@@ -17,25 +17,26 @@ import TextField from '@/components/common/TextField';
 import { default as CustomButton } from '@/components/common/buttons/Button';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { createResponse } from '@/app/api/puck/proc/route';
 
 export type ProcPayload = {
   name: string;
   description: string;
-  projectTag?: string[];
+  tags?: string[];
 };
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  onCreate: (payload: ProcPayload) => Promise<void> | void;
-  projectTags?: string[]; // optional list of tags to show in a select
+  onCreate: (payload: ProcPayload) => Promise<createResponse>;
+  tags?: string[]; // optional list of tags to show in a select
 };
 
 export default function CreateNewProcDialog({
   open,
   onClose,
   onCreate,
-  projectTags = [],
+  tags = [],
 }: Props) {
   const router = useRouter();
 
@@ -70,13 +71,13 @@ export default function CreateNewProcDialog({
     if (!validate()) return;
     setSubmitting(true);
     try {
-      const { id, path, data } = await onCreate({
+      const { path } = await onCreate({
         name: name.trim(),
         description: description.trim(),
-        projectTag,
+        tags,
       });
       toast.success(`Successfully Created new Proc: ${name.trim()}`);
-      router.push(`/procs/${id}`);
+      router.push(path);
     } catch (err) {
       console.error('Create proc failed', err);
       toast.error('Error creating Proc');
@@ -122,14 +123,12 @@ export default function CreateNewProcDialog({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             required
-            // multiline
-            // minRows={3}
             error={!!errors.description}
             // helperText={errors.description ?? ""}
           />
 
           {/* Project tag: if you pass a list, show select otherwise show text input */}
-          {projectTags && projectTags.length > 0 ? (
+          {tags && tags.length > 0 ? (
             <TextField
               className="w-full"
               label="Project Tag (Optional)"
@@ -142,7 +141,7 @@ export default function CreateNewProcDialog({
               <MenuItem value="">
                 <em>None</em>
               </MenuItem>
-              {projectTags.map((tag) => (
+              {tags.map((tag) => (
                 <MenuItem key={tag} value={tag}>
                   {tag}
                 </MenuItem>

@@ -5,22 +5,28 @@ import { PaperPage } from './PaperPage';
 import { EditButton } from './EditButton';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
-import ProcMetadataDialog from './ProcMetadataDialog';
+import ProcMetadataDialog, { MetadataInfo } from './ProcMetadataDialog';
 import { ProcMetadataDetailsButton } from './ProcMetadataDetailsButton';
 import { Metadata } from '@/app/puck/types';
+import { totalmem } from 'os';
 
 type Props = {
   viewMode: boolean;
   handlePreviewPrint: () => void | Promise<void>;
   metadata: Metadata;
   path: string;
+  title: string;
+  description?: string;
+  tags?: string[];
 };
 
 export const Header = ({
   handlePreviewPrint,
-  metadata,
   path,
   executionMode,
+  title,
+  description,
+  tags,
 }: Props) => {
   const [showProcMetadataDetails, setShowProcMetadataDetails] = useState(false);
 
@@ -50,6 +56,14 @@ export const Header = ({
         <div>Execution Mode</div>
       </div>
     );
+  };
+
+  console.log('DATA', title);
+
+  const metadata: MetadataInfo = {
+    title: title,
+    description: description ?? '',
+    tags: tags,
   };
 
   return (

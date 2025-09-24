@@ -42,7 +42,7 @@ export const config: Config<Props> = {
         label: 'Description: (Not displayed)',
         type: 'textarea',
       },
-      projectTag: { type: 'text' },
+      tags: { type: 'text' },
       padding: {
         type: 'select',
         label: 'Page Padding',
@@ -52,12 +52,10 @@ export const config: Config<Props> = {
     defaultProps: {
       padding: 12,
     },
-    render: ({ children, title, description, projectTag, padding }) => {
+    render: ({ children, title, description, projectTag: tags, padding }) => {
       return (
         <>
-          <div className="pl-5 pt-2 text-gray-500">
-            Project Tag: {projectTag || 'N/A'}
-          </div>
+          <div className="pl-5 pt-2 text-gray-500">Tags: {tags || 'N/A'}</div>
           <div className={classNames(padding)}>
             <div className="text-center">
               <span className="text-4xl font-semibold">{title}</span>

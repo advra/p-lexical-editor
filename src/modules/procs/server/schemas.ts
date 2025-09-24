@@ -1,22 +1,7 @@
 import z from 'zod';
+import { MAX_SLUG_LENGTH } from '../utils/title-generator';
 
-/** Accept Date or string; output a strict ISO string */
-const isoDateString = z.preprocess(
-  (v) => (v instanceof Date ? v.toISOString() : v),
-  z.string().datetime(), // RFC3339/ISO8601
-);
-
-// very light slug guard; tighten if needed
-export const slugSchema = z
-  .string()
-  .min(1)
-  .max(120)
-  .regex(
-    /^[a-z0-9]+(?:-[a-z0-9]+)*$/i,
-    'Invalid slug (letters, numbers, dashes)',
-  );
-
-/** Coerce many date shapes → ISO string or undefined */
+/** Accept Date or string; returns ISO string or undefined */
 const flexISO = z.preprocess((v) => {
   if (v == null || v === '') return undefined;
   if (v instanceof Date && !isNaN(v.getTime())) return v.toISOString();
@@ -24,95 +9,100 @@ const flexISO = z.preprocess((v) => {
   return isNaN(d.getTime()) ? undefined : d.toISOString();
 }, z.string().optional());
 
-/** Trim empty → undefined */
-const nonEmptyOpt = z.preprocess((v) => {
-  if (v == null) return undefined;
-  const s = String(v).trim();
-  return s.length ? s : undefined;
-}, z.string().optional());
+export const slugSchema = z
+  .string()
+  .min(1)
+  .max(MAX_SLUG_LENGTH)
+  .regex(
+    /^[a-z0-9]+(?:-[a-z0-9]+)*$/i,
+    'Invalid slug (letters, numbers, dashes)',
+  );
 
-/** Version: allow 0, strings, etc.; default to 1 if missing */
-const versionCoerce = z.preprocess((v) => {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : undefined;
-}, z.number().int().min(0).default(1));
+// Minimal contract: make sure root.props has your 3 fields.
+// Use .passthrough() to allow arbitrary extra keys/blocks from Puck.
+/* Root props you care about; allow extra keys too */
+const rootPropsSchema = z
+  .object({
+    title: z.string(),
+    tags: z.array(z.string()).optional(),
+    description: z.string().optional(),
+    padding: z.string(),
+  })
+  .loose();
 
-/** Metadata used by your Puck data */
-export const metadataSchema = z.object({
-  title: z.string().min(1).max(200),
-  createdAt: flexISO, // was strict; now coerce/optional
-  createdBy: nonEmptyOpt, // was required; make optional if legacy docs missed it
-  updatedAt: flexISO, // accept '', null, Date, non-ISO → ISO
-  updatedBy: nonEmptyOpt, // empty string becomes undefined
-  version: versionCoerce, // accept 0; default to 1 if absent
-});
-
-/**
- * Your Puck page data:
- * - keep the unknown Puck structure via `.passthrough()`
- * - but require the `metadata` shape you defined
- */
+/* Puck data: keep it loose so arbitrary blocks don’t fail */
 export const puckPageDataSchema = z
-  .object({ metadata: metadataSchema })
-  .passthrough();
+  .object({
+    root: z.object({ props: rootPropsSchema }).loose(),
+    content: z.array(z.unknown()).optional(),
+  })
+  .loose();
 
-/** If you store a slim record with just metadata */
-export const recordDataSchema = z.object({
-  metadata: metadataSchema,
-});
+export type PuckPageDataInput = z.infer<typeof puckPageDataSchema>;
 
-/** Base proc fields stored at the collection level */
-export const procBaseSchema = z.object({
-  slug: z.string().min(1),
-  description: z.string().max(1000).optional(),
-  tags: z.array(z.string().min(1)).optional().default([]),
-  sharedWith: z.array(z.string().min(1)).optional().default([]),
-  data: puckPageDataSchema,
-  published: z.boolean().optional().default(false),
-});
-
-const flexTopISO = flexISO; // reuse for top-level timestamps
-
-/** What you return publicly (normalize dates to ISO strings) */
-export const procPublicSchema = procBaseSchema.extend({
-  _id: z.string(),
+/** ---------- DB (internal) shape ---------- */
+export const procDbSchema = z.object({
+  _id: z.string(), // you convert ObjectId -> string in your map
+  slug: slugSchema,
   owner: z.string().min(1),
-  createdAt: flexTopISO, // was strict
-  updatedAt: flexTopISO, // was strict
-  publishedAt: flexTopISO, // nullable/optional handled by optional()
+  status: z.enum(['draft', 'published', 'archived']),
+  publishedAt: flexISO,
+  version: z.number().int().min(0),
+  title: z.string().min(1).max(200),
+  description: z.string().max(1000).optional(),
+  tags: z.array(z.string().min(1)).default([]),
+  sharedWith: z.array(z.string().min(1)).default([]),
+  data: puckPageDataSchema,
+  createdAt: flexISO,
+  updatedAt: flexISO,
 });
 
-/** Create input from clients (owner comes from ctx) */
-export const procCreateInput = procBaseSchema.omit({ published: true }).extend({
-  slug: slugSchema, // or make optional if you autogenerate
-  published: z.boolean().optional(), // allow publishing on create
+export type ProcCreateInput = z.infer<typeof procCreateInput>;
+
+/** ---------- Public return shape ----------
+ * Public schem to hide sharedWith from all users
+ */
+export const procPublicSchema = procDbSchema.omit({ sharedWith: true });
+
+/** ---------- Inputs ---------- */
+// Create: client provides slug? other info like (title/description/tags/sharedWith)? and data
+export const procCreateInput = z.object({
+  // slug: slugSchema.optional(),
+  title: z.string().min(1).max(200),
+  description: z.string().max(1000).optional(),
+  tags: z.array(z.string()).optional(),
+  sharedWith: z.array(z.string()).optional(),
+  // initial status: let server set 'draft' or 'published' (optional flag below)
+  publishNow: z.boolean().optional(),
+  data: puckPageDataSchema,
 });
 
-/** Update input: partial patch */
+// Update: allow partial patch on slug, published/status, metadata, data
 export const procUpdateInput = z.object({
   id: z.string().min(1),
   patch: z.object({
     slug: slugSchema.optional(),
+    title: z.string().min(1).max(200).optional(),
     description: z.string().max(1000).optional(),
-    tags: z.array(z.string().min(1)).optional(),
-    sharedWith: z.array(z.string().min(1)).optional(),
+    tags: z.array(z.string()).optional(),
+    sharedWith: z.array(z.string()).optional(),
+    status: z.enum(['draft', 'published', 'archived']).optional(),
     data: puckPageDataSchema.optional(),
-    published: z.boolean().optional(),
   }),
 });
 
 /** Fetch-one variants */
 export const procGetOneInput = z.union([
   z.object({ by: z.literal('id'), id: z.string().min(1) }),
+  z.object({ by: z.literal('slug'), slug: slugSchema }),
   z.object({
     by: z.literal('ownerSlug'),
     owner: z.string().min(1),
     slug: slugSchema,
   }),
-  z.object({ by: z.literal('slug'), slug: slugSchema }),
 ]);
 
-/** Listing inputs */
+/** Listings */
 export const procListMineInput = z.object({
   limit: z.number().int().min(1).max(100).optional().default(20),
   cursor: z.string().optional(),

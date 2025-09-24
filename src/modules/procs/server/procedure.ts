@@ -4,7 +4,7 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from '@/trpc/init';
-import { ProcModel } from '../models/proc-model';
+import { PERMISSIONS, ProcModel } from '../models/proc-model';
 import {
   procCreateInput,
   procGetOneInput,
@@ -16,6 +16,7 @@ import {
 } from './schemas';
 import z from 'zod';
 import { DEFAULT_LIMIT, MAX_LIMIT } from '@/lib/constants.mjs';
+import { uniqueSlugForTitle } from '../utils/title-generator';
 
 // naive slugify helper (keeps a-z0-9- only)
 function slugify(s: string) {
@@ -29,12 +30,41 @@ function slugify(s: string) {
 
 // map a Mongo doc -> validated public shape (normalizes _id & dates via zod)
 function toPublic(doc: any) {
-  return procPublicSchema.parse({
+  // Ensure required fields have default values if missing
+  const normalizedDoc = {
     ...doc,
-    _id: doc._id.toString(),
+    _id: String(doc._id),
+    status: doc.status || 'draft', // Default to 'draft' if missing
+    version: doc.version || 1, // Default to 1 if missing
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
-  });
+    publishedAt: doc.publishedAt,
+    tags: doc.tags || [], // Default to empty array if missing
+    data: doc.data || { root: { props: {} } }, // Default to empty data structure
+  };
+
+  try {
+    return procPublicSchema.parse(normalizedDoc);
+  } catch (error) {
+    console.error('Validation error in toPublic:', error);
+    console.error('Problematic document:', doc);
+
+    // Fallback: return a minimal valid structure
+    return {
+      _id: String(doc._id),
+      slug: doc.slug || 'unknown',
+      owner: doc.owner || 'unknown',
+      status: 'draft',
+      version: 1,
+      title: doc.title,
+      description: doc.description || '',
+      tags: [],
+      data: { root: { props: {} } },
+      createdAt: doc.createdAt || new Date().toISOString(),
+      updatedAt: doc.updatedAt || new Date().toISOString(),
+      publishedAt: doc.publishedAt || null,
+    };
+  }
 }
 
 // tiny helper to parse cursor safely
@@ -51,55 +81,37 @@ export const procRouter = createTRPCRouter({
       const owner = ctx.session?.user?.username;
       if (!owner) throw new TRPCError({ code: 'UNAUTHORIZED' });
 
-      const metaIn = input.data?.metadata ?? {};
-      const metaTitle = metaIn.title ?? '';
-      if (!metaTitle) {
+      const title = input.title;
+      if (!title)
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'metadata.title is required in data',
+          message: 'title is required',
         });
-      }
 
-      const slug = slugify(input.slug ?? metaTitle);
+      const slug = await uniqueSlugForTitle(title, ProcModel);
 
-      // Optional uniqueness check per owner
-      if (await ProcModel.exists({ owner, slug })) {
-        throw new TRPCError({
-          code: 'CONFLICT',
-          message: 'Slug already exists for this owner',
-        });
-      }
-
-      const nowIso = new Date().toISOString();
-
-      // Build final Puck data with server-controlled metadata
-      const finalData = {
-        ...input.data,
-        metadata: {
-          ...metaIn,
-          title: metaTitle,
-          createdBy: owner, // ← set here
-          createdAt: metaIn.createdAt ?? nowIso, // ← set if missing
-          updatedBy: owner, // optional, for initial write
-          updatedAt: nowIso, // optional, for initial write
-          version: (metaIn.version ?? 0) + 1, // simple bump
-        },
-      };
+      const publishNow = !!input.publishNow;
+      const now = new Date().toISOString();
 
       // TODO: Enable drafts for now this is always set to true for published
-      // const nowPublished = !!input.published;
-      const nowPublished = true;
 
       const doc = await ProcModel.create({
-        title: metaTitle,
         slug,
-        description: input.description,
-        tags: input.tags,
-        sharedWith: input.sharedWith,
-        data: finalData, // ← use finalData
         owner,
-        published: nowPublished,
-        publishedAt: nowPublished ? new Date() : null,
+        status: publishNow ? 'published' : 'draft',
+        publishedAt: publishNow ? now : null,
+        version: 1,
+
+        title,
+        description: input.description,
+        tags: input.tags ?? [],
+        sharedWith: input.sharedWith ?? [],
+
+        data: {
+          ...input.data,
+          // keep editor metadata in sync
+          metadata: { ...(input.data.metadata ?? {}), title },
+        },
       });
 
       const created = await ProcModel.findById(doc._id).lean();
@@ -119,7 +131,7 @@ export const procRouter = createTRPCRouter({
       const username = ctx.session?.user?.username;
       if (!username) throw new TRPCError({ code: 'UNAUTHORIZED' });
 
-      let filter: Record<string, unknown>;
+      let filter: Record<string, unknown> = {};
       switch (input.by) {
         case 'id':
           filter = { _id: input.id };
@@ -131,6 +143,11 @@ export const procRouter = createTRPCRouter({
           // if you intend slug to be globally unique, this is fine; if not, consider scoping by owner
           filter = { slug: input.slug.toLowerCase() };
           break;
+        default:
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Invalid filter type',
+          });
       }
 
       const doc = await ProcModel.findOne(filter).lean();
@@ -138,9 +155,20 @@ export const procRouter = createTRPCRouter({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Proc not found' });
 
       const canRead =
+        doc.status === 'published' ||
         doc.owner === username ||
-        doc.sharedWith?.includes(username) ||
-        doc.published;
+        (doc.sharedWith ?? []).some(
+          (s) =>
+            s.userId === username &&
+            (s.permission === 'read' || s.permission === 'edit'),
+        );
+
+      // const canEdit =
+      //   doc.owner === username ||
+      //   (doc.sharedWith ?? []).some(
+      //     (s) => s.userId === username && s.permission === 'edit',
+      //   );
+
       if (!canRead)
         throw new TRPCError({ code: 'FORBIDDEN', message: 'Forbidden' });
 
@@ -183,7 +211,10 @@ export const procRouter = createTRPCRouter({
       const limit = input.limit ?? 20;
       const skip = parseCursor(input.cursor);
 
-      const baseFilter = { sharedWith: username, owner: { $ne: username } };
+      const baseFilter = {
+        'sharedWith.userId': username,
+        owner: { $ne: username },
+      };
 
       const [docs, total] = await Promise.all([
         ProcModel.find(baseFilter)
@@ -212,14 +243,18 @@ export const procRouter = createTRPCRouter({
       const skip = parseCursor(input.cursor);
       const search = input.query?.trim();
 
-      // base access filter
+      // base access filter - fix sharedWith query to match the schema
       const accessible = {
         $or: [
           { owner: username },
-          { sharedWith: username },
-          { published: true },
+          { 'sharedWith.userId': username },
+          { status: 'published' },
         ],
-      };
+      } as const;
+
+      if (accessible) {
+        console.log('HAS ACCESS');
+      }
 
       const query: any = search
         ? {
@@ -227,13 +262,10 @@ export const procRouter = createTRPCRouter({
               accessible,
               {
                 $or: [
-                  // if your model keeps a root `title`
                   { title: { $regex: search, $options: 'i' } },
-                  // also search inside Puck metadata title
-                  { 'data.metadata.title': { $regex: search, $options: 'i' } },
                   { description: { $regex: search, $options: 'i' } },
-                  // tags array partial match
                   { tags: { $elemMatch: { $regex: search, $options: 'i' } } },
+                  { 'data.title': { $regex: search, $options: 'i' } }, // optional
                 ],
               },
             ],
@@ -274,16 +306,19 @@ export const procRouter = createTRPCRouter({
 
       const patch: any = { ...input.patch };
 
-      // keep slug lowercase/safe if present
       if (patch.slug) patch.slug = slugify(patch.slug);
 
-      // if metadata title changes, mirror to root title for search/index
+      // mirror editor title to root
       const newMetaTitle = patch.data?.metadata?.title as string | undefined;
-      if (newMetaTitle) patch.title = newMetaTitle;
+      if (newMetaTitle && !patch.title) patch.title = newMetaTitle;
 
-      // handle publishedAt
-      if (typeof patch.published === 'boolean') {
-        patch.publishedAt = patch.published ? new Date() : null;
+      // publishedAt logic
+      if (patch.status) {
+        if (patch.status === 'published') {
+          patch.publishedAt = new Date();
+        } else {
+          patch.publishedAt = null;
+        }
       }
 
       await ProcModel.updateOne({ _id: input.id }, { $set: patch });
@@ -295,14 +330,20 @@ export const procRouter = createTRPCRouter({
           message: 'Update failed',
         });
 
-      return toPublic(updated);
+      return procPublicSchema.parse({
+        ...updated,
+        _id: String(updated._id),
+        createdAt: updated.createdAt,
+        updatedAt: updated.updatedAt,
+        publishedAt: updated.publishedAt,
+      });
     }),
 
   // Delete (only owner)
   delete: protectedProcedure
     .input(z.object({ id: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
-      const owner = ctx.session.user?.username;
+      const owner = ctx.session?.user?.username;
       if (!owner) throw new TRPCError({ code: 'UNAUTHORIZED' });
 
       const doc = await ProcModel.findById(input.id).lean();

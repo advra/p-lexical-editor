@@ -48,8 +48,9 @@ npm run dev
 
 # For the first time running the docker instance there will be no data. To seed the database with users and data
 # run the script below
-
-node seeder/seed-users.js
+cd seeder
+npm install
+node seed-users.js
 ```
 
 ### III. Seeded Data

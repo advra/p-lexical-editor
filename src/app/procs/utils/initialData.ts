@@ -1,16 +1,15 @@
 // Build the initial Puck page JSON for a new Proc
 
-import { Metadata, PuckPageData } from '@/app/puck/types';
+import { PuckPageData } from '@/app/puck/types';
 import { now } from 'mongoose';
 
 export type InitialProcsProps = {
-  title: string;
   owner: string;
-  projectTag?: string[];
+  title: string;
   description?: string | null;
+  tags?: string[];
   /** Tailwind padding class (e.g., 'p-16'). Defaults to 'p-16' */
   paddingClass?: string;
-  metadata?: Metadata;
 };
 
 function genId(prefix: string) {
@@ -23,18 +22,18 @@ function genId(prefix: string) {
 }
 
 export function initialProcsData({
-  title,
   owner,
-  projectTag,
+  title,
   description,
+  tags,
   paddingClass = 'p-16',
 }: InitialProcsProps): PuckPageData {
   return {
     root: {
       props: {
         title,
-        tags: projectTag ?? [],
         description: description ?? '',
+        tags: tags ?? [],
         padding: paddingClass,
       },
     },
@@ -42,19 +41,11 @@ export function initialProcsData({
       {
         type: 'TextBlock',
         props: {
-          text: `This is your new page. Click the Edit Button at the top right to modify this page's contents.`,
+          text: `Hi ${owner}! This is your new page. Click the Edit Button at the top right to modify this page's contents.`,
           id: genId(`TextBlock-${owner}`),
         },
       },
     ],
     zones: {},
-    metadata: {
-      title,
-      createdAt: new Date().toISOString(),
-      createdBy: owner,
-      updatedAt: '',
-      updatedBy: '',
-      version: 0,
-    },
   };
 }

@@ -9,6 +9,7 @@ import { EditButton } from './EditButton';
 import { PuckPreview } from './puck-preview';
 import { Header } from './Header';
 import { PuckPageData } from '@/app/puck/types';
+import { ProcPublic } from '@/modules/procs/models/proc-model';
 
 function waitForImages(root: HTMLElement) {
   const imgs = Array.from(root.querySelectorAll('img'));
@@ -26,11 +27,11 @@ function waitForImages(root: HTMLElement) {
 }
 
 export default function ProcPageClient({
-  data,
+  proc,
   slug,
   path,
 }: {
-  data: PuckPageData;
+  proc: ProcPublic;
   slug: string;
   path: string;
 }) {
@@ -49,7 +50,7 @@ export default function ProcPageClient({
     if (rootRef.current) await waitForImages(rootRef.current);
 
     const prev = document.title;
-    document.title = `Eproc - Procedure: ${(data?.metadata?.title ?? slug) as string}`;
+    document.title = `Eproc - Procedure: ${(proc.title ?? slug) as string}`;
     window.print();
     setTimeout(() => {
       document.title = prev;
@@ -58,18 +59,24 @@ export default function ProcPageClient({
     }, 0);
   }
 
+  console.log('PROC TITLE', proc);
+
   return (
     <>
       <Header
         executionMode={false}
         handlePreviewPrint={handlePreviewPrint}
         path={path}
-        metadata={data?.metadata}
+        title={proc.title}
+        description={proc.description}
+        tags={proc.tags}
       />
       <div>
         <PuckPreview
           ref={rootRef}
-          data={data}
+          data={proc.data}
+          owner={proc.owner}
+          updatedAt={proc.updatedAt ?? proc.createdAt}
           preview={preview}
           page="letter"
         />
