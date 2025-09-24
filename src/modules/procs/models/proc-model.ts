@@ -134,7 +134,7 @@ const ProcSchema = new Schema<ProcDoc>(
     status: {
       type: String,
       enum: ['draft', 'published', 'archived'],
-      default: 'draft', // TODO: Always published. Eventually enable Draft and Archived
+      default: 'published', // TODO: Always published. Eventually enable Draft and Archived
       index: true,
     },
     publishedAt: { type: Date, default: null },
