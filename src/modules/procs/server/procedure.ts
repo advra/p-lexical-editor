@@ -4,7 +4,7 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from '@/trpc/init';
-import { PERMISSIONS, ProcModel } from '../models/proc-model';
+import { ProcModel, toPublic } from '../models/proc-model';
 import {
   procCreateInput,
   procGetOneInput,
@@ -26,45 +26,6 @@ function slugify(s: string) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 120);
-}
-
-// map a Mongo doc -> validated public shape (normalizes _id & dates via zod)
-function toPublic(doc: any) {
-  // Ensure required fields have default values if missing
-  const normalizedDoc = {
-    ...doc,
-    _id: String(doc._id),
-    status: doc.status || 'draft', // Default to 'draft' if missing
-    version: doc.version || 1, // Default to 1 if missing
-    createdAt: doc.createdAt,
-    updatedAt: doc.updatedAt,
-    publishedAt: doc.publishedAt,
-    tags: doc.tags || [], // Default to empty array if missing
-    data: doc.data || { root: { props: {} } }, // Default to empty data structure
-  };
-
-  try {
-    return procPublicSchema.parse(normalizedDoc);
-  } catch (error) {
-    console.error('Validation error in toPublic:', error);
-    console.error('Problematic document:', doc);
-
-    // Fallback: return a minimal valid structure
-    return {
-      _id: String(doc._id),
-      slug: doc.slug || 'unknown',
-      owner: doc.owner || 'unknown',
-      status: 'draft',
-      version: 1,
-      title: doc.title,
-      description: doc.description || '',
-      tags: [],
-      data: { root: { props: {} } },
-      createdAt: doc.createdAt || new Date().toISOString(),
-      updatedAt: doc.updatedAt || new Date().toISOString(),
-      publishedAt: doc.publishedAt || null,
-    };
-  }
 }
 
 // tiny helper to parse cursor safely
@@ -89,11 +50,10 @@ export const procRouter = createTRPCRouter({
         });
 
       const slug = await uniqueSlugForTitle(title, ProcModel);
-
-      const publishNow = !!input.publishNow;
-      const now = new Date().toISOString();
-
       // TODO: Enable drafts for now this is always set to true for published
+      // const publishNow = !!input.publishNow;
+      const publishNow = true;
+      const now = new Date();
 
       const doc = await ProcModel.create({
         slug,
@@ -114,14 +74,7 @@ export const procRouter = createTRPCRouter({
         },
       });
 
-      const created = await ProcModel.findById(doc._id).lean();
-      if (!created)
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Create failed',
-        });
-
-      return toPublic(created);
+      return toPublic(doc.toObject(), { includeACL: true });
     }),
 
   // Get a proc by id OR (owner, slug) OR (slug)
@@ -154,25 +107,17 @@ export const procRouter = createTRPCRouter({
       if (!doc)
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Proc not found' });
 
-      const canRead =
-        doc.status === 'published' ||
-        doc.owner === username ||
-        (doc.sharedWith ?? []).some(
-          (s) =>
-            s.userId === username &&
-            (s.permission === 'read' || s.permission === 'edit'),
-        );
-
-      // const canEdit =
-      //   doc.owner === username ||
-      //   (doc.sharedWith ?? []).some(
-      //     (s) => s.userId === username && s.permission === 'edit',
-      //   );
-
+      const isOwner = doc.owner === username;
+      const isSharedUser = (doc.sharedWith ?? []).some(
+        (s: any) =>
+          s.userId === username &&
+          (s.permission === 'read' || s.permission === 'edit'),
+      );
+      const canRead = doc.status === 'published' || isOwner || isSharedUser;
       if (!canRead)
         throw new TRPCError({ code: 'FORBIDDEN', message: 'Forbidden' });
 
-      return toPublic(doc);
+      return toPublic(doc, { includeACL: isOwner || isSharedUser });
     }),
 
   // List my procs (owner = me) with pagination
@@ -195,7 +140,8 @@ export const procRouter = createTRPCRouter({
       ]);
 
       return {
-        procs: docs.map(toPublic),
+        // owner always sees ACL
+        procs: docs.map((doc) => toPublic(doc, { includeACL: true })),
         nextCursor: skip + limit < total ? String(skip + limit) : undefined,
         total,
       };
@@ -226,7 +172,8 @@ export const procRouter = createTRPCRouter({
       ]);
 
       return {
-        procs: docs.map(toPublic),
+        // shared users always see ACL
+        procs: docs.map((doc) => toPublic(doc, { includeACL: true })),
         nextCursor: skip + limit < total ? String(skip + limit) : undefined,
         total,
       };
@@ -282,7 +229,16 @@ export const procRouter = createTRPCRouter({
       ]);
 
       return {
-        procs: docs.map(toPublic),
+        // provide doc with ACL if user is owner or sharedWith
+        procs: docs.map((d) => {
+          const isOwner = d.owner === username;
+          const isSharedUser = (d.sharedWith ?? []).some(
+            (s: any) =>
+              s.userId === username &&
+              (s.permission === 'read' || s.permission === 'edit'),
+          );
+          return toPublic(d, { includeACL: isOwner || isSharedUser });
+        }),
         nextCursor: skip + limit < total ? String(skip + limit) : undefined,
         total,
       };

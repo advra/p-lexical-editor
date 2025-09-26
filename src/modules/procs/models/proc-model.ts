@@ -1,16 +1,32 @@
 /*
   Proc Class Model which represents the documents in MongoDB
 */
-
+import type { HydratedDocument } from 'mongoose';
 import mongoose, { Model, Schema } from 'mongoose';
 import { PuckPageData } from '@/app/puck/types';
 import { slugify } from '../utils/title-generator';
+import { EMPTY_PUCK_DATA, normalizePuckData } from './pucky-empty';
+import { procPublicSchema, sharedWithZ } from '../server/schemas';
+import z from 'zod';
+
+type ProcMongo = Proc;
+type ProcAnyDoc =
+  | ProcMongo
+  | HydratedDocument<ProcMongo>
+  | LeanDocument<ProcMongo>
+  | Record<string, any>;
+
+const toISO = (v: unknown): string | null => {
+  if (v == null) return null;
+  const d = v instanceof Date ? v : new Date(v as any);
+  return isNaN(d.getTime()) ? null : d.toISOString();
+};
 
 // True representation of what lives in the database
-export type ProcInternal = Proc;
+export type ProcInternal = ProcDoc;
 
 // Return to Clients without giving too much data on Access Control Fields stripping sharedWith
-export type ProcPublic = Omit<Proc, 'sharedWith'>;
+export type ProcPublic = z.infer<typeof procPublicSchema>;
 
 interface Modifications {
   /**
@@ -189,8 +205,38 @@ export const ProcModel: Model<Proc> =
 /* ------------------------- projection / mappers -------------------------- */
 /** Use in list/find queries when caller should NOT see ACL fields */
 export const PROC_PUBLIC_PROJECTION = { sharedWith: 0 } as const;
-/** Safe conversion if you fetched the full document (server-side only) */
-export function toProcPublic(doc: ProcInternal): ProcPublic {
-  const { sharedWith, ...rest } = doc as any;
-  return rest as ProcPublic;
+
+export const procPublicWithAcl = procPublicSchema.extend({
+  sharedWith: sharedWithZ,
+});
+
+function normalizeCommon(doc: ProcAnyDoc) {
+  return {
+    ...doc,
+    _id: String(doc._id),
+    createdAt: toISO(doc.createdAt)!,
+    updatedAt: toISO(doc.updatedAt)!,
+    publishedAt: toISO(doc.publishedAt),
+    status: doc.status ?? 'draft',
+    version: doc.version ?? 1,
+    tags: Array.isArray(doc.tags) ? doc.tags : [],
+    data: doc.data ?? { root: { props: {} } },
+  };
+}
+
+// /** Safe conversion if you fetched the full document (server-side only) */
+export function toPublic(doc: ProcAnyDoc, opts?: { includeACL?: boolean }) {
+  const base = normalizeCommon(doc);
+
+  /** Public projector: safe across hydrated or lean docs */
+  if (opts?.includeACL) {
+    return procPublicWithAcl.parse({
+      ...base,
+      sharedWith: Array.isArray(doc.sharedWith) ? doc.sharedWith : [],
+    });
+  }
+
+  // hide ACL
+  const { sharedWith, ...noAcl } = base as any;
+  return procPublicSchema.parse(noAcl);
 }
