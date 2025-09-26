@@ -1,7 +1,7 @@
-// app/procs/[[...puckPath]]/page.tsx  (SERVER)
+// app/procs/[[...puckPath]]/execute/page.tsx  (SERVER)
 import { notFound } from 'next/navigation';
 import { getPage } from '@/lib/get-page';
-import ProcPageClient from '../ui/components/ProcPageClient';
+import ProcPageClient from '../../ui/components/ProcPageClient';
 import { StoreProvider } from '@/context/StoreContext';
 import {
   ProcPublic,
@@ -21,10 +21,13 @@ export default async function Page({
   if (!proc) return notFound();
 
   return (
-    <>
-      <StoreProvider initialProc={proc}>
-        <ProcPageClient proc={proc} slug={slug} path={`/procs/${slug}`} />;
-      </StoreProvider>
-    </>
+    <StoreProvider initialProc={proc}>
+      <ProcPageClient
+        executionMode={true}
+        proc={proc}
+        slug={slug}
+        path={`/procs/${slug}`}
+      />
+    </StoreProvider>
   );
 }

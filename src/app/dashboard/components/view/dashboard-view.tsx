@@ -1,12 +1,5 @@
-import ClientDashboardSidebar, {
-  ProcMetadata,
-} from '../ui/ClientDashboardSidebar';
-import ProcsTabbedTable, { Proc } from '../ui/ProcsTabbedTable';
-// import { getSessionFromCookie } from '@/lib/utils/auth';
-import { User } from '@/modules/auth/types';
-import ProfileAvatarMenu, {
-  ProfileAvatar,
-} from '@/components/common/profile/profile-avatar';
+import ClientDashboardSidebar from '../ui/ClientDashboardSidebar';
+import ProfileAvatarMenu from '@/components/common/profile/profile-avatar';
 import { ClientDashboard } from '../ui/ClientDashboard';
 import { PuckPageData } from '@/app/puck/types';
 
@@ -36,6 +29,13 @@ export default function DashboardView({ procs, total }: Props) {
     };
   });
 
+  // Convert ProcDoc[] to Proc[] for ClientDashboard
+  const convertedProcs = procs.map((proc) => ({
+    ...proc,
+    name: proc.title, // Map title to name
+    data: proc.data as PuckPageData,
+  }));
+
   return (
     <>
       <div className="h-screen flex flex-col">
@@ -43,7 +43,7 @@ export default function DashboardView({ procs, total }: Props) {
           <ClientDashboardSidebar links={links} />
           <div className="flex-1 min-h-0 min-w-0 overflow-hidden">
             {/* <div className="h-[90dvh]"> */}
-            <ClientDashboard procs={procs} />
+            <ClientDashboard procs={convertedProcs} />
             {/* </div> */}
           </div>
         </div>

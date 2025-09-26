@@ -7,23 +7,23 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
 import ProcMetadataDialog, { MetadataInfo } from './ProcMetadataDialog';
 import { ProcMetadataDetailsButton } from './ProcMetadataDetailsButton';
-import { Metadata } from '@/app/puck/types';
-import { totalmem } from 'os';
+import { BackToViewMode } from './BackToViewModeButton';
 
 type Props = {
   viewMode: boolean;
   handlePreviewPrint: () => void | Promise<void>;
-  metadata: Metadata;
+  metadata: MetadataInfo;
   path: string;
   title: string;
   description?: string;
   tags?: string[];
+  executionMode?: boolean;
 };
 
 export const Header = ({
   handlePreviewPrint,
   path,
-  executionMode,
+  executionMode = false,
   title,
   description,
   tags,
@@ -78,21 +78,31 @@ export const Header = ({
         />
       )}
       <div className="no-print">
-        <PaperPage>
+        <div
+          className="sticky top-0 z-40 py-1 bg-white/80 backdrop-blur 
+        supports-[backdrop-filter]:bg-white/60 shadow-sm"
+        >
           <div className="px-4 mx-auto max-w-screen">
             <div className="flex items-center h-12">
               <BackToDashboardButton />
+              <div className="pl-1">
+                {executionMode && <BackToViewMode path={path} />}
+              </div>
               {executionMode ? <ExecutionModeLabel /> : <ViewModeLabel />}
               <div className="ml-auto flex gap-2">
                 <ProcMetadataDetailsButton
                   openMetadataDetails={handleMetadataDetails}
                 />
-                <ExportPDFButton handlePreviewPrint={handlePreviewPrint} />
-                <EditButton path={path} />
+                {!executionMode && (
+                  <>
+                    <ExportPDFButton handlePreviewPrint={handlePreviewPrint} />
+                    <EditButton path={path} />
+                  </>
+                )}
               </div>
             </div>
           </div>
-        </PaperPage>
+        </div>
       </div>
     </>
   );

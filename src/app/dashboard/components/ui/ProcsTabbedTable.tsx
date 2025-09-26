@@ -11,7 +11,6 @@ import Button from '@/components/common/buttons/Button';
 import CreateNewProcDialog from './CreateNewProcDialog';
 import type { ProcPayload } from './CreateNewProcDialog';
 import { initialProcsData } from '@/app/procs/utils/initialData';
-import { title } from 'process';
 import { PuckPageData } from '@/app/puck/types';
 import Link from 'next/link';
 
@@ -64,7 +63,7 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
 
     // Guard for missing fields and support title vs name
     return items.filter((p) => {
-      const title = (p.title ?? p.name ?? '').toLowerCase();
+      const title = (p.data?.root?.props?.title ?? p.name ?? '').toLowerCase();
       const owner = (p.owner ?? '').toLowerCase();
       const shared = (p.sharedWith ?? []).map((s) => s.toLowerCase());
       return (
@@ -229,7 +228,7 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
                     <td className="flex px-3 py-3 text-gray-800">
                       <Link href={`procs/${p.slug}`}>
                         <span className="font-medium">
-                          {p.data.metadata.title}
+                          {p.data?.root?.props?.title ?? p.name}
                         </span>
                         {/* {!p.published && (
                           <span className="text-gray-500"> (DRAFT)</span>

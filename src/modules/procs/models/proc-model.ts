@@ -25,8 +25,11 @@ const toISO = (v: unknown): string | null => {
 // True representation of what lives in the database
 export type ProcInternal = ProcDoc;
 
+// Infer types from zod types
 // Return to Clients without giving too much data on Access Control Fields stripping sharedWith
 export type ProcPublic = z.infer<typeof procPublicSchema>;
+// The full schema if authorized
+export type ProcPublicWithAcl = z.infer<typeof procPublicWithAcl>;
 
 interface Modifications {
   /**
@@ -225,7 +228,10 @@ function normalizeCommon(doc: ProcAnyDoc) {
 }
 
 // /** Safe conversion if you fetched the full document (server-side only) */
-export function toPublic(doc: ProcAnyDoc, opts?: { includeACL?: boolean }) {
+export function toPublic(
+  doc: ProcAnyDoc,
+  opts?: { includeACL?: boolean },
+): ProcPublic | ProcPublicWithAcl {
   const base = normalizeCommon(doc);
 
   /** Public projector: safe across hydrated or lean docs */

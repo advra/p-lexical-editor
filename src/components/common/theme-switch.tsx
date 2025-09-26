@@ -31,7 +31,7 @@ export default function ThemeSwitch() {
     <Button
       className="hover:cursor-pointer"
       aria-label="Toggle theme"
-      onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+      onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'light')}
     >
       {resolvedTheme === 'dark' ? (
         <SunnyIcon

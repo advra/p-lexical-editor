@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ message: 'Password changed' }, { status: 200 });
-  } catch (err) {
+  } catch (err: any) {
     if (err?.name === 'ZodError') {
       return NextResponse.json(
         { message: 'Invalid input', issues: err.issues },

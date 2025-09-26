@@ -5,8 +5,6 @@ import { appRouter } from '@/trpc/routers/_app';
 import { createTRPCContext } from '@/trpc/init';
 import { TRPCError } from '@trpc/server';
 
-type CtxParams = { params: { slug: string } };
-
 type PutBody = {
   data: any;
   description?: string;
@@ -17,16 +15,23 @@ type PutBody = {
 /*
     Get a specific proc by slug
 */
-export async function GET(_req: Request, { params }: CtxParams) {
+export async function GET(
+  _req: Request,
+  { params }: { params: Promise<{ slug: string }> },
+) {
+  const { slug } = await params;
   const caller = appRouter.createCaller(await createTRPCContext());
-  const proc = await caller.procs.getOne({ by: 'slug', id: params.slug });
+  const proc = await caller.procs.getOne({ by: 'slug', slug });
   return NextResponse.json(proc);
 }
 
 /*
   Update (publish) an existing proc
 */
-export async function PUT(req: Request, { params }: CtxParams) {
+export async function PUT(
+  req: Request,
+  { params }: { params: Promise<{ slug: string }> },
+) {
   try {
     const caller = appRouter.createCaller(await createTRPCContext());
     const { slug } = await params;
@@ -34,7 +39,7 @@ export async function PUT(req: Request, { params }: CtxParams) {
     const { data, description, tags, published }: PutBody = await req.json();
 
     // Build metadata
-    const titleFromRoot = (data as any)?.root?.proos?.title as
+    const titleFromRoot = (data as any)?.root?.props?.title as
       | string
       | undefined;
     const metadata = {
@@ -47,7 +52,7 @@ export async function PUT(req: Request, { params }: CtxParams) {
     // Upsert by slug
     let existingId: string | null = null;
     try {
-      const existing = await caller.procs.getOne({ by: 'slug', slug }); // ✅ by slug
+      const existing = await caller.procs.getOne({ by: 'slug', slug });
       existingId = existing._id;
     } catch (e) {
       if (!(e instanceof TRPCError && e.code === 'NOT_FOUND')) throw e;
@@ -61,17 +66,17 @@ export async function PUT(req: Request, { params }: CtxParams) {
           description: description ?? '',
           tags: tags ?? [],
           data: finalData,
-          published: !!published,
+          status: published ? 'published' : 'draft',
         },
       });
     } else {
       await caller.procs.create({
-        slug,
+        title: titleFromRoot ?? 'Untitled',
         description: description ?? '',
         tags: tags ?? [],
         sharedWith: [],
         data: finalData,
-        published: !!published,
+        publishNow: !!published,
       });
     }
 
@@ -86,8 +91,16 @@ export async function PUT(req: Request, { params }: CtxParams) {
   }
 }
 
-export async function DELETE(_req: Request, { params }: CtxParams) {
+export async function DELETE(
+  _req: Request,
+  { params }: { params: Promise<{ slug: string }> },
+) {
+  const { slug } = await params;
   const caller = appRouter.createCaller(await createTRPCContext());
-  await caller.procs.delete({ id: params.slug });
+
+  // First get the proc to get its ID
+  const proc = await caller.procs.getOne({ by: 'slug', slug });
+  await caller.procs.delete({ id: proc._id });
+
   return NextResponse.json({ ok: true });
 }
