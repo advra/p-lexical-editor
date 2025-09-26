@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:linkt": "concurrently --kill-others \"npm run dev\" \"npm run lint\"",
     "start": "next start",
     "build": "next build --turbopack",
     "lint": "eslint"
