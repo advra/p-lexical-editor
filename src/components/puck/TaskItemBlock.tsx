@@ -19,6 +19,7 @@ import CompletionStatus from './constants/taskitem/CompletionStatus';
 import { ComponentConfig, WithId, WithPuckProps } from '@measured/puck';
 import { RedlineWrapper } from './ui/RedlineWrapper';
 import { cn } from '@/lib/utils/cn';
+import { RedLineModal } from '../redline/RedLineModal';
 
 export type TaskItemProps = {
   step: string;
@@ -27,7 +28,9 @@ export type TaskItemProps = {
   record?: any;
 };
 
-export const TaskItemBlock: ComponentConfig<TaskItemProps> = {
+export const TaskItemBlock: ComponentConfig<
+  TaskItemProps & { onRedlineClick?: (originalText: string) => void }
+> = {
   label: 'Task Item',
   fields: {
     step: { type: 'text', contentEditable: true },
@@ -39,32 +42,34 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps> = {
     content: 'Describe the task here...',
     // recordId: '',
   },
-  render: ({ step, content, record }: TaskItemProps) => {
+  render: ({
+    step,
+    content,
+    record,
+    onRedlineClick,
+  }: TaskItemProps & { onRedlineClick?: (originalText: string) => void }) => {
     const redlineContent = record?.redline_content || '[no recordData]';
-    const [dcnInput, setDcnInput] = useState('ABC');
-    const [redlineInput, setRedlineInput] = useState(
-      'This hsould be changed to something else',
-    );
-
-    const [anchorEl, setAnchorEl] = useState(null);
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const menuOpen = Boolean(anchorEl);
-    const [showRedlineModal, setShowRedlineModal] = useState(false);
 
     const { session, loading } = useUser();
     // const isViewer = !!session?.user?.roles?.includes('viewer');
     const isViewer = false;
 
     const onUnmarkComplete = () => {};
-    const handleMakeRedline = () => {};
-    const handleMenuClose = () => {};
+    const handleOpenRedlineModal = (originalText: string) => {
+      if (onRedlineClick) {
+        onRedlineClick(originalText);
+      }
+      handleMenuClose();
+    };
+    const handleMenuClose = () => setAnchorEl(null);
     const onIconButton = async (event: any) => {
       setAnchorEl(event.currentTarget);
     };
-    const handleCloseRedlineModal = () => {};
     const onMarkComplete = async () => {};
-    const handleSaveRedlineModal = () => {};
     // const isRedlined = record?.isRedlined;
-    const isRedlined = true;
+    const isRedlined = false;
 
     const findRecordById = (record: any[], recordId: string) => {
       if (!Array.isArray(record)) {
@@ -82,146 +87,100 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps> = {
     // const myRecord = findRecordById(record, recordId);
 
     return (
-      <>
-        <div className="p-2 h-auto my-2 border border-gray-300 rounded-md shadow-sm">
-          <div className="flex gap-2 items-stretch">
-            <div className="flex min-w-[3%] justify-center">
-              <span className="text-xl font-semibold text-left mr-auto">
-                <RedlineWrapper>{step}</RedlineWrapper>
-              </span>
-            </div>
-            <div className="w-px self-stretch bg-gray-300" />
-            <div className="flex-1">
-              <div className="flex flex-col gap-2">
-                <RedlineWrapper>
-                  <div
-                    className={cn(
-                      'whitespace-pre-wrap break-words',
-                      isRedlined &&
-                        'line-through decoration-red-500 decoration-1',
-                    )}
-                  >
-                    {content}
-                  </div>
-                </RedlineWrapper>
-                {isRedlined && (
-                  <span
-                    style={{ color: 'red' }}
-                    contentEditable={false}
-                    suppressContentEditableWarning={true}
-                    onBlur={(e) => {
-                      const updated = e.currentTarget.innerText;
-                      // Save or process updated redlined content
-                      console.log('Updated redline:', updated);
-                    }}
-                  >
-                    <br />
-                    {/* {record?.redline_content} */}
-                    SAMPLE EDITED CONTENT
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="flex items-start">
-              <div className="ml-auto">
-                {record && <CompletionStatus record={record} />}
-              </div>
-              <Tooltip
-                title={
-                  isViewer ? 'These actions are not permitted by viewers' : ''
-                }
-              >
-                <div className="flex">
-                  <Button
-                    className="w-40"
-                    variant="outlined"
-                    color="success"
-                    onClick={onMarkComplete}
-                    disabled={
-                      isViewer || record?.state === 'complete'
-                      // loadingSession ||
-                      // sessionId == null ||
-                      // loading
-                    }
-                  >
-                    Mark Complete
-                  </Button>
-                  <IconButton disabled={isViewer} onClick={onIconButton}>
-                    <MoreVertIcon />
-                  </IconButton>
-                  <Menu
-                    anchorEl={anchorEl}
-                    open={menuOpen}
-                    onClose={handleMenuClose}
-                    anchorOrigin={{
-                      vertical: 'bottom',
-                      horizontal: 'right',
-                    }}
-                    transformOrigin={{
-                      vertical: 'top',
-                      horizontal: 'right',
-                    }}
-                  >
-                    <MenuItem onClick={onUnmarkComplete}>
-                      Unmark Complete
-                    </MenuItem>
-                    <MenuItem onClick={handleMakeRedline}>
-                      Make Redline
-                    </MenuItem>
-                  </Menu>
+      <div className="p-2 h-auto my-2 border border-gray-300 rounded-md shadow-sm">
+        <div className="flex gap-2 items-stretch">
+          <div className="flex min-w-[3%] justify-center">
+            <span className="text-xl font-semibold text-left mr-auto">
+              <RedlineWrapper onClick={() => handleOpenRedlineModal(step)}>
+                {step}
+              </RedlineWrapper>
+            </span>
+          </div>
+          <div className="w-px self-stretch bg-gray-300" />
+          <div className="flex-1">
+            <div className="flex flex-col gap-2">
+              <RedlineWrapper onClick={() => handleOpenRedlineModal(content)}>
+                <div
+                  className={cn(
+                    'whitespace-pre-wrap break-words',
+                    isRedlined &&
+                      'line-through decoration-red-500 decoration-1',
+                  )}
+                >
+                  {content}
                 </div>
-              </Tooltip>
+              </RedlineWrapper>
+              {isRedlined && (
+                <span
+                  style={{ color: 'red' }}
+                  contentEditable={false}
+                  suppressContentEditableWarning={true}
+                  onBlur={(e) => {
+                    const updated = e.currentTarget.innerText;
+                    // Save or process updated redlined content
+                    console.log('Updated redline:', updated);
+                  }}
+                >
+                  <br />
+                  {/* {record?.redline_content} */}
+                  SAMPLE EDITED CONTENT
+                </span>
+              )}
             </div>
           </div>
+          <div className="flex items-start">
+            <div className="ml-auto">
+              {record && <CompletionStatus record={record} />}
+            </div>
+            <Tooltip
+              title={
+                isViewer ? 'These actions are not permitted by viewers' : ''
+              }
+            >
+              <div className="flex">
+                <Button
+                  className="w-40"
+                  variant="outlined"
+                  color="success"
+                  onClick={onMarkComplete}
+                  disabled={
+                    isViewer || record?.state === 'complete'
+                    // loadingSession ||
+                    // sessionId == null ||
+                    // loading
+                  }
+                >
+                  Mark Complete
+                </Button>
+                <IconButton disabled={isViewer} onClick={onIconButton}>
+                  <MoreVertIcon />
+                </IconButton>
+                <Menu
+                  disableScrollLock
+                  anchorEl={anchorEl}
+                  open={menuOpen}
+                  onClose={handleMenuClose}
+                  anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'right',
+                  }}
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                >
+                  <MenuItem onClick={onUnmarkComplete}>
+                    Unmark Complete
+                  </MenuItem>
+                  <MenuItem onClick={() => handleOpenRedlineModal(content)}>
+                    Create Redline
+                  </MenuItem>
+                </Menu>
+              </div>
+            </Tooltip>
+          </div>
         </div>
-
-        {/* Redline Input Modal */}
-        <Dialog
-          open={showRedlineModal}
-          onClose={handleCloseRedlineModal}
-          fullWidth
-          maxWidth="sm"
-        >
-          <DialogTitle>Redline Task</DialogTitle>
-          <DialogContent>
-            <TextField
-              autoFocus
-              margin="dense"
-              id="redline-text-dcn"
-              label="Enter DCN"
-              type="text"
-              fullWidth
-              minRows={4}
-              variant="outlined"
-              value={dcnInput} // Bound to the new dcnInput state
-              onChange={(e) => setDcnInput(e.target.value)} // Updates the new dcnInput state
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              autoFocus
-              margin="dense"
-              id="redline-text"
-              label="Enter new redline text"
-              type="text"
-              fullWidth
-              multiline
-              minRows={4}
-              variant="outlined"
-              value={redlineInput} // Bound to the new redlineInput state
-              onChange={(e) => setRedlineInput(e.target.value)} // Updates the new redlineInput state
-              sx={{ mb: 2 }}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseRedlineModal} disabled={loading}>
-              Cancel
-            </Button>
-            <Button onClick={handleSaveRedlineModal} disabled={loading}>
-              Apply Redline
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </>
+      </div>
     );
   },
 };

@@ -7,6 +7,7 @@ import { formatTimestamp } from '@/lib/utils/dateformat';
 import type { PuckPageData } from '@/app/puck/types';
 import clsx from 'clsx';
 import { forwardRef } from 'react';
+import { RedlineRender } from '@/components/puck/ui/redline/RedlineRender';
 
 export const PuckPreview = forwardRef<
   HTMLDivElement,
@@ -25,6 +26,16 @@ export const PuckPreview = forwardRef<
     page === 'a4'
       ? 'w-[210mm] min-h-[297mm] p-[12mm]'
       : 'w-[8.5in] min-h-[11in] p-[0.5in]';
+
+  const handleRedlineSave = (
+    dcn: string,
+    description: string,
+    originalText: string,
+  ) => {
+    console.log('Redline saved:', { dcn, description, originalText });
+    // Here you would typically save the redline data to your backend
+    // For now, we'll just log it
+  };
 
   return (
     <div
@@ -51,7 +62,11 @@ export const PuckPreview = forwardRef<
 
       {/* inner wrapper is constant */}
       <div className="min-h-screen">
-        <Render config={config} data={data} />
+        <RedlineRender
+          config={config}
+          data={data}
+          onRedlineSave={handleRedlineSave}
+        />
       </div>
     </div>
   );
