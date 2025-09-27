@@ -59,7 +59,8 @@ io.on('connection', (socket) => {
       name: name || `User ${socket.id.slice(0, 4)}`,
     });
 
-    emitPresence(room); // -> presence:update to everyone in room
+    // presence:update to everyone in room
+    emitPresence(room);
   });
 
   // LEAVE
@@ -88,6 +89,24 @@ io.on('connection', (socket) => {
   socket.on('record:patch', ({ room, record_id, patch }) => {
     if (!room || !record_id) return;
     socket.to(room).emit('record:patch', { record_id, patch });
+  });
+
+  // Handle redline creation events
+  socket.on('redline:create', ({ room, redline }) => {
+    if (!room || !redline) return;
+    socket.to(room).emit('redline:created', { redline });
+  });
+
+  // Handle redline update events
+  socket.on('redline:update', ({ room, redlineId, patch }) => {
+    if (!room || !redlineId) return;
+    socket.to(room).emit('redline:updated', { redlineId, patch });
+  });
+
+  // Handle redline deletion events
+  socket.on('redline:delete', ({ room, redlineId }) => {
+    if (!room || !redlineId) return;
+    socket.to(room).emit('redline:deleted', { redlineId });
   });
 
   // (Optional) Your previous custom action event—kept for compatibility:

@@ -4,12 +4,15 @@
 
 import { RedlineWrapper } from './RedlineWrapper';
 
-export type RedlineProps = { onRedlineClick?: (originalText: string) => void };
+export type RedlineProps = {
+  onRedlineClick?: (originalText: string, blockId?: string) => void;
+};
 
 type Props = {
-  onRedlineClick?: (originalText: string) => void;
+  onRedlineClick?: (originalText: string, blockId?: string) => void;
   handleMenuClose?: () => void;
   children?: React.ReactNode;
+  blockId?: string;
 };
 
 // Higher Order Component that wraps any component with redline capabilities
@@ -31,12 +34,13 @@ export const withRedline = <P extends object>(
 
 // Hook for using redline functionality
 export const useRedline = (
-  onRedlineClick?: (originalText: string) => void,
+  onRedlineClick?: (originalText: string, blockId?: string) => void,
   handleMenuClose?: () => void,
+  blockId?: string,
 ) => {
   const handleOpenRedlineModal = (originalText: string) => {
     if (onRedlineClick) {
-      onRedlineClick(originalText);
+      onRedlineClick(originalText, blockId);
     }
     if (handleMenuClose) {
       handleMenuClose();

@@ -17,9 +17,21 @@ export const PuckPreview = forwardRef<
     page?: 'letter' | 'a4';
     owner: string;
     updatedAt: string;
+    procId: string;
+    room: string;
+    onRedlineCreated?: (redline: any) => void;
   }
 >(function PuckPreview(
-  { data, preview = false, page = 'letter', owner, updatedAt },
+  {
+    data,
+    preview = false,
+    page = 'letter',
+    owner,
+    updatedAt,
+    procId,
+    room,
+    onRedlineCreated,
+  },
   ref,
 ) {
   const size =
@@ -65,6 +77,8 @@ export const PuckPreview = forwardRef<
         <RedlineRender
           config={config}
           data={data}
+          procId={procId}
+          room={room}
           onRedlineSave={handleRedlineSave}
         />
       </div>

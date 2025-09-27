@@ -45,8 +45,8 @@ export default function ProcPageClient({
     [],
   );
   const [preview, setPreview] = useState(false);
+  const [redlines, setRedlines] = useState<any[]>([]);
   const rootRef = useRef<HTMLDivElement | null>(null);
-  // const { store, updateStore } = useStore();
   const { session, loading } = useUser();
   const user = session?.user;
 
@@ -116,18 +116,42 @@ export default function ProcPageClient({
 
     const onPresence = (list: Array<{ id: string; name: string }>) =>
       setPresence(list);
-    const onPatch = (payload: { record_id: string; patch: any }) => {
-      updateStore({ record_id: payload.record_id, ...payload.patch });
+    const onPatch = (payload: { blockId: string; patch: any }) => {
+      updateStore({ blockId: payload.blockId, ...payload.patch });
+    };
+
+    // Handle redline events
+    const onRedlineCreated = (payload: { redline: any }) => {
+      setRedlines((prev) => [...prev, payload.redline]);
+      console.log('Redline created:', payload.redline);
+    };
+
+    const onRedlineUpdated = (payload: { redlineId: string; patch: any }) => {
+      setRedlines((prev) =>
+        prev.map((r) =>
+          r._id === payload.redlineId ? { ...r, ...payload.patch } : r,
+        ),
+      );
+    };
+
+    const onRedlineDeleted = (payload: { redlineId: string }) => {
+      setRedlines((prev) => prev.filter((r) => r._id !== payload.redlineId));
     };
 
     socket.on('presence:update', onPresence);
     socket.on('record:patch', onPatch);
+    socket.on('redline:created', onRedlineCreated);
+    socket.on('redline:updated', onRedlineUpdated);
+    socket.on('redline:deleted', onRedlineDeleted);
 
     socket.emit('presence:request', { room });
 
     return () => {
       socket.off('presence:update', onPresence);
       socket.off('record:patch', onPatch);
+      socket.off('redline:created', onRedlineCreated);
+      socket.off('redline:updated', onRedlineUpdated);
+      socket.off('redline:deleted', onRedlineDeleted);
       socket.emit('room:leave', { room });
     };
   }, [room, updateStore, user]);
@@ -153,6 +177,11 @@ export default function ProcPageClient({
           updatedAt={(proc.updatedAt ?? proc.createdAt) as string}
           preview={preview}
           page="letter"
+          procId={proc._id}
+          room={room}
+          onRedlineCreated={(redline) => {
+            console.log('Redline created from preview:', redline);
+          }}
         />
       </div>
     </>
