@@ -31,8 +31,8 @@ You can run a local application using a mocked json database located in the data
 
 ### Running Against Mongo Instance Locally
 
+A. EProc App
 Spin up your own docker container instance. By default it will create a docker container named `mongo-puck-{USER}`
-
 First Copy the test configs and run you app then run the docker
 
 ```bash
@@ -51,6 +51,13 @@ npm run dev
 cd seeder
 npm install
 node seed-users.js
+```
+
+B. SocketIO
+Spin up a container instance to listen for client socketio
+
+```bash
+node src/server/socket.js
 ```
 
 ### III. Seeded Data

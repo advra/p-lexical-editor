@@ -84,7 +84,8 @@ export default function ProcPageClient({
       new Set(
         presence
           .map((p) => (p?.name ?? '').trim())
-          .filter((n) => n && n !== 'Anonymous'),
+          .filter((n) => n && n !== 'Anonymous')
+          .map((n) => (user?.username && n === user?.username ? 'You' : n)),
       ),
     );
 
@@ -142,15 +143,8 @@ export default function ProcPageClient({
         description={proc.description}
         tags={proc.tags}
         metadata={metadata}
+        presenceDisplay={presenceDisplay}
       />
-      <div className="flex flex-col gap-4">
-        <div className="text-sm text-gray-500 p-2">
-          Viewing now: {presenceDisplay}
-        </div>
-
-        {/* render your Puck view here — TaskItem components will read from the store */}
-        {/* <PuckPreview data={proc.data} /> or your custom renderer */}
-      </div>
       <div>
         <PuckPreview
           ref={rootRef}

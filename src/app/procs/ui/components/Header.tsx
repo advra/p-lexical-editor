@@ -18,6 +18,7 @@ type Props = {
   description?: string;
   tags?: string[];
   executionMode?: boolean;
+  presenceDisplay: any;
 };
 
 export const Header = ({
@@ -27,6 +28,7 @@ export const Header = ({
   title,
   description,
   tags,
+  presenceDisplay,
 }: Props) => {
   const [showProcMetadataDetails, setShowProcMetadataDetails] = useState(false);
 
@@ -58,8 +60,6 @@ export const Header = ({
     );
   };
 
-  console.log('DATA', title);
-
   const metadata: MetadataInfo = {
     title: title,
     description: description ?? '',
@@ -79,12 +79,20 @@ export const Header = ({
       )}
       <div className="no-print">
         <div
-          className="sticky top-0 z-40 py-1 bg-white/80 backdrop-blur 
+          className="fixed w-full top-0 z-40 py-1 bg-white/80 backdrop-blur 
         supports-[backdrop-filter]:bg-white/60 shadow-sm"
         >
           <div className="px-4 mx-auto max-w-screen">
             <div className="flex items-center h-12">
               <BackToDashboardButton />
+              <div className="flex flex-col gap-4">
+                <div className="text-sm text-gray-500 p-2">
+                  Viewers: {presenceDisplay}
+                </div>
+
+                {/* render your Puck view here — TaskItem components will read from the store */}
+                {/* <PuckPreview data={proc.data} /> or your custom renderer */}
+              </div>
               <div className="pl-1">
                 {executionMode && <BackToViewMode path={path} />}
               </div>

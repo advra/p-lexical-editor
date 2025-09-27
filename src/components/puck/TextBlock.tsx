@@ -3,6 +3,7 @@
 */
 
 import type { ComponentConfig } from '@measured/puck';
+import { RedlineWrapper } from './ui/RedlineWrapper';
 
 export type TextBlockProps = { text: string };
 
@@ -14,7 +15,15 @@ export const TextBlock: ComponentConfig<TextBlockProps> = {
   defaultProps: {
     text: 'Sample pragraph text',
   },
-  render: ({ text }: TextBlockProps) => <p>{text}</p>,
+  render: ({ text }: TextBlockProps) => {
+    return (
+      <>
+        <RedlineWrapper>
+          <span>{text}</span>
+        </RedlineWrapper>
+      </>
+    );
+  },
 };
 
 export default TextBlock;
