@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { cn } from '@/lib/utils/cn'; // or your cn helper
+import { cn } from '@/lib/utils/cn';
 
 type Props = React.ComponentProps<'div'> & {
   children: React.ReactNode;

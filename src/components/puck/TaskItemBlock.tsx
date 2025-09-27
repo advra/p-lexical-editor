@@ -1,25 +1,12 @@
-import { PuckPageData } from '@/app/puck/types';
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  Menu,
-  MenuItem,
-  TextField,
-  Tooltip,
-} from '@mui/material';
+import { Button, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { JSX, useState } from 'react';
+import { useState } from 'react';
 import useUser from '@/hooks/use-user';
 import CompletionStatus from './constants/taskitem/CompletionStatus';
-import { ComponentConfig, WithId, WithPuckProps } from '@measured/puck';
+import { ComponentConfig } from '@measured/puck';
 import { RedlineWrapper } from './ui/RedlineWrapper';
 import { cn } from '@/lib/utils/cn';
-import { RedLineModal } from '../redline/RedLineModal';
+import { redlineOptions, RedlineProps } from './ui/redline/RedlineComponent';
 
 export type TaskItemProps = {
   step: string;
@@ -28,9 +15,7 @@ export type TaskItemProps = {
   record?: any;
 };
 
-export const TaskItemBlock: ComponentConfig<
-  TaskItemProps & { onRedlineClick?: (originalText: string) => void }
-> = {
+export const TaskItemBlock: ComponentConfig<TaskItemProps & RedlineProps> = {
   label: 'Task Item',
   fields: {
     step: { type: 'text', contentEditable: true },
@@ -47,7 +32,7 @@ export const TaskItemBlock: ComponentConfig<
     content,
     record,
     onRedlineClick,
-  }: TaskItemProps & { onRedlineClick?: (originalText: string) => void }) => {
+  }: TaskItemProps & RedlineProps) => {
     const redlineContent = record?.redline_content || '[no recordData]';
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const menuOpen = Boolean(anchorEl);
@@ -57,19 +42,16 @@ export const TaskItemBlock: ComponentConfig<
     const isViewer = false;
 
     const onUnmarkComplete = () => {};
-    const handleOpenRedlineModal = (originalText: string) => {
-      if (onRedlineClick) {
-        onRedlineClick(originalText);
-      }
-      handleMenuClose();
-    };
     const handleMenuClose = () => setAnchorEl(null);
     const onIconButton = async (event: any) => {
       setAnchorEl(event.currentTarget);
     };
     const onMarkComplete = async () => {};
+
+    // redline options
     // const isRedlined = record?.isRedlined;
-    const isRedlined = false;
+    const isRedlined = true;
+    const handleRedline = redlineOptions(onRedlineClick, handleMenuClose);
 
     const findRecordById = (record: any[], recordId: string) => {
       if (!Array.isArray(record)) {
@@ -91,7 +73,7 @@ export const TaskItemBlock: ComponentConfig<
         <div className="flex gap-2 items-stretch">
           <div className="flex min-w-[3%] justify-center">
             <span className="text-xl font-semibold text-left mr-auto">
-              <RedlineWrapper onClick={() => handleOpenRedlineModal(step)}>
+              <RedlineWrapper onClick={() => handleRedline(step)}>
                 {step}
               </RedlineWrapper>
             </span>
@@ -99,7 +81,7 @@ export const TaskItemBlock: ComponentConfig<
           <div className="w-px self-stretch bg-gray-300" />
           <div className="flex-1">
             <div className="flex flex-col gap-2">
-              <RedlineWrapper onClick={() => handleOpenRedlineModal(content)}>
+              <RedlineWrapper onClick={() => handleRedline(content)}>
                 <div
                   className={cn(
                     'whitespace-pre-wrap break-words',
@@ -172,7 +154,7 @@ export const TaskItemBlock: ComponentConfig<
                   <MenuItem onClick={onUnmarkComplete}>
                     Unmark Complete
                   </MenuItem>
-                  <MenuItem onClick={() => handleOpenRedlineModal(content)}>
+                  <MenuItem onClick={() => handleRedline(content)}>
                     Create Redline
                   </MenuItem>
                 </Menu>

@@ -8,15 +8,7 @@ import {
   TextField,
 } from '@mui/material';
 import TextareaAutosize from '@mui/material/TextareaAutosize';
-import {
-  Dispatch,
-  SetStateAction,
-  useRef,
-  useLayoutEffect,
-  useState,
-  useEffect,
-} from 'react';
-import { fa } from 'zod/v4/locales';
+import { useRef, useLayoutEffect, useState, useEffect } from 'react';
 
 type Props = {
   loading: boolean;
@@ -101,6 +93,7 @@ export const RedLineModal = ({
   return (
     <>
       <Dialog
+        disableScrollLock
         open={showRedlineModal}
         onClose={(_e, reason) => {
           if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
@@ -136,8 +129,9 @@ export const RedLineModal = ({
 
             <div className="w-full">
               <div className="grid grid-cols-2 gap-4">
-                <label className="justify-self-start block text-sm font-medium mb-1">
-                  Original Description
+                <label className="justify-self-start block text-sm mb-1">
+                  <span className="font-medium">Original Description</span>
+                  {/* <span> (Live Preview)</span> */}
                 </label>
                 <label className="justify-self-start block text-sm font-medium mb-1">
                   New Description
@@ -146,7 +140,7 @@ export const RedLineModal = ({
             </div>
 
             {/* ONE shared scroll container drives both columns */}
-            <div className="h-[55dvh] overflow-auto">
+            <div className="max-h-[55dvh] overflow-auto">
               <div className="grid grid-cols-2 gap-4 min-h-full">
                 {/* LEFT: Old / read-only */}
                 <div className="flex flex-col min-h-full hover:cursor-not-allowed bg-gray-200">
