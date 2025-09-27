@@ -4,7 +4,7 @@ import { useState } from 'react';
 import useUser from '@/hooks/use-user';
 import CompletionStatus from './constants/taskitem/CompletionStatus';
 import { ComponentConfig } from '@measured/puck';
-import { RedlineWrapper } from './ui/RedlineWrapper';
+import { RedlineWrapper } from './ui/redline/RedlineWrapper';
 import { cn } from '@/lib/utils/cn';
 import { redlineOptions, RedlineProps } from './ui/redline/RedlineComponent';
 

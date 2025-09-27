@@ -1,3 +1,7 @@
+/*
+  Use this to add redline modal features to any child this wraps around
+*/
+
 import React, { forwardRef } from 'react';
 import { cn } from '@/lib/utils/cn';
 

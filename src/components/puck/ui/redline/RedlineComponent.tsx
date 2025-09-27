@@ -2,7 +2,7 @@
   This is an abstract component which adds Redline capability to any Puck Component by extending it
 */
 
-import { RedlineWrapper } from '../RedlineWrapper';
+import { RedlineWrapper } from './RedlineWrapper';
 
 export type RedlineProps = { onRedlineClick?: (originalText: string) => void };
 
@@ -18,15 +18,6 @@ export const withRedline = <P extends object>(
 ) => {
   return (props: P & Props) => {
     const { onRedlineClick, handleMenuClose, ...componentProps } = props;
-
-    const handleOpenRedlineModal = (originalText: string) => {
-      if (onRedlineClick) {
-        onRedlineClick(originalText);
-      }
-      if (handleMenuClose) {
-        handleMenuClose();
-      }
-    };
 
     return (
       <Component
@@ -74,18 +65,13 @@ export const useRedline = (
 };
 
 // Base component that can be extended
-export const RedlineComponent = ({
-  onRedlineClick,
-  handleMenuClose,
-  children,
-}: Props) => {
-  const { handleOpenRedlineModal, RedlineWrapper: RedlineWrapperHook } =
-    useRedline(onRedlineClick, handleMenuClose);
-
+export const RedlineComponent = ({ children }: Props) => {
   return children || null;
 };
 
-// Function that can be used directly in components
+/* 
+  Function that can be used directly in components
+*/
 export const redlineOptions = (
   onRedlineClick?: (originalText: string) => void,
   handleMenuClose?: () => void,

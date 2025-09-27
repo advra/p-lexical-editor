@@ -3,7 +3,7 @@
 */
 
 import type { ComponentConfig } from '@measured/puck';
-import { RedlineWrapper } from './ui/RedlineWrapper';
+import { RedlineWrapper } from './ui/redline/RedlineWrapper';
 import { redlineOptions, RedlineProps } from './ui/redline/RedlineComponent';
 
 export type HeadingBlockProps = { title: string };
