@@ -7,10 +7,11 @@ import { cn } from '@/lib/utils/cn';
 
 type Props = React.ComponentProps<'div'> & {
   children: React.ReactNode;
+  onClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
 };
 
 export const RedlineWrapper = forwardRef<HTMLDivElement, Props>(
-  ({ className, children, ...rest }, ref) => {
+  ({ className, children, onClick, ...rest }, ref) => {
     return (
       <div
         ref={ref}
@@ -18,6 +19,7 @@ export const RedlineWrapper = forwardRef<HTMLDivElement, Props>(
           'min-h-4 min-w-4 cursor-pointer outline outline-1 outline-transparent hover:outline-red-500 hover:[outline-style:dashed] outline-offset-2 transition-shadow',
           className,
         )}
+        onClick={onClick}
         {...rest}
       >
         {children}

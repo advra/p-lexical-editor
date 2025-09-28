@@ -3,7 +3,7 @@
 import { Render as PuckRender } from '@measured/puck';
 import { PuckPageData } from '@/app/puck/types';
 import { RedLineModal } from '@/components/redline/RedLineModal';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getSocket } from '@/lib/socket';
 import useUser from '@/hooks/use-user';
 
@@ -44,6 +44,61 @@ export const RedlineRender = ({
     onSave: () => {},
   });
   const [currentBlockId, setCurrentBlockId] = useState<string>('');
+  const [redlines, setRedlines] = useState<any[]>([]);
+
+  // Fetch redlines when component mounts and handle socket events
+  useEffect(() => {
+    const fetchRedlines = async () => {
+      try {
+        const response = await fetch(`/api/redlines?procId=${procId}`);
+        if (response.ok) {
+          const result = await response.json();
+          setRedlines(result.redlines || []);
+          console.log(
+            'Redlines loaded',
+            JSON.stringify(result.redlines, null, 2),
+          );
+        }
+      } catch (error) {
+        console.error('Failed to fetch redlines:', error);
+      }
+    };
+
+    fetchRedlines();
+
+    // Listen for redline socket events
+    const socket = getSocket();
+    if (socket) {
+      const handleRedlineCreated = (payload: { redline: any }) => {
+        setRedlines((prev) => [...prev, payload.redline]);
+      };
+
+      const handleRedlineUpdated = (payload: {
+        redlineId: string;
+        patch: any;
+      }) => {
+        setRedlines((prev) =>
+          prev.map((r) =>
+            r._id === payload.redlineId ? { ...r, ...payload.patch } : r,
+          ),
+        );
+      };
+
+      const handleRedlineDeleted = (payload: { redlineId: string }) => {
+        setRedlines((prev) => prev.filter((r) => r._id !== payload.redlineId));
+      };
+
+      socket.on('redline:created', handleRedlineCreated);
+      socket.on('redline:updated', handleRedlineUpdated);
+      socket.on('redline:deleted', handleRedlineDeleted);
+
+      return () => {
+        socket.off('redline:created', handleRedlineCreated);
+        socket.off('redline:updated', handleRedlineUpdated);
+        socket.off('redline:deleted', handleRedlineDeleted);
+      };
+    }
+  }, [procId]);
 
   const handleCloseRedlineModal = () => {
     setRedlineState((prev) => ({ ...prev, isOpen: false }));
@@ -102,18 +157,52 @@ export const RedlineRender = ({
     });
   };
 
-  // Create a modified data object that injects onRedlineClick into components with blockId
-  const modifiedData = {
-    ...data,
-    content: data.content?.map((block) => ({
+  // Function to apply redlines to block content
+  const applyRedlinesToBlock = (block: any) => {
+    const blockId = block?.props?.id;
+
+    // Always provide the click handler so the modal can be opened
+    const baseProps = {
+      ...block.props,
+      onRedlineClick: (originalText: string) =>
+        handleRedlineClick(originalText, blockId),
+    };
+
+    // If no redlines, just return with the handler attached
+    const blockRedlines = redlines.filter((r) => r.blockId === blockId);
+    if (blockRedlines.length === 0) {
+      return { ...block, props: baseProps };
+    }
+
+    // Apply the latest redline metadata
+    const latestRedline = blockRedlines.reduce((latest, current) =>
+      new Date(current.createdAt) > new Date(latest.createdAt)
+        ? current
+        : latest,
+    );
+
+    return {
       ...block,
       props: {
-        ...block.props,
-        onRedlineClick: (originalText: string) =>
-          handleRedlineClick(originalText, block.props?.id),
+        ...baseProps,
+        isRedlined: true,
+        redlineContent: latestRedline.newText,
+        redlineDcn: latestRedline.dcn,
+        redlineDescription: latestRedline.description,
+        originalContent: latestRedline.originalText,
+        author: latestRedline.userId,
+        createdAt: latestRedline.createdAt,
       },
-    })),
+    };
   };
+
+  // Build modified data safely (even if content is undefined)
+  const modifiedData = {
+    ...data,
+    content: (data.content ?? []).map((block) => applyRedlinesToBlock(block)),
+  };
+
+  // Create a modified data object that applies redlines and injects onRedlineClick
 
   return (
     <>

@@ -7,6 +7,7 @@ import { ComponentConfig } from '@measured/puck';
 import { RedlineWrapper } from './ui/redline/RedlineWrapper';
 import { cn } from '@/lib/utils/cn';
 import { redlineOptions, RedlineProps } from './ui/redline/RedlineComponent';
+import { RedlineInfo } from './ui/redline/RedlineInfo';
 
 export type TaskItemProps = {
   step: string;
@@ -32,8 +33,23 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & RedlineProps> = {
     content,
     record,
     onRedlineClick,
-  }: TaskItemProps & RedlineProps) => {
-    const redlineContent = record?.redline_content || '[no recordData]';
+    isRedlined,
+    redlineContent,
+    redlineDcn,
+    redlineDescription,
+    originalContent,
+    author,
+    createdAt,
+  }: TaskItemProps &
+    RedlineProps & {
+      isRedlined?: boolean;
+      redlineContent?: string;
+      redlineDcn?: string;
+      redlineDescription?: string;
+      originalContent?: string;
+      author?: string;
+      createdAt?: string;
+    }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const menuOpen = Boolean(anchorEl);
 
@@ -49,9 +65,12 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & RedlineProps> = {
     const onMarkComplete = async () => {};
 
     // redline options
-    // const isRedlined = record?.isRedlined;
-    const isRedlined = true;
     const handleRedline = redlineOptions(onRedlineClick, handleMenuClose);
+
+    // Use redline content if available
+    const displayContent =
+      isRedlined && redlineContent ? redlineContent : content;
+    const displayStep = isRedlined && redlineContent ? step : step;
 
     const findRecordById = (record: any[], recordId: string) => {
       if (!Array.isArray(record)) {
@@ -73,15 +92,15 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & RedlineProps> = {
         <div className="flex gap-2 items-stretch">
           <div className="flex min-w-[3%] justify-center">
             <span className="text-xl font-semibold text-left mr-auto">
-              <RedlineWrapper onClick={() => handleRedline(step)}>
-                {step}
+              <RedlineWrapper onClick={() => handleRedline(displayStep)}>
+                {displayStep}
               </RedlineWrapper>
             </span>
           </div>
           <div className="w-px self-stretch bg-gray-300" />
           <div className="flex-1">
             <div className="flex flex-col gap-2">
-              <RedlineWrapper onClick={() => handleRedline(content)}>
+              <RedlineWrapper onClick={() => handleRedline(displayContent)}>
                 <div
                   className={cn(
                     'whitespace-pre-wrap break-words',
@@ -89,24 +108,16 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & RedlineProps> = {
                       'line-through decoration-red-500 decoration-1',
                   )}
                 >
-                  {content}
+                  {isRedlined ? originalContent : displayContent}
                 </div>
               </RedlineWrapper>
               {isRedlined && (
-                <span
-                  style={{ color: 'red' }}
-                  contentEditable={false}
-                  suppressContentEditableWarning={true}
-                  onBlur={(e) => {
-                    const updated = e.currentTarget.innerText;
-                    // Save or process updated redlined content
-                    console.log('Updated redline:', updated);
-                  }}
-                >
-                  <br />
-                  {/* {record?.redline_content} */}
-                  SAMPLE EDITED CONTENT
-                </span>
+                <RedlineInfo
+                  dcn={redlineDcn}
+                  description={redlineDescription}
+                  author={author}
+                  createdAt={createdAt}
+                />
               )}
             </div>
           </div>
@@ -154,7 +165,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & RedlineProps> = {
                   <MenuItem onClick={onUnmarkComplete}>
                     Unmark Complete
                   </MenuItem>
-                  <MenuItem onClick={() => handleRedline(content)}>
+                  <MenuItem onClick={() => handleRedline(displayContent)}>
                     Create Redline
                   </MenuItem>
                 </Menu>

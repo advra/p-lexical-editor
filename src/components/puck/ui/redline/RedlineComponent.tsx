@@ -4,8 +4,24 @@
 
 import { RedlineWrapper } from './RedlineWrapper';
 
+// export type Redline = {
+//   isRedlined: boolean;
+//   content: string;
+//   originalContent: string;
+//   dcn: string;
+//   description: string;
+// };
+
 export type RedlineProps = {
   onRedlineClick?: (originalText: string, blockId?: string) => void;
+  isRedlined?: boolean;
+  redlineContent?: string;
+  redlineDcn?: string;
+  redlineDescription?: string;
+  originalContent?: string;
+  author?: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 type Props = {
