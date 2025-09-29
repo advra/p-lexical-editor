@@ -81,12 +81,12 @@ export const RedLineModal = ({
   };
 
   useLayoutEffect(() => {
-    const el = oldBlockRef.current;
-    if (!el) return;
-    const lh = parseFloat(getComputedStyle(el).lineHeight || '24');
-    const h = el.clientHeight || 0;
-    if (lh > 0 && h > 0) {
-      const rows = Math.max(3, Math.floor(h / lh));
+    const element = oldBlockRef.current;
+    if (!element) return;
+    const lineHeight = parseFloat(getComputedStyle(element).lineHeight || '24');
+    const currentHeight = element.clientHeight || 0;
+    if (lineHeight > 0 && currentHeight > 0) {
+      const rows = Math.max(3, Math.floor(currentHeight / lineHeight));
       setMinRows(rows);
     }
   }, [originalText, showRedlineModal]);
@@ -118,23 +118,24 @@ export const RedLineModal = ({
             <TextField
               margin="dense"
               id="redline-text-dcn"
-              label="Enter DCN"
+              label="Document Change Number (DCN)"
               type="text"
               fullWidth
               variant="outlined"
               value={dcn}
               onChange={(e) => setDcn(e.target.value)}
               sx={{ mb: 2 }}
+              required
             />
 
             <div className="w-full">
               <div className="grid grid-cols-2 gap-4">
                 <label className="justify-self-start block text-sm mb-1">
-                  <span className="font-medium">Original Description</span>
-                  {/* <span> (Live Preview)</span> */}
+                  <span className="font-medium">Original</span>
                 </label>
-                <label className="justify-self-start block text-sm font-medium mb-1">
-                  New Description
+                <label className="flex justify-self-start text-sm mb-1 gap-1">
+                  <span className="font-medium">New</span>
+                  <span>*</span>
                 </label>
               </div>
             </div>
@@ -157,9 +158,10 @@ export const RedLineModal = ({
                 <div className="flex flex-col min-h-full">
                   <div className="flex-1 rounded border border-gray-300">
                     <TextareaAutosize
+                      required
                       minRows={minRows} // at least fill visible height
                       value={description}
-                      placeholder="Enter your new description"
+                      placeholder="Enter a description for suggested changes"
                       onChange={(e) => setDescription(e.target.value)}
                       className={`w-full resize-none outline-none p-3 ${lineHeightClass}`}
                       style={{

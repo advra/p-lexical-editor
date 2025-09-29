@@ -66,7 +66,6 @@ export async function PUT(
           description: description ?? '',
           tags: tags ?? [],
           data: finalData,
-          status: published ? 'published' : 'draft',
         },
       });
     } else {
