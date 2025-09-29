@@ -140,9 +140,13 @@ export const RedlineRender = ({
           const result = await response.json();
           const redline = result.redline;
 
+          // Update current user's UI immediately
+          setRedlines((prev) => [...prev, redline]);
+
           // Broadcast via socket to other users
           const socket = getSocket();
           if (socket) {
+            // notify other users
             socket.emit('redline:create', { room, redline });
           }
 
