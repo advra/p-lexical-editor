@@ -78,6 +78,10 @@ io.on('connection', (socket) => {
     emitPresence(room);
   });
 
+  /*
+    Presence is to display users in the current room (proc)
+  */
+
   // Presence request (send only to requester)
   socket.on('presence:request', ({ room }) => {
     if (!room) return;
@@ -90,6 +94,10 @@ io.on('connection', (socket) => {
     if (!room || !record_id) return;
     socket.to(room).emit('record:patch', { record_id, patch });
   });
+
+  /*
+    Redline Events to properly display users any redlines in the current proc (aka room)
+  */
 
   // Handle redline creation events
   socket.on('redline:create', ({ room, redline }) => {

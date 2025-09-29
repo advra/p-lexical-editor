@@ -12,11 +12,22 @@ type Props = React.ComponentProps<'div'> & {
 
 export const RedlineWrapper = forwardRef<HTMLDivElement, Props>(
   ({ className, children, onClick, ...rest }, ref) => {
+    // Check if we're in edit mode by looking at the URL pathname
+    const isEditMode =
+      typeof window !== 'undefined' &&
+      window.location.pathname.includes('/edit');
+
+    // Only apply hover styles when NOT in edit mode
+    const hoverStyles = isEditMode
+      ? ''
+      : 'hover:outline-red-500 hover:[outline-style:dashed]';
+
     return (
       <div
         ref={ref}
         className={cn(
-          'min-h-4 min-w-4 cursor-pointer outline outline-1 outline-transparent hover:outline-red-500 hover:[outline-style:dashed] outline-offset-2 transition-shadow',
+          'min-h-4 min-w-4 cursor-pointer outline outline-1 outline-transparent outline-offset-2 transition-shadow',
+          hoverStyles,
           className,
         )}
         onClick={onClick}
