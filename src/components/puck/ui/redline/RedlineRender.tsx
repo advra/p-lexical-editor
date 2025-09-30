@@ -11,7 +11,7 @@ type RedlineState = {
   isOpen: boolean;
   originalText: string;
   dcn: string;
-  description: string;
+  newText: string;
   onSave: (dcn: string, description: string) => void;
 };
 
@@ -22,7 +22,7 @@ type RedlineRenderProps = {
   room: string;
   onRedlineSave?: (
     dcn: string,
-    description: string,
+    newText: string,
     originalText: string,
     blockId: string,
   ) => void;
@@ -40,7 +40,7 @@ export const RedlineRender = ({
     isOpen: false,
     originalText: '',
     dcn: '',
-    description: '',
+    newText: '',
     onSave: () => {},
   });
   const [currentBlockId, setCurrentBlockId] = useState<string>('');
@@ -105,7 +105,7 @@ export const RedlineRender = ({
   };
 
   const handleSaveRedlineModal = () => {
-    redlineState.onSave(redlineState.dcn, redlineState.description);
+    redlineState.onSave(redlineState.dcn, redlineState.newText);
   };
 
   const handleRedlineClick = (
@@ -127,8 +127,8 @@ export const RedlineRender = ({
       isOpen: true,
       originalText,
       dcn: existingRedline?.dcn || '',
-      description: existingRedline?.newText || '',
-      onSave: async (dcn: string, description: string) => {
+      newText: existingRedline?.newText || '',
+      onSave: async (dcn: string, newText: string) => {
         try {
           let redline: any;
 
@@ -143,8 +143,7 @@ export const RedlineRender = ({
                 procId,
                 redlineId: existingRedline.redlineId,
                 dcn,
-                newText: description,
-                description,
+                newText,
               }),
             });
 
@@ -168,7 +167,7 @@ export const RedlineRender = ({
               socket.emit('redline:update', {
                 room,
                 redlineId: existingRedline.redlineId,
-                patch: { dcn, newText: description, description },
+                patch: { dcn, newText },
               });
             }
           } else {
@@ -184,8 +183,7 @@ export const RedlineRender = ({
                 target,
                 dcn,
                 originalText,
-                newText: description,
-                description,
+                newText,
               }),
             });
 
@@ -207,7 +205,7 @@ export const RedlineRender = ({
           }
 
           // Call the original callback if provided
-          onRedlineSave?.(dcn, description, originalText, blockId);
+          onRedlineSave?.(dcn, newText, originalText, blockId);
         } catch (error) {
           console.error('Failed to save redline:', error);
         } finally {
@@ -258,6 +256,7 @@ export const RedlineRender = ({
 
     console.log('latestRedlinesByTarget', latestRedlinesByTarget);
 
+    // inject redline attributes per block
     return {
       ...block,
       props: {
@@ -267,7 +266,6 @@ export const RedlineRender = ({
         // For backward compatibility, keep the latest redline as the main one
         redlineContent: blockRedlines[0]?.newText,
         redlineDcn: blockRedlines[0]?.dcn,
-        redlineDescription: blockRedlines[0]?.description,
         originalContent: blockRedlines[0]?.originalText,
         author: blockRedlines[0]?.userId,
         createdAt: blockRedlines[0]?.createdAt,
@@ -291,12 +289,12 @@ export const RedlineRender = ({
         loading={false}
         originalText={redlineState.originalText}
         dcn={redlineState.dcn}
-        description={redlineState.description}
+        newText={redlineState.newText}
         handleCloseRedlineModal={handleCloseRedlineModal}
         handleSaveRedlineModal={handleSaveRedlineModal}
         setDcn={(dcn: string) => setRedlineState((prev) => ({ ...prev, dcn }))}
-        setDescription={(description: string) =>
-          setRedlineState((prev) => ({ ...prev, description }))
+        setNewText={(newText: string) =>
+          setRedlineState((prev) => ({ ...prev, newText }))
         }
         showRedlineModal={redlineState.isOpen}
       />

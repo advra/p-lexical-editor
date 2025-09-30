@@ -52,24 +52,33 @@ export const redlineRouter = createTRPCRouter({
         procId: input.procId,
       });
 
-      if (!procRedlines) {
+      if (!procRedlines || !procRedlines.blocks) {
         return [];
       }
 
-      let redlines = procRedlines.redlines;
+      let allRedlines: any[] = [];
+
+      // Convert blocks map to array of redlines
+      procRedlines.blocks.forEach((block) => {
+        if (block.redlines) {
+          block.redlines.forEach((redline) => {
+            allRedlines.push(redline);
+          });
+        }
+      });
 
       // Filter by status if provided
       if (input.status) {
-        redlines = redlines.filter((r) => r.status === input.status);
+        allRedlines = allRedlines.filter((r) => r.status === input.status);
       }
 
       // Sort by creation date (newest first)
-      redlines.sort(
+      allRedlines.sort(
         (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
 
-      return redlines;
+      return allRedlines;
     }),
 
   // TODO: Update getByBlock procedure for new data model
@@ -84,22 +93,33 @@ export const redlineRouter = createTRPCRouter({
         procId: input.procId,
       });
 
-      if (!procRedlines) {
+      if (!procRedlines || !procRedlines.blocks) {
         return [];
       }
 
-      // Filter redlines by blockId
-      const blockRedlines = procRedlines.redlines.filter(
-        (r) => r.blockId === input.blockId,
-      );
+      let allRedlines: any[] = [];
+
+      // Convert blocks map to array of redlines
+      procRedlines.blocks.forEach((block) => {
+        if (block.redlines) {
+          block.redlines.forEach((redline) => {
+            allRedlines.push(redline);
+          });
+        }
+      });
+
+      // Filter by blockId if provided
+      if (input.blockId) {
+        allRedlines = allRedlines.filter((r) => r.blockId === input.blockId);
+      }
 
       // Sort by creation date (newest first)
-      blockRedlines.sort(
+      allRedlines.sort(
         (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
 
-      return blockRedlines;
+      return allRedlines;
     }),
 
   // TODO: Update delete procedure for new data model

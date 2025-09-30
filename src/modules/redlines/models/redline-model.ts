@@ -14,8 +14,6 @@ export interface RedlineItem {
   originalText: string;
   // Text after change
   newText: string;
-  // User's description of the change
-  description: string;
   // Who made the change
   userId: string;
   status: 'pending' | 'applied' | 'rejected';
@@ -65,10 +63,6 @@ const RedlineItemSchema = new Schema<RedlineItem>(
       required: true,
     },
     newText: {
-      type: String,
-      required: true,
-    },
-    description: {
       type: String,
       required: true,
     },
@@ -131,7 +125,6 @@ export const redlineItemSchema = z.object({
   dcn: z.string().min(1),
   originalText: z.string(),
   newText: z.string(),
-  description: z.string(),
   userId: z.string().min(1),
   status: z.enum(['pending', 'applied', 'rejected']),
   createdAt: z.date().optional(),

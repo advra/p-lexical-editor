@@ -11,7 +11,6 @@ import { RedlineInfo } from './ui/redline/RedlineInfo';
 
 export type TaskItemProps = {
   step: string;
-  // recordId: string;
   content: string;
   record?: any;
 };
@@ -21,12 +20,10 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & RedlineProps> = {
   fields: {
     step: { type: 'text', contentEditable: true },
     content: { type: 'textarea', contentEditable: true },
-    // recordId: { type: 'text', contentEditable: true },
   },
   defaultProps: {
     step: '1.',
     content: 'Describe the task here...',
-    // recordId: '',
   },
   render: ({
     step,
@@ -82,9 +79,6 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & RedlineProps> = {
 
       return entry?.record?.data?.record || null;
     };
-    // todo reference record id from data.content
-    // const myRecord = findRecordById(record, recordId);
-    // console.log('redlinesByTarget step:', redlinesByTarget?.step);
 
     return (
       <div className="p-2 h-auto my-2 border border-gray-300 rounded-md shadow-sm">
@@ -120,7 +114,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & RedlineProps> = {
                     <RedlineInfo
                       key={`${target}-${redline.redlineId}`}
                       dcn={redline.dcn}
-                      description={redline.description}
+                      description={redline.newText}
                       author={redline.userId}
                       createdAt={redline.createdAt}
                       target={target}

@@ -7,14 +7,12 @@ export const redlineCreateInput = z.object({
   dcn: z.string().min(1),
   originalText: z.string(),
   newText: z.string(),
-  description: z.string(),
 });
 
 export const redlineUpdateInput = z.object({
   id: z.string().min(1),
   patch: z.object({
     status: z.enum(['pending', 'applied', 'rejected']).optional(),
-    description: z.string().optional(),
   }),
 });
 

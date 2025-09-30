@@ -14,11 +14,11 @@ type Props = {
   loading: boolean;
   originalText: string;
   dcn: string;
-  description: string;
+  newText: string;
   handleCloseRedlineModal: () => void;
   handleSaveRedlineModal: () => void;
   setDcn: (value: string) => void;
-  setDescription: (value: string) => void;
+  setNewText: (value: string) => void;
   showRedlineModal: boolean;
 };
 
@@ -26,24 +26,24 @@ export const RedLineModal = ({
   loading,
   originalText,
   dcn,
-  description,
+  newText,
   handleCloseRedlineModal,
   handleSaveRedlineModal,
   setDcn,
-  setDescription,
+  setNewText,
   showRedlineModal,
 }: Props) => {
   const lineHeightClass = 'leading-6';
   const oldBlockRef = useRef<HTMLDivElement | null>(null);
   const [minRows, setMinRows] = useState<number>(6);
   const [showDiscardModal, setShowDiscardModal] = useState(false);
-  const initial = useRef({ dcn: '', description: '' });
+  const initial = useRef({ dcn: '', newText: '' });
   const hasInit = useRef(false);
 
   const normalize = (s: string) => (s ?? '').replace(/\r\n/g, '\n');
   const isDirty =
     normalize(dcn) !== normalize(initial.current.dcn) ||
-    normalize(description) !== normalize(initial.current.description);
+    normalize(newText) !== normalize(initial.current.newText);
 
   useEffect(() => {
     if (showRedlineModal) {
@@ -55,12 +55,12 @@ export const RedLineModal = ({
     if (showRedlineModal && !hasInit.current) {
       // next frame to let parent setState flush
       const id = requestAnimationFrame(() => {
-        initial.current = { dcn, description };
+        initial.current = { dcn, newText };
         hasInit.current = true;
       });
       return () => cancelAnimationFrame(id);
     }
-  }, [showRedlineModal, dcn, description]);
+  }, [showRedlineModal, dcn, newText]);
 
   // attempt to close (from cancel button, backdrop, or ESC)
   const handleAttemptClose = () => {
@@ -160,9 +160,9 @@ export const RedLineModal = ({
                     <TextareaAutosize
                       required
                       minRows={minRows} // at least fill visible height
-                      value={description}
+                      value={newText}
                       placeholder="Enter a description for suggested changes"
-                      onChange={(e) => setDescription(e.target.value)}
+                      onChange={(e) => setNewText(e.target.value)}
                       className={`w-full resize-none outline-none p-3 ${lineHeightClass}`}
                       style={{
                         // Make sure it fills and lets the parent be the only scrollable thing
@@ -189,7 +189,7 @@ export const RedLineModal = ({
           <Button
             variant="contained"
             onClick={handleSaveRedlineModal}
-            disabled={loading || !dcn.length || !description.length}
+            disabled={loading || !dcn.length || !newText.length}
           >
             Apply
           </Button>

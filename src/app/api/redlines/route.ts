@@ -14,19 +14,10 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { procId, blockId, target, dcn, originalText, newText, description } =
-      body;
+    const { procId, blockId, target, dcn, originalText, newText } = body;
 
     // Validate required fields
-    if (
-      !procId ||
-      !blockId ||
-      !target ||
-      !dcn ||
-      !originalText ||
-      !newText ||
-      !description
-    ) {
+    if (!procId || !blockId || !target || !dcn || !originalText || !newText) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 },
@@ -73,7 +64,6 @@ export async function POST(request: Request) {
         ...existingRedline,
         dcn,
         newText,
-        description,
         updatedAt: new Date(),
       });
     } else {
@@ -85,7 +75,6 @@ export async function POST(request: Request) {
         dcn,
         originalText,
         newText,
-        description,
         userId: session.user.username,
         status: 'pending' as const,
         createdAt: new Date(),
@@ -182,10 +171,10 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json();
-    const { procId, redlineId, dcn, newText, description } = body;
+    const { procId, redlineId, dcn, newText } = body;
 
     // Validate required fields
-    if (!procId || !redlineId || !dcn || !newText || !description) {
+    if (!procId || !redlineId || !dcn || !newText) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 },
@@ -237,7 +226,6 @@ export async function PUT(request: Request) {
       ...targetRedline,
       dcn,
       newText,
-      description,
       updatedAt: new Date(),
     });
 
