@@ -51,6 +51,11 @@ export default function ProcPageClient({
   const user = session?.user;
 
   const viewMode = !executionMode;
+
+  // Check if user has edit permissions
+  const isOwner = proc.owner === user?.username;
+  const isAdmin = user?.roles?.includes('admin');
+  const canEdit = !!(isOwner || isAdmin);
   const metadata = {
     title: proc.title,
     description: proc.description ?? '',
@@ -168,6 +173,7 @@ export default function ProcPageClient({
         tags={proc.tags}
         metadata={metadata}
         presenceDisplay={presenceDisplay}
+        canEdit={canEdit}
       />
       <div>
         <PuckPreview

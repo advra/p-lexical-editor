@@ -2,7 +2,7 @@
   Use this to add redline modal features to any child this wraps around
 */
 
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useState, useEffect } from 'react';
 import { cn } from '@/lib/utils/cn';
 
 type Props = React.ComponentProps<'div'> & {
@@ -12,13 +12,16 @@ type Props = React.ComponentProps<'div'> & {
 
 export const RedlineWrapper = forwardRef<HTMLDivElement, Props>(
   ({ className, children, onClick, ...rest }, ref) => {
-    // Check if we're in edit or execute mode by looking at the URL pathname
-    const isEditOrExecuteMode = (p: string) =>
-      /^\/procs?\/[^/]+\/(edit|execute)\/?$/.test(p);
-    const shouldShowHoverStyles =
-      typeof window !== 'undefined' &&
-      !isEditOrExecuteMode(window.location.pathname);
-    console.log('shouldShowHoverStyles', shouldShowHoverStyles);
+    const [shouldShowHoverStyles, setShouldShowHoverStyles] = useState(false);
+
+    useEffect(() => {
+      // Check if we're in edit or execute mode by looking at the URL pathname
+      const isEditOrExecuteMode = (p: string) =>
+        /^\/procs?\/[^/]+\/(edit|execute)\/?$/.test(p);
+      const showHover = !isEditOrExecuteMode(window.location.pathname);
+      setShouldShowHoverStyles(showHover);
+      console.log('shouldShowHoverStyles', showHover);
+    }, []);
 
     // Only apply hover styles when NOT in edit or execute mode
     const hoverStyles = shouldShowHoverStyles

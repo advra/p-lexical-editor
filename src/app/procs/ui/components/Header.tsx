@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { BackToDashboardButton } from './BackToDashboardButton';
 import { ExportPDFButton } from './ExportPDFButton';
-import { PaperPage } from './PaperPage';
 import { EditButton } from './EditButton';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
@@ -19,6 +18,7 @@ type Props = {
   tags?: string[];
   executionMode?: boolean;
   presenceDisplay: any;
+  canEdit: boolean;
 };
 
 export const Header = ({
@@ -29,6 +29,7 @@ export const Header = ({
   description,
   tags,
   presenceDisplay,
+  canEdit,
 }: Props) => {
   const [showProcMetadataDetails, setShowProcMetadataDetails] = useState(false);
 
@@ -104,7 +105,7 @@ export const Header = ({
                 {!executionMode && (
                   <>
                     <ExportPDFButton handlePreviewPrint={handlePreviewPrint} />
-                    <EditButton path={path} />
+                    <EditButton path={path} disabled={!canEdit} />
                   </>
                 )}
               </div>

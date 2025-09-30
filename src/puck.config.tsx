@@ -119,7 +119,7 @@ export const config: Config<Props> = {
         // Render the card using the values from its fields
         return (
           <div
-            className="m-2 px-2 border border-gray-200 rounded-sm shadow-sm"
+            className="border border-gray-200 rounded-sm shadow-sm"
             style={{ padding }}
           >
             <CardHeader

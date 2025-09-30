@@ -244,20 +244,26 @@ export const procRouter = createTRPCRouter({
       };
     }),
 
-  // Update (only owner)
+  // Update (owner or shared users with edit permission)
   update: protectedProcedure
     .input(procUpdateInput)
     .mutation(async ({ ctx, input }) => {
-      const owner = ctx.session?.user?.username;
-      if (!owner) throw new TRPCError({ code: 'UNAUTHORIZED' });
+      const username = ctx.session?.user?.username;
+      if (!username) throw new TRPCError({ code: 'UNAUTHORIZED' });
 
       const existing = await ProcModel.findById(input.id).lean();
       if (!existing)
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Proc not found' });
-      if (existing.owner !== owner)
+
+      const isOwner = existing.owner === username;
+      const isSharedWithEdit = (existing.sharedWith ?? []).some(
+        (s: any) => s.userId === username && s.permission === 'edit',
+      );
+
+      if (!isOwner && !isSharedWithEdit)
         throw new TRPCError({
           code: 'FORBIDDEN',
-          message: 'Only owner can update',
+          message: 'Only owner or users with edit permission can update',
         });
 
       const patch: any = { ...input.patch };
