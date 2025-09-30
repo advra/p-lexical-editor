@@ -26,6 +26,7 @@ type RedlineRenderProps = {
     originalText: string,
     blockId: string,
   ) => void;
+  onRedlineDeleted?: (redlineId: string) => void;
 };
 
 export const RedlineRender = ({
@@ -34,6 +35,7 @@ export const RedlineRender = ({
   procId,
   room,
   onRedlineSave,
+  onRedlineDeleted,
 }: RedlineRenderProps) => {
   const { session } = useUser();
   const [redlineState, setRedlineState] = useState<RedlineState>({
@@ -106,6 +108,39 @@ export const RedlineRender = ({
 
   const handleSaveRedlineModal = () => {
     redlineState.onSave(redlineState.dcn, redlineState.newText);
+  };
+
+  const handleRedlineDelete = async (redlineId: string) => {
+    try {
+      const response = await fetch('/api/redlines', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          procId,
+          redlineId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete redline');
+      }
+
+      // Update current user's UI immediately
+      setRedlines((prev) => prev.filter((r) => r.redlineId !== redlineId));
+
+      // Call the original callback if provided
+      onRedlineDeleted?.(redlineId);
+
+      // Broadcast via socket to other users - use procId as the room
+      const socket = getSocket();
+      if (socket) {
+        socket.emit('redline:deleted', { room: procId, redlineId });
+      }
+    } catch (error) {
+      console.error('Failed to delete redline:', error);
+    }
   };
 
   const handleRedlineClick = (
@@ -263,6 +298,7 @@ export const RedlineRender = ({
         ...baseProps,
         isRedlined: true,
         redlinesByTarget: latestRedlinesByTarget,
+        onRedlineDelete: handleRedlineDelete,
       },
     };
   };

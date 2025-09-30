@@ -52,7 +52,7 @@ export const HeadingBlock: ComponentConfig<
           {isRedlined && (
             <RedlineInfo
               dcn={redlineDcn}
-              newText={redlineDescription}
+              description={redlineDescription}
               author={author}
               createdAt={createdAt}
             />

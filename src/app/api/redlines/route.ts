@@ -244,3 +244,81 @@ export async function PUT(request: Request) {
     );
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    await dbConnect();
+
+    const session = await getSessionFromCookie();
+    if (!session?.user?.username) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { procId, redlineId } = body;
+
+    // Validate required fields
+    if (!procId || !redlineId) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 },
+      );
+    }
+
+    // Find the proc redlines document
+    const procRedlines = await ProcRedlinesModel.findOne({ procId });
+    if (!procRedlines || !procRedlines.blocks) {
+      return NextResponse.json(
+        { error: 'Proc redlines not found' },
+        { status: 404 },
+      );
+    }
+
+    // Find the specific redline by redlineId
+    let targetRedline: any = null;
+    let targetBlockId: string = '';
+    let targetTarget: string = '';
+
+    // Search through all blocks and targets to find the redline
+    procRedlines.blocks.forEach((block, blockId) => {
+      block.redlines.forEach((redline, target) => {
+        if (redline.redlineId === redlineId) {
+          targetRedline = redline;
+          targetBlockId = blockId;
+          targetTarget = target;
+        }
+      });
+    });
+
+    if (!targetRedline) {
+      return NextResponse.json({ error: 'Redline not found' }, { status: 404 });
+    }
+
+    // Check if user owns the redline
+    if (targetRedline.userId !== session.user.username) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Get the block and delete the redline
+    const block = procRedlines.blocks.get(targetBlockId);
+    if (!block) {
+      return NextResponse.json({ error: 'Block not found' }, { status: 404 });
+    }
+
+    // Delete the redline
+    block.redlines.delete(targetTarget);
+
+    await procRedlines.save();
+
+    return NextResponse.json({
+      success: true,
+      message: 'Redline deleted successfully',
+    });
+  } catch (error) {
+    console.error('Failed to delete redline:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 },
+    );
+  }
+}

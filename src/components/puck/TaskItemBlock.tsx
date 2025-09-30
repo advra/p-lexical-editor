@@ -12,6 +12,7 @@ import {
   RedlineProps,
 } from './ui/redline/RedlineComponent';
 import { RedlineInfo } from './ui/redline/RedlineInfo';
+import { DisplayRedlineText } from './ui/redline/DisplayRedlineText';
 
 export type TaskItemProps = {
   step: string;
@@ -35,7 +36,9 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
     record,
     onRedlineClick,
     redlinesByTarget,
-  }: TaskItemProps & AddRedlineProps) => {
+    onRedlineDelete,
+  }: TaskItemProps &
+    AddRedlineProps & { onRedlineDelete?: (redlineId: string) => void }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const menuOpen = Boolean(anchorEl);
 
@@ -61,8 +64,6 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
     // Use redline content if available
     const displayContent = redlineContent?.newText || content;
     const displayStep = redlineStep?.newText || step;
-    const originalContent = redlineContent?.originalText || content;
-    const originalStep = redlineStep?.originalText || step;
 
     return (
       <div className="p-2 h-auto my-2 border border-gray-300 rounded-md shadow-sm">
@@ -72,15 +73,11 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
               <RedlineWrapper
                 onClick={() => handleRedline(displayStep, 'step')}
               >
-                <div
-                  className={cn(
-                    'whitespace-pre-wrap break-words',
-                    isRedlined &&
-                      'line-through decoration-red-500 decoration-1',
-                  )}
-                >
-                  {isRedlined ? originalStep : displayStep}
-                </div>
+                <DisplayRedlineText
+                  isRedlined={isRedlined}
+                  redline={redlineStep}
+                  fallbackText={step}
+                />
               </RedlineWrapper>
             </span>
           </div>
@@ -90,15 +87,11 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
               <RedlineWrapper
                 onClick={() => handleRedline(displayContent, 'content')}
               >
-                <div
-                  className={cn(
-                    'whitespace-pre-wrap break-words',
-                    isRedlined &&
-                      'line-through decoration-red-500 decoration-1',
-                  )}
-                >
-                  {isRedlined ? originalContent : displayContent}
-                </div>
+                <DisplayRedlineText
+                  isRedlined={isRedlined}
+                  redline={redlineContent}
+                  fallbackText={content}
+                />
               </RedlineWrapper>
               {isRedlined && redlinesByTarget && (
                 <div className="flex flex-col gap-2">
@@ -112,6 +105,8 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
                         author={redlineObj.userId}
                         createdAt={redlineObj.createdAt}
                         target={target}
+                        redlineId={redlineObj.redlineId}
+                        onRedlineDelete={onRedlineDelete}
                       />
                     );
                   })}
