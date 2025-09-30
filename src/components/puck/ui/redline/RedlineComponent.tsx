@@ -5,15 +5,17 @@
 import { RedlineWrapper } from './RedlineWrapper';
 
 export type RedlineProps = {
-  onRedlineClick?: (originalText: string, blockId?: string) => void;
   isRedlined?: boolean;
-  redlineContent?: string;
-  redlineDcn?: string;
-  redlineDescription?: string;
-  originalContent?: string;
-  author?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  dcn: string;
+  userId: string;
+  originalText: string;
+  newText: string;
+  createdAt: string;
+};
+
+export type AddRedlineProps = {
+  onRedlineClick?: (originalText: string, blockId?: string) => void;
+  redlinesByTarget?: { [target: string]: RedlineProps };
 };
 
 type Props = {

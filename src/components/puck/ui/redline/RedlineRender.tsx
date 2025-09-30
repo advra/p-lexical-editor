@@ -263,12 +263,6 @@ export const RedlineRender = ({
         ...baseProps,
         isRedlined: true,
         redlinesByTarget: latestRedlinesByTarget,
-        // For backward compatibility, keep the latest redline as the main one
-        redlineContent: blockRedlines[0]?.newText,
-        redlineDcn: blockRedlines[0]?.dcn,
-        originalContent: blockRedlines[0]?.originalText,
-        author: blockRedlines[0]?.userId,
-        createdAt: blockRedlines[0]?.createdAt,
       },
     };
   };

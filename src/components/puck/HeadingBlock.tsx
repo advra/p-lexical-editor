@@ -4,13 +4,15 @@
 
 import type { ComponentConfig } from '@measured/puck';
 import { RedlineWrapper } from './ui/redline/RedlineWrapper';
-import { redlineOptions, RedlineProps } from './ui/redline/RedlineComponent';
+import { redlineOptions, AddRedlineProps } from './ui/redline/RedlineComponent';
 import { cn } from '@/lib/utils/cn';
 import { RedlineInfo } from './ui/redline/RedlineInfo';
 
 export type HeadingBlockProps = { title: string };
 
-export const HeadingBlock: ComponentConfig<HeadingBlockProps & RedlineProps> = {
+export const HeadingBlock: ComponentConfig<
+  HeadingBlockProps & AddRedlineProps
+> = {
   label: 'Heading',
   fields: {
     title: { type: 'text', contentEditable: true },
@@ -28,7 +30,7 @@ export const HeadingBlock: ComponentConfig<HeadingBlockProps & RedlineProps> = {
     originalContent,
     author,
     createdAt,
-  }: HeadingBlockProps & RedlineProps) => {
+  }: HeadingBlockProps & AddRedlineProps) => {
     const handleMenuClose = () => {};
     const handleRedline = redlineOptions(onRedlineClick, handleMenuClose);
 
@@ -50,7 +52,7 @@ export const HeadingBlock: ComponentConfig<HeadingBlockProps & RedlineProps> = {
           {isRedlined && (
             <RedlineInfo
               dcn={redlineDcn}
-              description={redlineDescription}
+              newText={redlineDescription}
               author={author}
               createdAt={createdAt}
             />

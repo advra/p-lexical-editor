@@ -5,12 +5,14 @@
 import React from 'react';
 import type { ComponentConfig } from '@measured/puck';
 import { RedlineWrapper } from './ui/redline/RedlineWrapper';
-import { redlineOptions, RedlineProps } from './ui/redline/RedlineComponent';
+import { redlineOptions, AddRedlineProps } from './ui/redline/RedlineComponent';
 import { RedlineInfo } from './ui/redline/RedlineInfo';
 
 export type SectionBlockProps = { title: string };
 
-export const SectionBlock: ComponentConfig<SectionBlockProps & RedlineProps> = {
+export const SectionBlock: ComponentConfig<
+  SectionBlockProps & AddRedlineProps
+> = {
   label: 'Section',
   fields: {
     title: { type: 'text', contentEditable: true },
@@ -28,7 +30,7 @@ export const SectionBlock: ComponentConfig<SectionBlockProps & RedlineProps> = {
     originalContent,
     author,
     createdAt,
-  }: SectionBlockProps & RedlineProps) => {
+  }: SectionBlockProps & AddRedlineProps) => {
     const handleMenuClose = () => {};
     const handleRedline = redlineOptions(onRedlineClick, handleMenuClose);
     return (
@@ -39,7 +41,7 @@ export const SectionBlock: ComponentConfig<SectionBlockProps & RedlineProps> = {
         {isRedlined && (
           <RedlineInfo
             dcn={redlineDcn}
-            description={redlineDescription}
+            newText={redlineDescription}
             author={author}
             createdAt={createdAt}
           />

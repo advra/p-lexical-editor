@@ -4,11 +4,11 @@
 
 import type { ComponentConfig } from '@measured/puck';
 import { RedlineWrapper } from './ui/redline/RedlineWrapper';
-import { redlineOptions, RedlineProps } from './ui/redline/RedlineComponent';
+import { redlineOptions, AddRedlineProps } from './ui/redline/RedlineComponent';
 
 export type TextBlockProps = { text: string };
 
-export const TextBlock: ComponentConfig<TextBlockProps & RedlineProps> = {
+export const TextBlock: ComponentConfig<TextBlockProps & AddRedlineProps> = {
   label: 'Paragraph',
   fields: {
     text: { type: 'textarea', contentEditable: true },
@@ -25,7 +25,7 @@ export const TextBlock: ComponentConfig<TextBlockProps & RedlineProps> = {
     redlineDescription,
     originalContent,
   }: TextBlockProps &
-    RedlineProps & {
+    AddRedlineProps & {
       isRedlined?: boolean;
       redlineContent?: string;
       redlineDcn?: string;

@@ -6,7 +6,11 @@ import CompletionStatus from './constants/taskitem/CompletionStatus';
 import { ComponentConfig } from '@measured/puck';
 import { RedlineWrapper } from './ui/redline/RedlineWrapper';
 import { cn } from '@/lib/utils/cn';
-import { redlineOptions, RedlineProps } from './ui/redline/RedlineComponent';
+import {
+  redlineOptions,
+  AddRedlineProps,
+  RedlineProps,
+} from './ui/redline/RedlineComponent';
 import { RedlineInfo } from './ui/redline/RedlineInfo';
 
 export type TaskItemProps = {
@@ -15,7 +19,7 @@ export type TaskItemProps = {
   record?: any;
 };
 
-export const TaskItemBlock: ComponentConfig<TaskItemProps & RedlineProps> = {
+export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
   label: 'Task Item',
   fields: {
     step: { type: 'text', contentEditable: true },
@@ -30,21 +34,8 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & RedlineProps> = {
     content,
     record,
     onRedlineClick,
-    isRedlined,
-    redlineContent,
-    originalContent,
     redlinesByTarget,
-  }: TaskItemProps &
-    RedlineProps & {
-      isRedlined?: boolean;
-      redlineContent?: string;
-      redlineDcn?: string;
-      redlineDescription?: string;
-      originalContent?: string;
-      author?: string;
-      createdAt?: string;
-      redlinesByTarget?: { [target: string]: any };
-    }) => {
+  }: TaskItemProps & AddRedlineProps) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const menuOpen = Boolean(anchorEl);
 
@@ -62,23 +53,16 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & RedlineProps> = {
     // redline options
     const handleRedline = redlineOptions(onRedlineClick, handleMenuClose);
 
+    // Extract redlines by target
+    const redlineContent = redlinesByTarget?.['content'] as RedlineProps;
+    const redlineStep = redlinesByTarget?.['step'] as RedlineProps;
+    const isRedlined = !!redlineContent || !!redlineStep;
+
     // Use redline content if available
-    const displayContent =
-      isRedlined && redlineContent ? redlineContent : content;
-    const displayStep = isRedlined && redlineContent ? step : step;
-
-    const findRecordById = (record: any[], recordId: string) => {
-      if (!Array.isArray(record)) {
-        console.warn('Expected record to be an array');
-        return null;
-      }
-      const entry = record.find((entry) => entry.recordId === recordId);
-      if (entry === null) {
-        return null;
-      }
-
-      return entry?.record?.data?.record || null;
-    };
+    const displayContent = redlineContent?.newText || content;
+    const displayStep = redlineStep?.newText || step;
+    const originalContent = redlineContent?.originalText || content;
+    const originalStep = redlineStep?.originalText || step;
 
     return (
       <div className="p-2 h-auto my-2 border border-gray-300 rounded-md shadow-sm">
@@ -88,7 +72,15 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & RedlineProps> = {
               <RedlineWrapper
                 onClick={() => handleRedline(displayStep, 'step')}
               >
-                {displayStep}
+                <div
+                  className={cn(
+                    'whitespace-pre-wrap break-words',
+                    isRedlined &&
+                      'line-through decoration-red-500 decoration-1',
+                  )}
+                >
+                  {isRedlined ? originalStep : displayStep}
+                </div>
               </RedlineWrapper>
             </span>
           </div>
@@ -110,16 +102,19 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & RedlineProps> = {
               </RedlineWrapper>
               {isRedlined && redlinesByTarget && (
                 <div className="flex flex-col gap-2">
-                  {Object.entries(redlinesByTarget).map(([target, redline]) => (
-                    <RedlineInfo
-                      key={`${target}-${redline.redlineId}`}
-                      dcn={redline.dcn}
-                      description={redline.newText}
-                      author={redline.userId}
-                      createdAt={redline.createdAt}
-                      target={target}
-                    />
-                  ))}
+                  {Object.entries(redlinesByTarget).map(([target, redline]) => {
+                    const redlineObj = redline as any;
+                    return (
+                      <RedlineInfo
+                        key={`${target}-${redlineObj.redlineId}`}
+                        dcn={redlineObj.dcn}
+                        description={redlineObj.newText}
+                        author={redlineObj.userId}
+                        createdAt={redlineObj.createdAt}
+                        target={target}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </div>
