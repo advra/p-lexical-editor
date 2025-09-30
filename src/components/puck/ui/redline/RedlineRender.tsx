@@ -81,13 +81,20 @@ export const RedlineRender = ({
       }) => {
         setRedlines((prev) =>
           prev.map((r) =>
-            r._id === payload.redlineId ? { ...r, ...payload.patch } : r,
+            r.redlineId === payload.redlineId ? { ...r, ...payload.patch } : r,
           ),
         );
       };
 
       const handleRedlineDeleted = (payload: { redlineId: string }) => {
-        setRedlines((prev) => prev.filter((r) => r._id !== payload.redlineId));
+        console.log('Client: Received redline:deleted event', payload);
+        setRedlines((prev) => {
+          const newRedlines = prev.filter(
+            (r) => r.redlineId !== payload.redlineId,
+          );
+          console.log('Client: Redlines after socket deletion:', newRedlines);
+          return newRedlines;
+        });
       };
 
       socket.on('redline:created', handleRedlineCreated);
@@ -111,6 +118,9 @@ export const RedlineRender = ({
   };
 
   const handleRedlineDelete = async (redlineId: string) => {
+    console.log('handleRedlineDelete called with redlineId:', redlineId);
+    console.log('Current redlines before deletion:', redlines);
+
     try {
       const response = await fetch('/api/redlines', {
         method: 'DELETE',
@@ -128,7 +138,11 @@ export const RedlineRender = ({
       }
 
       // Update current user's UI immediately
-      setRedlines((prev) => prev.filter((r) => r.redlineId !== redlineId));
+      setRedlines((prev) => {
+        const newRedlines = prev.filter((r) => r.redlineId !== redlineId);
+        console.log('Redlines after deletion:', newRedlines);
+        return newRedlines;
+      });
 
       // Call the original callback if provided
       onRedlineDeleted?.(redlineId);
@@ -136,7 +150,7 @@ export const RedlineRender = ({
       // Broadcast via socket to other users - use procId as the room
       const socket = getSocket();
       if (socket) {
-        socket.emit('redline:deleted', { room: procId, redlineId });
+        socket.emit('redline:delete', { room, redlineId });
       }
     } catch (error) {
       console.error('Failed to delete redline:', error);
