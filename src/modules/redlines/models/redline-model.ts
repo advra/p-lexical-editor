@@ -112,7 +112,6 @@ const ProcRedlinesSchema = new Schema<ProcRedlinesDoc>(
 );
 
 // Index for efficient queries
-ProcRedlinesSchema.index({ procId: 1 });
 ProcRedlinesSchema.index({ 'redlines.blockId': 1 });
 ProcRedlinesSchema.index({ 'redlines.userId': 1 });
 ProcRedlinesSchema.index({ 'redlines.status': 1 });

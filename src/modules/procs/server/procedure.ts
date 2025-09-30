@@ -295,9 +295,9 @@ export const procRouter = createTRPCRouter({
       return procPublicSchema.parse({
         ...updated,
         _id: String(updated._id),
-        createdAt: updated.createdAt,
-        updatedAt: updated.updatedAt,
-        publishedAt: updated.publishedAt,
+        createdAt: updated.createdAt?.toISOString(),
+        updatedAt: updated.updatedAt?.toISOString(),
+        publishedAt: updated.publishedAt?.toISOString(),
       });
     }),
 
