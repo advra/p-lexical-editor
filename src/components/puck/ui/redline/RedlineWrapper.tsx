@@ -13,12 +13,14 @@ type Props = React.ComponentProps<'div'> & {
 export const RedlineWrapper = forwardRef<HTMLDivElement, Props>(
   ({ className, children, onClick, ...rest }, ref) => {
     // Check if we're in edit mode by looking at the URL pathname
-    const isEditMode =
+    const isProcEditOrExecute = (p: string) =>
+      /^\/procs?\/[^/]+\/(edit|execute)\/?$/.test(p);
+    const isEditOrExecuteMode =
       typeof window !== 'undefined' &&
-      window.location.pathname.includes('/edit');
+      isProcEditOrExecute(window.location.pathname);
 
     // Only apply hover styles when NOT in edit mode
-    const hoverStyles = isEditMode
+    const hoverStyles = isEditOrExecuteMode
       ? ''
       : 'hover:outline-red-500 hover:[outline-style:dashed]';
 

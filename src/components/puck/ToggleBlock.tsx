@@ -29,7 +29,9 @@ export const HeadingBlock: ComponentConfig<ToggleBlockProps> = {
       <>
         <details style={{ padding: 8 }}>
           {/* Exclude summary from the overlay so it can be clicked */}
-          <summary ref={ref}>{summary}</summary>
+          <summary ref={ref} className="hover:cursor-pointer">
+            {summary}
+          </summary>
           {details()}
         </details>
       </>

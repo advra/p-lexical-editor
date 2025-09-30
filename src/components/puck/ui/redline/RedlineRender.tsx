@@ -46,7 +46,7 @@ export const RedlineRender = ({
   const [currentBlockId, setCurrentBlockId] = useState<string>('');
   const [redlines, setRedlines] = useState<any[]>([]);
 
-  // Fetch redlines when component mounts and handle socket events
+  // Fetch redlines when component mounts, when data changes, and handle socket events
   useEffect(() => {
     const fetchRedlines = async () => {
       try {
@@ -98,7 +98,7 @@ export const RedlineRender = ({
         socket.off('redline:deleted', handleRedlineDeleted);
       };
     }
-  }, [procId]);
+  }, [procId, data]); // Add data as dependency to re-fetch when Puck data changes
 
   const handleCloseRedlineModal = () => {
     setRedlineState((prev) => ({ ...prev, isOpen: false }));
@@ -108,52 +108,108 @@ export const RedlineRender = ({
     redlineState.onSave(redlineState.dcn, redlineState.description);
   };
 
-  const handleRedlineClick = (originalText: string, blockId: string) => {
+  const handleRedlineClick = (
+    originalText: string,
+    blockId: string,
+    target: string = 'content',
+  ) => {
     setCurrentBlockId(blockId);
+
+    // Check if there's an existing redline for this block and target
+    const existingRedline = redlines.find(
+      (r) =>
+        r.blockId === blockId &&
+        r.target === target &&
+        r.userId === session?.user?.username,
+    );
+
     setRedlineState({
       isOpen: true,
       originalText,
-      dcn: '',
-      description: '',
+      dcn: existingRedline?.dcn || '',
+      description: existingRedline?.newText || '',
       onSave: async (dcn: string, description: string) => {
         try {
-          // Create redline in database via API call
-          const response = await fetch('/api/redlines', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              procId,
-              blockId,
-              dcn,
-              originalText,
-              newText: description, // Using description as the new text
-              description,
-            }),
-          });
+          let redline: any;
 
-          if (!response.ok) {
-            throw new Error('Failed to create redline');
-          }
+          if (existingRedline) {
+            // Update existing redline
+            const response = await fetch('/api/redlines', {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                procId,
+                redlineId: existingRedline.redlineId,
+                dcn,
+                newText: description,
+                description,
+              }),
+            });
 
-          const result = await response.json();
-          const redline = result.redline;
+            if (!response.ok) {
+              throw new Error('Failed to update redline');
+            }
 
-          // Update current user's UI immediately
-          setRedlines((prev) => [...prev, redline]);
+            const result = await response.json();
+            redline = result.redline;
 
-          // Broadcast via socket to other users
-          const socket = getSocket();
-          if (socket) {
-            // notify other users
-            socket.emit('redline:create', { room, redline });
+            // Update current user's UI immediately
+            setRedlines((prev) =>
+              prev.map((r) =>
+                r.redlineId === existingRedline.redlineId ? redline : r,
+              ),
+            );
+
+            // Broadcast via socket to other users
+            const socket = getSocket();
+            if (socket) {
+              socket.emit('redline:update', {
+                room,
+                redlineId: existingRedline.redlineId,
+                patch: { dcn, newText: description, description },
+              });
+            }
+          } else {
+            // Create new redline
+            const response = await fetch('/api/redlines', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                procId,
+                blockId,
+                target,
+                dcn,
+                originalText,
+                newText: description,
+                description,
+              }),
+            });
+
+            if (!response.ok) {
+              throw new Error('Failed to create redline');
+            }
+
+            const result = await response.json();
+            redline = result.redline;
+
+            // Update current user's UI immediately
+            setRedlines((prev) => [...prev, redline]);
+
+            // Broadcast via socket to other users
+            const socket = getSocket();
+            if (socket) {
+              socket.emit('redline:create', { room, redline });
+            }
           }
 
           // Call the original callback if provided
           onRedlineSave?.(dcn, description, originalText, blockId);
         } catch (error) {
-          console.error('Failed to create redline:', error);
+          console.error('Failed to save redline:', error);
         } finally {
           setRedlineState((prev) => ({ ...prev, isOpen: false }));
         }
@@ -168,34 +224,53 @@ export const RedlineRender = ({
     // Always provide the click handler so the modal can be opened
     const baseProps = {
       ...block.props,
-      onRedlineClick: (originalText: string) =>
-        handleRedlineClick(originalText, blockId),
+      onRedlineClick: (originalText: string, target: string = 'content') =>
+        handleRedlineClick(originalText, blockId, target),
     };
 
-    // If no redlines, just return with the handler attached
+    // Get all redlines for this block
     const blockRedlines = redlines.filter((r) => r.blockId === blockId);
+
+    // If no redlines, just return with the handler attached
     if (blockRedlines.length === 0) {
       return { ...block, props: baseProps };
     }
 
-    // Apply the latest redline metadata
-    const latestRedline = blockRedlines.reduce((latest, current) =>
-      new Date(current.createdAt) > new Date(latest.createdAt)
-        ? current
-        : latest,
-    );
+    // Group redlines by target
+    const redlinesByTarget: { [target: string]: any[] } = {};
+    blockRedlines.forEach((redline) => {
+      if (!redlinesByTarget[redline.target]) {
+        redlinesByTarget[redline.target] = [];
+      }
+      redlinesByTarget[redline.target].push(redline);
+    });
+
+    // Get the latest redline for each target
+    const latestRedlinesByTarget: { [target: string]: any } = {};
+    Object.entries(redlinesByTarget).forEach(([target, targetRedlines]) => {
+      const latestRedline = targetRedlines.reduce((latest, current) =>
+        new Date(current.createdAt) > new Date(latest.createdAt)
+          ? current
+          : latest,
+      );
+      latestRedlinesByTarget[target] = latestRedline;
+    });
+
+    console.log('latestRedlinesByTarget', latestRedlinesByTarget);
 
     return {
       ...block,
       props: {
         ...baseProps,
         isRedlined: true,
-        redlineContent: latestRedline.newText,
-        redlineDcn: latestRedline.dcn,
-        redlineDescription: latestRedline.description,
-        originalContent: latestRedline.originalText,
-        author: latestRedline.userId,
-        createdAt: latestRedline.createdAt,
+        redlinesByTarget: latestRedlinesByTarget,
+        // For backward compatibility, keep the latest redline as the main one
+        redlineContent: blockRedlines[0]?.newText,
+        redlineDcn: blockRedlines[0]?.dcn,
+        redlineDescription: blockRedlines[0]?.description,
+        originalContent: blockRedlines[0]?.originalText,
+        author: blockRedlines[0]?.userId,
+        createdAt: blockRedlines[0]?.createdAt,
       },
     };
   };

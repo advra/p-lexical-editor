@@ -104,7 +104,7 @@ export const RedLineModal = ({
         maxWidth="xl"
       >
         <div className="p-4">
-          <h3>Create New Redline</h3>
+          <h3>{dcn ? 'Edit Redline' : 'Create New Redline'}</h3>
         </div>
 
         <div className="px-4 mb-8">

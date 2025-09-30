@@ -35,11 +35,8 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & RedlineProps> = {
     onRedlineClick,
     isRedlined,
     redlineContent,
-    redlineDcn,
-    redlineDescription,
     originalContent,
-    author,
-    createdAt,
+    redlinesByTarget,
   }: TaskItemProps &
     RedlineProps & {
       isRedlined?: boolean;
@@ -49,6 +46,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & RedlineProps> = {
       originalContent?: string;
       author?: string;
       createdAt?: string;
+      redlinesByTarget?: { [target: string]: any };
     }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const menuOpen = Boolean(anchorEl);
@@ -86,13 +84,16 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & RedlineProps> = {
     };
     // todo reference record id from data.content
     // const myRecord = findRecordById(record, recordId);
+    // console.log('redlinesByTarget step:', redlinesByTarget?.step);
 
     return (
       <div className="p-2 h-auto my-2 border border-gray-300 rounded-md shadow-sm">
         <div className="flex gap-2 items-stretch">
           <div className="flex min-w-[3%] justify-center">
             <span className="text-xl font-semibold text-left mr-auto">
-              <RedlineWrapper onClick={() => handleRedline(displayStep)}>
+              <RedlineWrapper
+                onClick={() => handleRedline(displayStep, 'step')}
+              >
                 {displayStep}
               </RedlineWrapper>
             </span>
@@ -100,7 +101,9 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & RedlineProps> = {
           <div className="w-px self-stretch bg-gray-300" />
           <div className="flex-1">
             <div className="flex flex-col gap-2">
-              <RedlineWrapper onClick={() => handleRedline(displayContent)}>
+              <RedlineWrapper
+                onClick={() => handleRedline(displayContent, 'content')}
+              >
                 <div
                   className={cn(
                     'whitespace-pre-wrap break-words',
@@ -111,13 +114,19 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & RedlineProps> = {
                   {isRedlined ? originalContent : displayContent}
                 </div>
               </RedlineWrapper>
-              {isRedlined && (
-                <RedlineInfo
-                  dcn={redlineDcn}
-                  description={redlineDescription}
-                  author={author}
-                  createdAt={createdAt}
-                />
+              {isRedlined && redlinesByTarget && (
+                <div className="flex flex-col gap-2">
+                  {Object.entries(redlinesByTarget).map(([target, redline]) => (
+                    <RedlineInfo
+                      key={`${target}-${redline.redlineId}`}
+                      dcn={redline.dcn}
+                      description={redline.description}
+                      author={redline.userId}
+                      createdAt={redline.createdAt}
+                      target={target}
+                    />
+                  ))}
+                </div>
               )}
             </div>
           </div>
