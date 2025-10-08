@@ -40,25 +40,12 @@ cp .env.local.example .env.local
 
 ./scripts/docker-up.bash
 
-# install packages if you havent already yet
-npm install
-
-# start the app against our mongodb container
-npm run dev
-
 # For the first time running the docker instance there will be no data. To seed the database with users and data
 # run the script below
 cd seeder
 npm install
 node seed-users.js
 ```
-
-<!-- B. SocketIO
-Spin up a container instance to listen for client socketio
-
-```bash
-node src/server/socketio/socket.js
-``` -->
 
 ### III. Seeded Data
 

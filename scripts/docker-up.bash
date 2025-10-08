@@ -51,8 +51,8 @@ services:
     volumes:
       - ./seeder:/app:ro
     environment:
-      DATABASE_URL: mongodb://r00t:r00t@mongo:27017/eproc?authSource=admin
-    command: sh -lc "if [ -f package-lock.json ]; then npm ci; else npm install; fi && npm run seed"
+      DATABASE_URL: mongodb://r00t:r00t@localhost:27017/eproc?authSource=admin
+    command: sh -lc "if [ -f package-lock.json ]; then npm ci; else npm install; fi && node seed-users.js"
     restart: "no"
 
   socketio:
