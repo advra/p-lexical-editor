@@ -7,9 +7,9 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 
-const PORT = Number(process.env.NEXT_PUBLIC_SOCKET_PORT || 58854);
+const PORT = Number(process.env.NEXT_PUBLIC_SOCKET_PORT || 5772);
 const FRONTEND_ORIGIN =
-  process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:5770';
 
 /*
   Convenience api to check socket.io online status
