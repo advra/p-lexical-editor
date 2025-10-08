@@ -21,15 +21,11 @@ app.get('/status', (_req, res) => res.send('ONLINE'));
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    // allow list
-    origin: [
-      FRONTEND_ORIGIN,
-      'https://eproc.com', // production origin, lowercase domain
-    ],
-    methods: ['GET', 'POST'],
-    credentials: true, // if you need cookies
-  },
-});
+    origin: "*",
+    credentials: false,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'POST', 'DELETE'],
+  }
+})
 
 // roomsPresence: Map<room, Map<socketId, { id, name }>>
 const roomsPresence = new Map();

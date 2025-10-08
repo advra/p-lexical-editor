@@ -25,26 +25,53 @@ After cloning this application install the packages:
 npm install
 ```
 
-### a. Running locally
+### a. Running Stack Locally
 
 You can run a local application using a mocked json database located in the data directory. To run this configuration run the following:
 
-### Running Against Mongo Instance Locally
-
-A. EProc App
-Spin up your own docker container instance. By default it will create a docker container named `mongo-puck-{USER}`
-First Copy the test configs and run you app then run the docker
-
+First Copy the test configs and install the packages
 ```bash
 cp .env.local.example .env.local
 
+npm install
+```
+Now spin up the EProc stack. By default it will create the Eproc App, Mongo and Socketio containers tagged with your user such as `mongo-puck-{USER}`
+```bash
+# make scripts executable 
+chmod 755 ./scripts/*
+
+# run the stack
 ./scripts/docker-up.bash
 
-# For the first time running the docker instance there will be no data. To seed the database with users and data
-# run the script below
-cd seeder
-npm install
-node seed-users.js
+# For the first time running the docker instance will ingest user data. To seed the database manually or reset default users with default passwords, you can run the script below:
+# cd seeder
+# npm install
+# node seed-users.js
+```
+
+### b. Deploying Stack on SB1 machine/Prod
+
+For services to run correctly on a remote machine you need define the ip address. 
+
+1. ssh into the machine you want to deploy. This example I will use `sbvws02`
+```bash
+ssh 10.69.82.122
+
+# if you are already connected to a machine and dont now the ipaddress check it with the following command:
+ip -br -a
+lo               UNKNOWN        127.0.0.1/8 
+ens192           UP             10.69.82.122/23 
+docker0          DOWN           172.17.0.1/16 
+virbr0           DOWN           192.168.122.1/24 
+```
+In this case I am currently logged into `sbvws02` which is on `10.69.82.122`. 
+
+update envrionment variables and deploy the stack pointing to that ip address:
+```bash
+export NEXT_PUBLIC_BASE_URL=http://10.69.82.122:5770
+export NEXT_PUBLIC_SOCKET_BASE_URL=http://10.69.82.122
+export NEXT_PUBLIC_SOCKET_PORT=5772
+./scripts/docker-up.bash 
 ```
 
 ### III. Seeded Data

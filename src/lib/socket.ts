@@ -16,7 +16,7 @@ export function getSocket() {
     socket = io(url, {
       // Let socket.io fall back to polling if WS fails locally/proxied
       transports: ['websocket', 'polling'],
-      withCredentials: true,
+      withCredentials: false,
       // path: '/socket.io', // uncomment if you changed server path
     });
 
