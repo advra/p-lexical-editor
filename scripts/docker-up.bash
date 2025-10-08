@@ -61,6 +61,24 @@ services:
     ports:
       - "5772:5772"
 
+  eproc-app:
+    container_name: ${NEXTJS_EPROC_NAME:-nextjs-eproc-${user}}
+    build: .
+    ports:
+      - "5770:3000"
+    environment:
+      NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-http://localhost:5770}
+      NEXT_PUBLIC_SOCKET_BASE_URL: ${NEXT_PUBLIC_SOCKET_BASE_URL:-http://localhost}
+      NEXT_PUBLIC_SOCKET_PORT: 5772
+      MONGODB_URL: mongodb://r00t:r00t@mongo:27017/eproc?authSource=admin
+      DATA_SOURCE: mongodb
+      NODE_ENV: development
+    depends_on:
+      mongo:
+        condition: service_healthy
+      socketio:
+        condition: service_started
+
 volumes:
   ${VOLUME_NAME}: {}
 EOF
