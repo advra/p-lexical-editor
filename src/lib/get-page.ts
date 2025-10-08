@@ -1,15 +1,16 @@
-import { Data } from "@measured/puck";
-import fs from "fs";
+import { appRouter } from '@/trpc/routers/_app';
+import { createTRPCContext } from '@/trpc/init';
+import {
+  ProcPublic,
+  ProcPublicWithAcl,
+} from '@/modules/procs/models/proc-model';
 
 // Replace with call to your database
-export const getPage = (path: string) => {
-  if (!process.env.DB_JSON_PATH) {
-    throw new Error('Missing DB_JSON_PATH environment variable');
-  }
-
-  const allData: Record<string, Data> | null = fs.existsSync(process.env.DB_JSON_PATH)
-    ? JSON.parse(fs.readFileSync(process.env.DB_JSON_PATH, "utf-8"))
-    : null;
-
-  return allData ? allData[path] : null;
+export const getPage = async (slug: string) => {
+  const caller = appRouter.createCaller(await createTRPCContext());
+  const proc: ProcPublic | ProcPublicWithAcl = await caller.procs.getOne({
+    by: 'slug',
+    slug,
+  });
+  return proc ?? null;
 };

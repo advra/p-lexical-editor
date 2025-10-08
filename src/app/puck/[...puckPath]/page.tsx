@@ -11,23 +11,10 @@
  * NB this route is public, and you will need to add authentication
  */
 
-import "@measured/puck/puck.css";
-import { Client } from "./client";
-import { Metadata } from "next";
-import { getPage } from "../../../lib/get-page";
-
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ puckPath: string[] }>;
-}): Promise<Metadata> {
-  const { puckPath = [] } = await params;
-  const path = `/${puckPath.join("/")}`;
-
-  return {
-    title: "Puck: " + path,
-  };
-}
+import '@measured/puck/puck.css';
+import { PuckClientEditor } from './puck-client-editor';
+import { getPage } from '../../../lib/get-page';
+import { Data } from '@measured/puck';
 
 export default async function Page({
   params,
@@ -35,10 +22,15 @@ export default async function Page({
   params: Promise<{ puckPath: string[] }>;
 }) {
   const { puckPath = [] } = await params;
-  const path = `/${puckPath.join("/")}`;
-  const data = getPage(path);
-
-  return <Client path={path} data={data || {}} />;
+  const path = `/${puckPath.join('/')}`;
+  const slug = puckPath[puckPath.length - 1];
+  const proc = await getPage(slug);
+  const data = proc.data as Data;
+  return (
+    <>
+      <PuckClientEditor path={path} data={data || {}} />
+    </>
+  );
 }
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';

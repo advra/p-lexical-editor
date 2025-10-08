@@ -39,3 +39,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+# testdata
+/data/users.json
+
+
+# seeder sidecart container
+/seeder/node_modules
+/seeder/package-lock.json 
+
+/src/server/serverio/node_modules
+
+# generated docker yaml file
+docker-compose.generated.yml
