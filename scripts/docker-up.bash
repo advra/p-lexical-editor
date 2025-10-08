@@ -43,16 +43,17 @@ services:
       retries: 30
 
   seeder:
+    container_name: ${SEEDER_EPROC_NAME:-seeder-eproc-${user}}
     image: node:20-alpine
     working_dir: /app
     depends_on:
       mongo:
         condition: service_healthy
     volumes:
-      - ./seeder:/app:ro
+      - ./seeder:/app
     environment:
-      DATABASE_URL: mongodb://r00t:r00t@localhost:27017/eproc?authSource=admin
-    command: sh -lc "if [ -f package-lock.json ]; then npm ci; else npm install; fi && node seed-users.js"
+      MONGODB_URL: mongodb://r00t:r00t@mongo:27017/eproc?authSource=admin
+    command: sh -lc "npm install && npm run seed"
     restart: "no"
 
   socketio:
