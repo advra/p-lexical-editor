@@ -3,21 +3,13 @@
 import ProfileAvatarMenu from '@/components/common/profile/profile-avatar';
 import ProcsTabbedTable, { Proc } from './ProcsTabbedTable';
 import useUser from '@/hooks/use-user';
-import { Suspense, useEffect, useState } from 'react';
-import { getSessionFromCookie } from '@/lib/utils/auth';
-import { useTRPC } from '@/trpc/client';
-import { useQuery } from '@tanstack/react-query';
+import { Suspense, useState } from 'react';
 import { ProcsTabbedTableSkeleton } from './ClientDashboardSkeleton';
 
-export const ClientDashboard = ({ procs }) => {
-  const { user, loading: userLoading, error: userError } = useUser();
-  // const trpc = useTRPC();
-  // const { data, isLoading, error } = useQuery(
-  //   trpc.procs.listAll.queryOptions({ limit: 50 }),
-  // );
-
+export const ClientDashboard = ({ procs }: { procs: Proc[] }) => {
+  const { session, loading: userLoading, error: userError } = useUser();
+  const user = session?.user;
   const [procsLoading, setProcsLoading] = useState(false);
-  // const [procsError, setProcsError] = useState<string | null>(null);
 
   const username = user?.username ?? 'Guest';
 

@@ -50,8 +50,15 @@ export function PuckClientEditor({
           data,
         }),
       });
+
+      if (!res.ok) {
+        throw new Error('Failed to save changes');
+      }
+
       toast.success('Changes saved!');
-      router.push(path);
+      // Redirect to view mode instead of staying in edit mode
+      const viewPath = path.replace('/edit', '');
+      router.push(viewPath);
     } catch {
       toast.error('Error saving, please try again...');
     }

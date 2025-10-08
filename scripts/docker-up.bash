@@ -18,6 +18,10 @@ STACK_NAME="${STACK_NAME:-my_stack}"   # used only for stack deploy
 user=$(whoami | tr '[:upper:]' '[:lower:]')
 VOLUME_NAME="mongo-eproc-${user}-data"
 
+
+PROJECT_ROOT="$(pwd)"
+SOCKET_DIR="${PROJECT_ROOT}/src/server/socketio"
+
 cat > "$OUT" <<EOF
 services:
   mongo:
@@ -25,7 +29,7 @@ services:
     container_name: ${MONGO_EPROC_NAME:-mongo-eproc-${user}}
     restart: unless-stopped
     ports:
-      - "27017:27017"
+      - "5771:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-r00t}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-r00t}
@@ -39,17 +43,42 @@ services:
       retries: 30
 
   seeder:
+    container_name: ${SEEDER_EPROC_NAME:-seeder-eproc-${user}}
     image: node:20-alpine
     working_dir: /app
     depends_on:
       mongo:
         condition: service_healthy
     volumes:
-      - ./seeder:/app:ro
+      - ./seeder:/app
     environment:
-      DATABASE_URL: mongodb://r00t:r00t@mongo:27017/eproc?authSource=admin
-    command: sh -lc "if [ -f package-lock.json ]; then npm ci; else npm install; fi && npm run seed"
+      MONGODB_URL: mongodb://r00t:r00t@mongo:27017/eproc?authSource=admin
+    command: sh -lc "npm install && npm run seed"
     restart: "no"
+
+  socketio:
+    container_name: ${SOCKET_EPROC_NAME:-socket-eproc-${user}}
+    build: ./src/server/socketio
+    ports:
+      - "5772:5772"
+
+  eproc-app:
+    container_name: ${NEXTJS_EPROC_NAME:-nextjs-eproc-${user}}
+    build: .
+    ports:
+      - "5770:3000"
+    environment:
+      NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-http://localhost:5770}
+      NEXT_PUBLIC_SOCKET_BASE_URL: ${NEXT_PUBLIC_SOCKET_BASE_URL:-http://localhost}
+      NEXT_PUBLIC_SOCKET_PORT: 5772
+      MONGODB_URL: mongodb://r00t:r00t@mongo:27017/eproc?authSource=admin
+      DATA_SOURCE: mongodb
+      NODE_ENV: development
+    depends_on:
+      mongo:
+        condition: service_healthy
+      socketio:
+        condition: service_started
 
 volumes:
   ${VOLUME_NAME}: {}

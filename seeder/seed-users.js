@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 
 // databae to connect to for import
 const DEFAULT_URI =
-  'mongodb://r00t:r00t@localhost:27017/eproc?authSource=admin';
+  'mongodb://r00t:r00t@localhost:5771/eproc?authSource=admin';
 // salt the passwords in database
 const DEFAULT_SALT = 10;
 

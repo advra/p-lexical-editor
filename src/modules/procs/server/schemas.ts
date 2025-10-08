@@ -1,13 +1,16 @@
 import z from 'zod';
 import { MAX_SLUG_LENGTH } from '../utils/title-generator';
 
-/** Accept Date or string; returns ISO string or undefined */
-const flexISO = z.preprocess((v) => {
-  if (v == null || v === '') return undefined;
-  if (v instanceof Date && !isNaN(v.getTime())) return v.toISOString();
-  const d = new Date(String(v));
-  return isNaN(d.getTime()) ? undefined : d.toISOString();
-}, z.string().optional());
+// /** Accept Date or string; returns ISO string or undefined */
+// const flexISO = z.preprocess((v) => {
+//   if (v == null || v === '') return undefined;
+//   if (v instanceof Date && !isNaN(v.getTime())) return v.toISOString();
+//   const d = new Date(String(v));
+//   return isNaN(d.getTime()) ? undefined : d.toISOString();
+// }, z.string().optional());
+
+// ISO datetime with timezone (Zod v3)
+const isoOpt = z.string().datetime({ offset: true }).nullable().optional();
 
 export const slugSchema = z
   .string()
@@ -46,15 +49,22 @@ export const procDbSchema = z.object({
   slug: slugSchema,
   owner: z.string().min(1),
   status: z.enum(['draft', 'published', 'archived']),
-  publishedAt: flexISO,
+  publishedAt: z.date().nullable().optional(),
   version: z.number().int().min(0),
   title: z.string().min(1).max(200),
   description: z.string().max(1000).optional(),
   tags: z.array(z.string().min(1)).default([]),
-  sharedWith: z.array(z.string().min(1)).default([]),
+  sharedWith: z
+    .array(
+      z.object({
+        userId: z.string().min(1),
+        permission: z.enum(['read', 'edit']),
+      }),
+    )
+    .default([]),
   data: puckPageDataSchema,
-  createdAt: flexISO,
-  updatedAt: flexISO,
+  createdAt: z.date(),
+  updatedAt: z.date(),
 });
 
 export type ProcCreateInput = z.infer<typeof procCreateInput>;
@@ -62,7 +72,13 @@ export type ProcCreateInput = z.infer<typeof procCreateInput>;
 /** ---------- Public return shape ----------
  * Public schem to hide sharedWith from all users
  */
-export const procPublicSchema = procDbSchema.omit({ sharedWith: true });
+// Public schema (ISO strings)
+const iso = z.iso.datetime({ offset: true });
+export const procPublicSchema = procDbSchema.omit({ sharedWith: true }).extend({
+  createdAt: iso,
+  updatedAt: iso,
+  publishedAt: iso.nullable().optional(),
+});
 
 /** ---------- Inputs ---------- */
 // Create: client provides slug? other info like (title/description/tags/sharedWith)? and data
@@ -118,3 +134,13 @@ export const procListAllInput = z.object({
   cursor: z.string().optional(),
   query: z.string().optional(),
 });
+
+// shared with optionally (if user is owner or in sharedWith)
+export const sharedWithZ = z
+  .array(
+    z.object({
+      userId: z.string().min(1),
+      permission: z.enum(['read', 'edit']),
+    }),
+  )
+  .default([]);

@@ -49,5 +49,7 @@ next-env.d.ts
 /seeder/node_modules
 /seeder/package-lock.json 
 
+/src/server/serverio/node_modules
+
 # generated docker yaml file
 docker-compose.generated.yml

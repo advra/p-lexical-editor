@@ -15,6 +15,7 @@ import {
   ChecklistBlock,
   ChecklistBlockProps,
 } from './components/puck/ChecklistBlock';
+import { TaskItemBlock, TaskItemProps } from './components/puck/TaskItemBlock';
 // import rootPage from './components/puck/RootPage';
 
 type Props = {
@@ -24,6 +25,7 @@ type Props = {
   SectionBlock: SectionBlockProps;
   ColumnsBlock: ColumnsBlockProps;
   TextBlock: TextBlockProps;
+  TaskItemBlock: TaskItemProps;
   Grid: GridProps;
   Card: {
     title: string;
@@ -74,6 +76,7 @@ export const config: Config<Props> = {
     SectionBlock,
     ColumnsBlock,
     TextBlock,
+    TaskItemBlock,
     Grid: {
       label: 'Grid',
       fields: {
@@ -116,7 +119,7 @@ export const config: Config<Props> = {
         // Render the card using the values from its fields
         return (
           <div
-            className="m-2 px-2 border border-gray-200 rounded-sm shadow-sm"
+            className="border border-gray-200 rounded-sm shadow-sm"
             style={{ padding }}
           >
             <CardHeader
@@ -153,6 +156,11 @@ export const config: Config<Props> = {
       defaultExpanded: true,
       title: 'Formatting',
       components: ['Grid', 'ColumnsBlock', 'ToggleBlock', 'Card'],
+    },
+    tasking: {
+      title: 'Tasking',
+      components: ['TaskItemBlock'],
+      defaultExpanded: true,
     },
   },
 };

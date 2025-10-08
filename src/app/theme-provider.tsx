@@ -24,11 +24,9 @@ export const NextThemeProvider = ({ children }) => {
   const muiTheme = nextTheme === 'dark' ? darkTheme : lightTheme;
   return (
     <>
-      <NextThemesProvider attribute="class" defaultTheme="system" enableSystem>
-        <MuiThemeProvider theme={muiTheme}>
-          {children}
-        </MuiThemeProvider>
+      <NextThemesProvider attribute="class" defaultTheme="light" enableSystem>
+        <MuiThemeProvider theme={muiTheme}>{children}</MuiThemeProvider>
       </NextThemesProvider>
     </>
-  )
-}
+  );
+};

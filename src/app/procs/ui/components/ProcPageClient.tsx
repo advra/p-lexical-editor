@@ -1,15 +1,13 @@
 // app/procs/[[...puckPath]]/ui/ProcPageClient.tsx
 'use client';
 
-import { useRef, useState } from 'react';
-import { PaperPage } from './PaperPage';
-import { BackToDashboardButton } from './BackToDashboardButton';
-import { ExportPDFButton } from './ExportPDFButton';
-import { EditButton } from './EditButton';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { PuckPreview } from './puck-preview';
 import { Header } from './Header';
-import { PuckPageData } from '@/app/puck/types';
 import { ProcPublic } from '@/modules/procs/models/proc-model';
+import { useStore } from '@/context/StoreContext';
+import useUser from '@/hooks/use-user';
+import { getSocket } from '@/lib/socket';
 
 function waitForImages(root: HTMLElement) {
   const imgs = Array.from(root.querySelectorAll('img'));
@@ -26,17 +24,43 @@ function waitForImages(root: HTMLElement) {
   );
 }
 
+type Props = {
+  proc: ProcPublic;
+  slug: string;
+  path: string;
+  executionMode?: boolean;
+};
+
+const MAX_NAMES = 3;
+
 export default function ProcPageClient({
   proc,
   slug,
   path,
-}: {
-  proc: ProcPublic;
-  slug: string;
-  path: string;
-}) {
+  executionMode = false,
+}: Props) {
+  const { updateStore } = useStore();
+  const room = useMemo(() => `proc:${proc._id}`, [proc._id]);
+  const [presence, setPresence] = useState<Array<{ id: string; name: string }>>(
+    [],
+  );
   const [preview, setPreview] = useState(false);
+  const [redlines, setRedlines] = useState<any[]>([]);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const { session, loading } = useUser();
+  const user = session?.user;
+
+  const viewMode = !executionMode;
+
+  // Check if user has edit permissions
+  const isOwner = proc.owner === user?.username;
+  const isAdmin = user?.roles?.includes('admin');
+  const canEdit = !!(isOwner || isAdmin);
+  const metadata = {
+    title: proc.title,
+    description: proc.description ?? '',
+    tags: proc.tags,
+  };
 
   async function handlePreviewPrint() {
     setPreview(true);
@@ -59,26 +83,111 @@ export default function ProcPageClient({
     }, 0);
   }
 
-  console.log('PROC TITLE', proc);
+  const presenceDisplay = useMemo(() => {
+    // filter + dedupe names
+    const names = Array.from(
+      new Set(
+        presence
+          .map((p) => (p?.name ?? '').trim())
+          .filter((n) => n && n !== 'Anonymous')
+          .map((n) => (user?.username && n === user?.username ? 'You' : n)),
+      ),
+    );
+
+    if (names.length === 0) return '—';
+
+    const shown = names.slice(0, MAX_NAMES);
+    const rest = names.length - shown.length;
+
+    // Join first 1–3 with commas
+    const shownJoined = shown.join(', ');
+
+    if (rest <= 0) return shownJoined;
+
+    const plural = rest === 1 ? 'other' : 'others';
+    return `${shownJoined} and ${rest} ${plural}`;
+  }, [presence]);
+
+  useEffect(() => {
+    // Wait until we know the username
+    if (loading) return;
+
+    const socket = getSocket();
+    if (!socket) return;
+    console.log('GOT SOCKET', socket);
+
+    const name = user?.username || 'Anonymous';
+    socket.emit('room:join', { room, name });
+
+    const onPresence = (list: Array<{ id: string; name: string }>) =>
+      setPresence(list);
+    const onPatch = (payload: { blockId: string; patch: any }) => {
+      updateStore({ blockId: payload.blockId, ...payload.patch });
+    };
+
+    // Handle redline events
+    const onRedlineCreated = (payload: { redline: any }) => {
+      setRedlines((prev) => [...prev, payload.redline]);
+      console.log('Redline created:', payload.redline);
+    };
+
+    const onRedlineUpdated = (payload: { redlineId: string; patch: any }) => {
+      setRedlines((prev) =>
+        prev.map((r) =>
+          r._id === payload.redlineId ? { ...r, ...payload.patch } : r,
+        ),
+      );
+    };
+
+    const onRedlineDeleted = (payload: { redlineId: string }) => {
+      setRedlines((prev) => prev.filter((r) => r._id !== payload.redlineId));
+    };
+
+    socket.on('presence:update', onPresence);
+    socket.on('record:patch', onPatch);
+    socket.on('redline:created', onRedlineCreated);
+    socket.on('redline:updated', onRedlineUpdated);
+    socket.on('redline:deleted', onRedlineDeleted);
+
+    socket.emit('presence:request', { room });
+
+    return () => {
+      socket.off('presence:update', onPresence);
+      socket.off('record:patch', onPatch);
+      socket.off('redline:created', onRedlineCreated);
+      socket.off('redline:updated', onRedlineUpdated);
+      socket.off('redline:deleted', onRedlineDeleted);
+      socket.emit('room:leave', { room });
+    };
+  }, [room, updateStore, user]);
 
   return (
     <>
       <Header
-        executionMode={false}
+        viewMode={viewMode}
+        executionMode={executionMode}
         handlePreviewPrint={handlePreviewPrint}
         path={path}
         title={proc.title}
         description={proc.description}
         tags={proc.tags}
+        metadata={metadata}
+        presenceDisplay={presenceDisplay}
+        canEdit={canEdit}
       />
       <div>
         <PuckPreview
           ref={rootRef}
           data={proc.data}
           owner={proc.owner}
-          updatedAt={proc.updatedAt ?? proc.createdAt}
+          updatedAt={(proc.updatedAt ?? proc.createdAt) as string}
           preview={preview}
           page="letter"
+          procId={proc._id}
+          room={room}
+          onRedlineCreated={(redline) => {
+            console.log('Redline created from preview:', redline);
+          }}
         />
       </div>
     </>
