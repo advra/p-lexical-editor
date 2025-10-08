@@ -18,6 +18,10 @@ STACK_NAME="${STACK_NAME:-my_stack}"   # used only for stack deploy
 user=$(whoami | tr '[:upper:]' '[:lower:]')
 VOLUME_NAME="mongo-eproc-${user}-data"
 
+
+PROJECT_ROOT="$(pwd)"
+SOCKET_DIR="${PROJECT_ROOT}/src/server/socketio"
+
 cat > "$OUT" <<EOF
 services:
   mongo:
@@ -25,7 +29,7 @@ services:
     container_name: ${MONGO_EPROC_NAME:-mongo-eproc-${user}}
     restart: unless-stopped
     ports:
-      - "27017:27017"
+      - "5771:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-r00t}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-r00t}
@@ -50,6 +54,12 @@ services:
       DATABASE_URL: mongodb://r00t:r00t@mongo:27017/eproc?authSource=admin
     command: sh -lc "if [ -f package-lock.json ]; then npm ci; else npm install; fi && npm run seed"
     restart: "no"
+
+  socketio:
+    container_name: ${SOCKET_EPROC_NAME:-socket-eproc-${user}}
+    build: ./src/server/socketio
+    ports:
+      - "5772:5772"
 
 volumes:
   ${VOLUME_NAME}: {}

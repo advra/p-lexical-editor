@@ -53,12 +53,12 @@ npm install
 node seed-users.js
 ```
 
-B. SocketIO
+<!-- B. SocketIO
 Spin up a container instance to listen for client socketio
 
 ```bash
-node src/server/socket.js
-```
+node src/server/socketio/socket.js
+``` -->
 
 ### III. Seeded Data
 
