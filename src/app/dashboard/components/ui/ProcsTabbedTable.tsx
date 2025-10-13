@@ -15,6 +15,7 @@ import { initialProcsData } from '@/app/procs/utils/initialData';
 import { PuckPageData } from '@/app/puck/types';
 import Link from 'next/link';
 import RedirectingDialog from './RedirectingDialog';
+import { Menu, MenuItem } from '@mui/material';
 
 export type Proc = {
   _id: string;
@@ -38,6 +39,8 @@ const formatWhen = (v?: string | Date) =>
 export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
   const [showCreateNewProc, setShowCreateNewProc] = useState(false);
   const [showRedirectDialog, setShowRedirectDialog] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
   const tabs = ['All', 'My Procs', 'Shared With Me'] as const;
   type Tab = (typeof tabs)[number];
 
@@ -274,9 +277,45 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
                           <Link href={`procs/${p.slug}/edit`}> Edit</Link>
                         </button>
                         {/* TODO: Add Delete, Edit Metadata, Manage Permissions */}
-                        {/* <button className="text-sm text-gray-600 hover:underline hover:cursor-pointer">
+                        <button
+                          className="text-sm text-blue-600 hover:underline hover:cursor-pointer"
+                          onClick={(e) => setAnchorEl(e.currentTarget)}
+                        >
                           More
-                        </button> */}
+                        </button>
+                        <Menu
+                          anchorEl={anchorEl}
+                          open={open}
+                          onClose={() => setAnchorEl(null)}
+                          anchorOrigin={{
+                            vertical: 'bottom',
+                            horizontal: 'right',
+                          }}
+                          transformOrigin={{
+                            vertical: 'top',
+                            horizontal: 'right',
+                          }}
+                          slotProps={{
+                            paper: {
+                              elevation: 0,
+                              sx: {
+                                boxShadow:
+                                  '0 12px 28px rgba(0,0,0,0.01), 0 2px 6px rgba(0,0,0,0.05)',
+                                minWidth: 200,
+                              },
+                            },
+                          }}
+                        >
+                          <MenuItem key="unpublish">
+                            <div>Unpublish</div>
+                          </MenuItem>
+                          <MenuItem key="managePermissions">
+                            {/* <LoginButton
+                              handleClose={() => setAnchorEl(null)}
+                            /> */}
+                            <div>Manage Permissions</div>
+                          </MenuItem>
+                        </Menu>
                       </div>
                     </td>
                   </tr>
