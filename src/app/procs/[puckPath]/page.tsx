@@ -20,6 +20,8 @@ export default async function Page({
   const proc: ProcPublic | ProcPublicWithAcl = await getPage(slug);
   if (!proc) return notFound();
 
+  // todo: eproc-2 determine if logged in user can see ProcPublicWithAcl
+
   return (
     <>
       <StoreProvider initialProc={proc}>

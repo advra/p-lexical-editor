@@ -16,6 +16,7 @@ import { PuckPageData } from '@/app/puck/types';
 import Link from 'next/link';
 import RedirectingDialog from './RedirectingDialog';
 import { Menu, MenuItem } from '@mui/material';
+import { User } from '@/modules/auth/types';
 
 export type Proc = {
   _id: string;
@@ -30,13 +31,13 @@ export type Proc = {
 
 type Props = {
   procs: Proc[];
-  currentUsername: string;
+  currentUser: User | null;
 };
 
 const formatWhen = (v?: string | Date) =>
   v ? new Date(v).toLocaleString() : '—';
 
-export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
+export default function ProcsTabbedTable({ procs, currentUser }: Props) {
   const [showCreateNewProc, setShowCreateNewProc] = useState(false);
   const [showRedirectDialog, setShowRedirectDialog] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -56,13 +57,17 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
     console.log('ALL PROCS: ', procs);
 
     if (active === 'My Procs') {
-      items = procs.filter((p) => p.owner === currentUsername);
+      items = procs.filter((p) => p.owner === currentUser?.username);
     } else if (active === 'Shared With Me') {
-      items = procs.filter(
-        (p) =>
-          p.owner !== currentUsername &&
-          (p.sharedWith?.includes(currentUsername) ?? false),
-      );
+      if (currentUser) {
+        items = procs.filter(
+          (p) =>
+            p.owner !== currentUser?.username &&
+            (p.sharedWith?.includes(currentUser.username) ?? false),
+        );
+      } else {
+        items = [];
+      }
     }
 
     if (!q) return items;
@@ -78,7 +83,7 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
         shared.some((s) => s.includes(q))
       );
     });
-  }, [procs, query, active, currentUsername]);
+  }, [procs, query, active, currentUser]);
 
   // Pagination logic
   const totalItems = filtered.length;
@@ -98,39 +103,46 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
     // const id = crypto.randomUUID();
     // const path = `/procs/${id}`;
 
-    // 2) build the data object in the same shape your DB expects
-    const initialData = initialProcsData({
-      owner: currentUsername,
-      title: name,
-      description: description || undefined,
-      tags: tags ? [] : undefined,
-    });
-
-    console.log('initialData: ', initialData);
-
-    try {
-      const res = await fetch('/api/puck/proc', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: initialData }),
+    // check if valid user
+    if (!currentUser) {
+      console.error(
+        'Creating Eproc failed. No user is logged in to create eproc',
+      );
+    } else {
+      // 2) build the data object in the same shape your DB expects
+      const initialData = initialProcsData({
+        owner: currentUser.username,
+        title: name,
+        description: description || undefined,
+        tags: tags ? [] : undefined,
       });
 
-      if (!res.ok) {
-        const err = await res.text();
-        throw new Error(err || `Request failed: ${res.status}`);
+      console.log('initialData: ', initialData);
+
+      try {
+        const res = await fetch('/api/puck/proc', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: initialData }),
+        });
+
+        if (!res.ok) {
+          const err = await res.text();
+          throw new Error(err || `Request failed: ${res.status}`);
+        }
+
+        // Optionally parse server response
+        const { id, path } = await res.json();
+
+        setShowCreateNewProc(false);
+        // render loading new page message
+        setShowRedirectDialog(true);
+        // The dialog expects this return value to navigate to the new proc
+        return { id, path, initialData } as any;
+      } catch (error) {
+        console.error('Failed to create proc', error);
+        throw error;
       }
-
-      // Optionally parse server response
-      const { id, path } = await res.json();
-
-      setShowCreateNewProc(false);
-      // render loading new page message
-      setShowRedirectDialog(true);
-      // The dialog expects this return value to navigate to the new proc
-      return { id, path, initialData } as any;
-    } catch (error) {
-      console.error('Failed to create proc', error);
-      throw error;
     }
   };
 
@@ -277,12 +289,14 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
                           <Link href={`procs/${p.slug}/edit`}> Edit</Link>
                         </button>
                         {/* TODO: Add Delete, Edit Metadata, Manage Permissions */}
-                        <button
-                          className="text-sm text-blue-600 hover:underline hover:cursor-pointer"
-                          onClick={(e) => setAnchorEl(e.currentTarget)}
-                        >
-                          More
-                        </button>
+                        {currentUser?.username === p.owner && (
+                          <button
+                            className="text-sm text-blue-600 hover:underline hover:cursor-pointer"
+                            onClick={(e) => setAnchorEl(e.currentTarget)}
+                          >
+                            More
+                          </button>
+                        )}
                         <Menu
                           anchorEl={anchorEl}
                           open={open}
@@ -306,13 +320,11 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
                             },
                           }}
                         >
+                          {/* TODO: eproc-3 Implement Publish and unpublish for drafts *
                           <MenuItem key="unpublish">
                             <div>Unpublish</div>
-                          </MenuItem>
+                          </MenuItem> */}
                           <MenuItem key="managePermissions">
-                            {/* <LoginButton
-                              handleClose={() => setAnchorEl(null)}
-                            /> */}
                             <div>Manage Permissions</div>
                           </MenuItem>
                         </Menu>

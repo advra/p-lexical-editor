@@ -1,4 +1,4 @@
-import z from 'zod';
+import z, { boolean } from 'zod';
 import { MAX_SLUG_LENGTH } from '../utils/title-generator';
 
 // /** Accept Date or string; returns ISO string or undefined */
@@ -58,7 +58,7 @@ export const procDbSchema = z.object({
     .array(
       z.object({
         userId: z.string().min(1),
-        permission: z.enum(['read', 'edit']),
+        permission: z.enum(['read', 'edit', 'execute']),
       }),
     )
     .default([]),
@@ -140,7 +140,11 @@ export const sharedWithZ = z
   .array(
     z.object({
       userId: z.string().min(1),
-      permission: z.enum(['read', 'edit']),
+      permissions: z.object({
+        read: z.boolean().optional(),
+        edit: z.boolean().optional(),
+        execute: z.boolean().optional(),
+      }),
     }),
   )
   .default([]);

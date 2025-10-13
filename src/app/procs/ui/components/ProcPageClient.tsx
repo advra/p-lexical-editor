@@ -4,7 +4,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { PuckPreview } from './puck-preview';
 import { Header } from './Header';
-import { ProcPublic } from '@/modules/procs/models/proc-model';
+import {
+  ProcPublic,
+  ProcPublicWithAcl,
+} from '@/modules/procs/models/proc-model';
 import { useStore } from '@/context/StoreContext';
 import useUser from '@/hooks/use-user';
 import { getSocket } from '@/lib/socket';
@@ -25,7 +28,7 @@ function waitForImages(root: HTMLElement) {
 }
 
 type Props = {
-  proc: ProcPublic;
+  proc: ProcPublic | ProcPublicWithAcl;
   slug: string;
   path: string;
   executionMode?: boolean;
