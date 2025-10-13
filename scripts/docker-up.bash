@@ -18,6 +18,13 @@ STACK_NAME="${STACK_NAME:-my_stack}"   # used only for stack deploy
 user=$(whoami | tr '[:upper:]' '[:lower:]')
 VOLUME_NAME="mongo-eproc-${user}-data"
 
+# load .env.local if var not already exported
+if [ -z "${NEXT_PUBLIC_BASE_URL+x}" ] && [ -f ".env.local" ]; then
+  set -a
+  # shellcheck disable=SC1090
+  . ./.env.local
+  set +a
+fi
 
 PROJECT_ROOT="$(pwd)"
 SOCKET_DIR="${PROJECT_ROOT}/src/server/socketio"
@@ -100,4 +107,5 @@ else
   echo "Bringing up services with docker compose using $OUT..."
   docker compose -f "$OUT" up -d
   echo "Services started."
+echo "App hosted and deployed to ${NEXT_PUBLIC_BASE_URL:-http://localhost:5770}"
 fi
