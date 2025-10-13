@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
@@ -13,6 +14,7 @@ import type { ProcPayload } from './CreateNewProcDialog';
 import { initialProcsData } from '@/app/procs/utils/initialData';
 import { PuckPageData } from '@/app/puck/types';
 import Link from 'next/link';
+import RedirectingDialog from './RedirectingDialog';
 
 export type Proc = {
   _id: string;
@@ -35,6 +37,7 @@ const formatWhen = (v?: string | Date) =>
 
 export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
   const [showCreateNewProc, setShowCreateNewProc] = useState(false);
+  const [showRedirectDialog, setShowRedirectDialog] = useState(false);
   const tabs = ['All', 'My Procs', 'Shared With Me'] as const;
   type Tab = (typeof tabs)[number];
 
@@ -118,6 +121,8 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
       const { id, path } = await res.json();
 
       setShowCreateNewProc(false);
+      // render loading new page message
+      setShowRedirectDialog(true);
       // The dialog expects this return value to navigate to the new proc
       return { id, path, initialData } as any;
     } catch (error) {
@@ -355,7 +360,7 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
         </div>
       )}
 
-      {/* Render NewProcDialog */}
+      {/* Render dialogs */}
       {showCreateNewProc && (
         <CreateNewProcDialog
           open={showCreateNewProc}
@@ -364,6 +369,7 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
           tags={['Viasat', 'Northrop', 'Qualcomm']}
         />
       )}
+      {showRedirectDialog && <RedirectingDialog open={showRedirectDialog} />}
     </div>
   );
 }

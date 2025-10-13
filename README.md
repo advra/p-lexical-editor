@@ -88,6 +88,17 @@ const rawUsers = [
 
 ### IV. Troubleshooting
 
+a. Logging
+
+You can check logs in a new terminal by tailing docker container logs. Note USER here is your logged in user.
+
+```bash
+# In this example the username is alonzoa
+docker logs docker logs nextjs-eproc-alonzoa
+
+To get a list of containers you can log run `docker ps -a | grep eproc`
+```
+
 a. package install issues
 
 If you run into any issues try to manually clear the nextjs cache and any installed packages:
