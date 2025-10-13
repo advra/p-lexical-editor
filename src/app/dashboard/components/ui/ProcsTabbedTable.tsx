@@ -17,6 +17,9 @@ import Link from 'next/link';
 import RedirectingDialog from './RedirectingDialog';
 import { Menu, MenuItem } from '@mui/material';
 import { User } from '@/modules/auth/types';
+import ManagePermissionsDialog, {
+  UserPermission,
+} from './ManagePermissionsDialog';
 
 export type Proc = {
   _id: string;
@@ -40,7 +43,12 @@ const formatWhen = (v?: string | Date) =>
 export default function ProcsTabbedTable({ procs, currentUser }: Props) {
   const [showCreateNewProc, setShowCreateNewProc] = useState(false);
   const [showRedirectDialog, setShowRedirectDialog] = useState(false);
+  const [showManagePermissions, setShowManagePermissions] = useState(false);
+  const [selectedProc, setSelectedProc] = useState<Proc | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedProcForMenu, setSelectedProcForMenu] = useState<Proc | null>(
+    null,
+  );
   const open = Boolean(anchorEl);
   const tabs = ['All', 'My Procs', 'Shared With Me'] as const;
   type Tab = (typeof tabs)[number];
@@ -96,6 +104,52 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
   useEffect(() => {
     setCurrentPage(1);
   }, [query, active, filtered.length]);
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, proc: Proc) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedProcForMenu(proc);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedProcForMenu(null);
+  };
+
+  const handleManagePermissions = () => {
+    if (selectedProcForMenu) {
+      setSelectedProc(selectedProcForMenu);
+      setShowManagePermissions(true);
+    }
+    handleMenuClose();
+  };
+
+  const handlePermissionsUpdate = async (
+    procId: string,
+    permissions: UserPermission[],
+  ) => {
+    // TODO: Implement API call to update permissions
+    console.log('Updating permissions for proc:', procId, permissions);
+
+    // Mock implementation - replace with actual API call
+    try {
+      const response = await fetch(`/api/puck/proc/${procId}/permissions`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ permissions }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update permissions');
+      }
+
+      // Refresh the procs list or update local state
+      // For now, we'll just log success
+      console.log('Permissions updated successfully');
+    } catch (error) {
+      console.error('Failed to update permissions', error);
+      throw error;
+    }
+  };
 
   const tryCreateNewProc = async ({ name, description, tags }: ProcPayload) => {
     console.log(`Creating: name: ${name} desc: ${description} tag: ${tags}`);
@@ -292,7 +346,7 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
                         {currentUser?.username === p.owner && (
                           <button
                             className="text-sm text-blue-600 hover:underline hover:cursor-pointer"
-                            onClick={(e) => setAnchorEl(e.currentTarget)}
+                            onClick={(e) => handleMenuOpen(e, p)}
                           >
                             More
                           </button>
@@ -300,7 +354,7 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
                         <Menu
                           anchorEl={anchorEl}
                           open={open}
-                          onClose={() => setAnchorEl(null)}
+                          onClose={handleMenuClose}
                           anchorOrigin={{
                             vertical: 'bottom',
                             horizontal: 'right',
@@ -324,7 +378,10 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
                           <MenuItem key="unpublish">
                             <div>Unpublish</div>
                           </MenuItem> */}
-                          <MenuItem key="managePermissions">
+                          <MenuItem
+                            key="managePermissions"
+                            onClick={handleManagePermissions}
+                          >
                             <div>Manage Permissions</div>
                           </MenuItem>
                         </Menu>
@@ -421,6 +478,14 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
         />
       )}
       {showRedirectDialog && <RedirectingDialog open={showRedirectDialog} />}
+      {showManagePermissions && selectedProc && (
+        <ManagePermissionsDialog
+          open={showManagePermissions}
+          onClose={() => setShowManagePermissions(false)}
+          proc={selectedProc}
+          onPermissionsUpdate={handlePermissionsUpdate}
+        />
+      )}
     </div>
   );
 }

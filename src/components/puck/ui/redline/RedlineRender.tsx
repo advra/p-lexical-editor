@@ -1,5 +1,11 @@
 'use client';
 
+/*
+  This is a custom extension to support redlines. 
+  Client processes the current proc component "blocks" by rading them, injecting the redline components in 
+  the "applyRedlinesToBlock" method, and passing the modified blocks to the PuckRender component 
+*/
+
 import { Render as PuckRender } from '@measured/puck';
 import { PuckPageData } from '@/app/puck/types';
 import { RedLineModal } from '@/components/redline/RedLineModal';
@@ -38,6 +44,7 @@ export const RedlineRender = ({
   onRedlineDeleted,
 }: RedlineRenderProps) => {
   const { session } = useUser();
+  const user = session?.user;
   const [redlineState, setRedlineState] = useState<RedlineState>({
     isOpen: false,
     originalText: '',
@@ -303,8 +310,6 @@ export const RedlineRender = ({
       latestRedlinesByTarget[target] = latestRedline;
     });
 
-    console.log('latestRedlinesByTarget', latestRedlinesByTarget);
-
     // inject redline attributes per block
     return {
       ...block,
@@ -324,6 +329,7 @@ export const RedlineRender = ({
   };
 
   // Create a modified data object that applies redlines and injects onRedlineClick
+  console.log('modifieddata', modifiedData);
 
   return (
     <>

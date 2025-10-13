@@ -11,6 +11,7 @@ import {
 import { useStore } from '@/context/StoreContext';
 import useUser from '@/hooks/use-user';
 import { getSocket } from '@/lib/socket';
+import { ProcProvider } from '@/context/ProcContext';
 
 function waitForImages(root: HTMLElement) {
   const imgs = Array.from(root.querySelectorAll('img'));
@@ -166,8 +167,20 @@ export default function ProcPageClient({
     };
   }, [room, updateStore, user]);
 
+  // Calculate user permissions based on proc sharedWith data
+  const userPermissions = {
+    read: isOwner || isAdmin || true, // Default to true for now
+    edit: !!(isOwner || isAdmin),
+    execute: !!(isOwner || isAdmin),
+  };
+
   return (
-    <>
+    <ProcProvider
+      owner={proc.owner}
+      permissions={userPermissions}
+      currentUser={user}
+      procId={proc._id}
+    >
       <Header
         viewMode={viewMode}
         executionMode={executionMode}
@@ -195,6 +208,6 @@ export default function ProcPageClient({
           }}
         />
       </div>
-    </>
+    </ProcProvider>
   );
 }

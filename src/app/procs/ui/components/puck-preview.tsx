@@ -50,12 +50,12 @@ export const PuckPreview = forwardRef<
   };
 
   return (
+    // Show the printable version or actual proc page
     <div
       ref={ref}
       id="printable"
       className={clsx(
         'bg-white',
-        // use classes only; do not alter structure
         preview
           ? clsx(
               size,
