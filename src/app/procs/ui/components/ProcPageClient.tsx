@@ -55,6 +55,8 @@ export default function ProcPageClient({
   // Check if user has edit permissions
   const isOwner = proc.owner === user?.username;
   const isAdmin = user?.roles?.includes('admin');
+  // TODO: eproc-2 Add permissions canEdit and canExecute
+  // const hasPermissions = proc.
   const canEdit = !!(isOwner || isAdmin);
   const metadata = {
     title: proc.title,
