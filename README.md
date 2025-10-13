@@ -42,10 +42,25 @@ chmod 755 ./scripts/*
 # run the stack
 ./scripts/docker-up.bash
 
-# For the first time running the docker instance will ingest user data. To seed the database manually or reset default users with default passwords, you can run the script below:
+# Docker will automatically create users on first startup. If you cannot login or you need to reset default users back to default passwords, you can run the script below:
 # cd seeder
 # npm install
 # node seed-users.js
+
+# Once deployed you should see the message shown below
+# App hosted and deployed to http://localhost:5770
+```
+
+For creating changes to the code and spinning up your own dev instance of the app you can stop the container of the app. And then deploy the app
+
+```bash
+# get the docker name you want to stop
+docker ps -a | grep eproc-app
+
+# stop the docker container (it should have a username like so)
+docker stop nextjs-eproc-USER
+
+# Once deployed you should beable to visit the app at: http://localhost:3000
 ```
 
 ### b. Deploy Stack on a SB1 Machine (Test/Production)
@@ -93,8 +108,8 @@ a. Logging
 You can check logs in a new terminal by tailing docker container logs. Note USER here is your logged in user.
 
 ```bash
-# In this example the username is alonzoa
-docker logs docker logs nextjs-eproc-alonzoa
+# Note USERNAME should be the user you used to deploy the app (ie your sb1 username)
+docker logs docker logs nextjs-eproc-USER
 
 To get a list of containers you can log run `docker ps -a | grep eproc`
 ```
