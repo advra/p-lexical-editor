@@ -236,7 +236,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
 
     return (
       <div className="p-2 h-auto my-2 border border-gray-300 rounded-md shadow-sm">
-        <div className="flex gap-2 items-stretch">
+        <div className="flex gap-2 items-stretch mb-2">
           <div className="flex min-w-[3%] justify-center">
             <span className="text-xl font-semibold text-left mr-auto">
               <RedlineWrapper
@@ -283,15 +283,16 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
               )}
             </div>
           </div>
-          <div className="flex items-start">
-            <div className="ml-auto">
-              {record && (
-                <CompletionStatus
-                  record={record}
-                  completionData={completionData}
-                />
-              )}
-            </div>
+        </div>
+        <div className="flex-1">{/* ADD GRID */}</div>
+        <div className="flex items-start">
+          <div className="ml-auto">
+            {record && (
+              <CompletionStatus
+                record={record}
+                completionData={completionData}
+              />
+            )}
           </div>
         </div>
         <div className="flex-1">

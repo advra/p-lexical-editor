@@ -16,7 +16,6 @@ import {
   ChecklistBlockProps,
 } from './components/puck/ChecklistBlock';
 import { TaskItemBlock, TaskItemProps } from './components/puck/TaskItemBlock';
-// import rootPage from './components/puck/RootPage';
 
 type Props = {
   ChecklistBlock: ChecklistBlockProps;
@@ -26,7 +25,7 @@ type Props = {
   ColumnsBlock: ColumnsBlockProps;
   TextBlock: TextBlockProps;
   TaskItemBlock: TaskItemProps;
-  Grid: GridProps;
+  Grid: {};
   Card: {
     title: string;
     subtitle: string;
