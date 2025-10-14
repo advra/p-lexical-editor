@@ -6,7 +6,7 @@ import config from '@/puck.config';
 import { formatTimestamp } from '@/lib/utils/dateformat';
 import type { PuckPageData } from '@/app/puck/types';
 import clsx from 'clsx';
-import { forwardRef, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { RedlineRender } from '@/components/puck/ui/redline/RedlineRender';
 import useUser from '@/hooks/use-user';
 import { NavigationDrawer } from '@/components/puck/ui/NavigationDrawer';
@@ -23,6 +23,7 @@ export const PuckPreview = forwardRef<
     procId: string;
     room: string;
     onRedlineCreated?: (redline: any) => void;
+    title?: string; // Add title prop
   }
 >(function PuckPreview(
   {
@@ -34,6 +35,7 @@ export const PuckPreview = forwardRef<
     procId,
     room,
     onRedlineCreated,
+    title = 'Title', // Default title
   },
   ref,
 ) {
@@ -61,7 +63,7 @@ export const PuckPreview = forwardRef<
     // Add title as first item
     navigationItems.push({
       id: 'title',
-      label: 'Title',
+      label: title,
       type: 'title' as const,
     });
 
@@ -101,6 +103,10 @@ export const PuckPreview = forwardRef<
   const handleDrawerClose = () => {
     setIsDrawerOpen(false);
   };
+
+  useEffect(() => {
+    extractSectionBlocks();
+  }, [data]);
 
   return (
     // Show the printable version or actual proc page

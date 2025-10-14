@@ -216,6 +216,7 @@ export default function ProcPageClient({
           page="letter"
           procId={proc._id}
           room={room}
+          title={proc.title}
           onRedlineCreated={(redline) => {
             console.log('Redline created from preview:', redline);
           }}
