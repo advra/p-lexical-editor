@@ -16,31 +16,26 @@ export const RedlineWrapper = forwardRef<HTMLDivElement, Props>(
   ({ className, children, onClick, ...rest }, ref) => {
     const [shouldShowHoverStyles, setShouldShowHoverStyles] = useState(false);
     const { owner, currentUser } = useProc();
-    let userIsAuthor = false;
-
-    // Only apply hover styles when NOT in edit or execute mode
-    const hoverStyles = shouldShowHoverStyles
-      ? 'cursor-pointer hover:outline-red-500 hover:[outline-style:dashed]'
-      : '';
 
     useEffect(() => {
       // Check if we're in edit or execute mode by looking at the URL pathname
       const isEditOrExecuteMode = (p: string) =>
         /^\/procs?\/[^/]+\/(edit|execute)\/?$/.test(p);
       // Use currentUser from ProcContext which is properly synchronized
-      userIsAuthor = owner === currentUser?.username;
+      const userIsAuthor = owner === currentUser?.username;
+
+      // Show hover styles when user is NOT the author AND we're NOT in edit/execute mode
+      // This indicates that redlines exist but can't be edited
       const showHover =
         !userIsAuthor && !isEditOrExecuteMode(window.location.pathname);
       setShouldShowHoverStyles(showHover);
     }, [owner, currentUser]);
 
-    const handleClick = React.useCallback(
-      (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!userIsAuthor) return;
-        onClick?.(e);
-      },
-      [userIsAuthor, onClick],
-    );
+    // Only apply hover styles when NOT in edit or execute mode AND user is not author
+    // This indicates redlines exist but can't be edited
+    const hoverStyles = shouldShowHoverStyles
+      ? 'cursor-pointer hover:outline-red-500 hover:[outline-style:dashed]'
+      : '';
 
     return (
       <div
@@ -50,7 +45,7 @@ export const RedlineWrapper = forwardRef<HTMLDivElement, Props>(
           hoverStyles,
           className,
         )}
-        onClick={handleClick}
+        onClick={shouldShowHoverStyles ? onClick : undefined}
         {...rest}
       >
         {children}
