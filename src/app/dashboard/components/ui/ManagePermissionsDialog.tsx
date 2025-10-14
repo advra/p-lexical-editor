@@ -166,6 +166,20 @@ export default function ManagePermissionsDialog({
             Current Permissions
           </Typography>
 
+          <div className="flex items-center border border-gray-300 rounded-sm px-4 py-2">
+            <div className="mr-auto">All Users</div>
+            <FormControlLabel control={<Checkbox />} label="Read" />
+            <FormControlLabel control={<Checkbox />} label="Edit" />
+            <FormControlLabel control={<Checkbox />} label="Execute" />
+            <IconButton
+              size="small"
+              onClick={() => handleRemoveUser('all')}
+              color="error"
+            >
+              <DeleteIcon />
+            </IconButton>
+          </div>
+
           {/* Shared users */}
           {permissions.length === 0 ? (
             <Typography

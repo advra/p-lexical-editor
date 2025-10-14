@@ -91,13 +91,13 @@ export const Header = ({
               <div className="pl-1">
                 {executionMode && <BackToViewMode path={path} />}
               </div>
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
                 <div className="text-sm text-gray-500 p-2">
                   Viewers: {presenceDisplay}
                 </div>
               </div>
               {executionMode ? <ExecutionModeLabel /> : <ViewModeLabel />}
-              <div className="ml-auto flex gap-2 items-center">
+              <div className="ml-auto flex gap-1 items-center">
                 <ProcMetadataDetailsButton
                   openMetadataDetails={handleMetadataDetails}
                 />
@@ -117,7 +117,7 @@ export const Header = ({
             <div className="bg-yellow-100 text-center text-yellow-700 text-sm">
               You are viewing a read-only version of this procedure. Items are
               displayed based on your current user permissions. If you have
-              permissions, begin a test execution session.
+              permissions you can begin a session to start a test execution.
             </div>
           )}
         </div>
