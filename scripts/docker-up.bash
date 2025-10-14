@@ -105,7 +105,7 @@ if [ "$MODE" = "stack" ]; then
   echo "Stack deployed."
 else
   echo "Bringing up services with docker compose using $OUT..."
-  docker compose -f "$OUT" up -d
+  docker compose -f "$OUT" up -d --build
   echo "Services started."
 echo "App hosted and deployed to ${NEXT_PUBLIC_BASE_URL:-http://localhost:5770}"
 fi
