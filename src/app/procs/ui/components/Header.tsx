@@ -43,7 +43,10 @@ export const Header = ({
 
   const ViewModeLabel = () => {
     return (
-      <div className="absolute left-1/2 transform -translate-x-1/2 flex gap-2 text-blue-400">
+      <div
+        id="main-header"
+        className="absolute left-1/2 transform -translate-x-1/2 flex gap-2 text-blue-400"
+      >
         <div>
           <VisibilityIcon className="mb-0.5" />
         </div>

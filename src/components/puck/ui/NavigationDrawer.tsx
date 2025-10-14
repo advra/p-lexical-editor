@@ -16,24 +16,12 @@ interface NavigationDrawerProps {
   onItemClick?: (item: NavigationItem) => void;
 }
 
-export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
+export const NavigationDrawer = ({
   isOpen,
   onClose,
-  items = [
-    { id: 'title', label: 'Title', type: 'title' },
-    { id: 'section-1', label: 'Section 1', type: 'section' },
-    { id: 'section-2', label: 'Section 2', type: 'section' },
-    { id: 'section-3', label: 'Section 3', type: 'section' },
-    { id: 'section-3', label: 'Section 3', type: 'section' },
-    { id: 'section-3', label: 'Section 3', type: 'section' },
-    { id: 'section-3', label: 'Section 3', type: 'section' },
-    { id: 'section-3', label: 'Section 3', type: 'section' },
-    { id: 'section-3', label: 'Section 3', type: 'section' },
-    { id: 'section-3', label: 'Section 3', type: 'section' },
-    { id: 'section-3', label: 'Section 3', type: 'section' },
-  ],
+  items = [],
   onItemClick,
-}) => {
+}: NavigationDrawerProps) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -103,10 +91,9 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
                   key={item.id}
                   onClick={() => handleItemClick(item)}
                   className={cn(
-                    'hover:cursor-pointer w-full text-left px-4 py-3 rounded-md transition-colors hover:bg-blue-50 focus:bg-blue-50 focus:outline-none',
-                    item.type === 'title'
-                      ? 'font-semibold text-blue-700 border-l-4 border-blue-700'
-                      : 'text-gray-700 hover:text-blue-700',
+                    'hover:cursor-pointer w-full text-left px-4 py-3 border-l-4 border-transparent transition-colors hover:bg-blue-50 focus:bg-blue-50 focus:outline-none',
+                    'hover:font-semibold hover:text-blue-700 hover:border-l-4 hover:border-blue-700',
+                    'text-gray-700 hover:text-blue-700',
                   )}
                 >
                   {item.label}

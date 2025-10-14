@@ -16,7 +16,7 @@ export const PuckPreview = forwardRef<
   HTMLDivElement,
   {
     data: PuckPageData;
-    preview?: boolean; // screen vs print-preview
+    printPreview?: boolean; // screen vs print-preview
     page?: 'letter' | 'a4';
     owner: string;
     updatedAt: string;
@@ -27,7 +27,7 @@ export const PuckPreview = forwardRef<
 >(function PuckPreview(
   {
     data,
-    preview = false,
+    printPreview = false,
     page = 'letter',
     owner,
     updatedAt,
@@ -54,23 +54,42 @@ export const PuckPreview = forwardRef<
     // For now, we'll just log it
   };
 
+  // Extract SectionBlocks from the proc data
+  const extractSectionBlocks = () => {
+    const navigationItems = [];
+
+    // Add title as first item
+    navigationItems.push({
+      id: 'title',
+      label: 'Title',
+      type: 'title' as const,
+    });
+
+    // Extract SectionBlocks from content
+    if (data.content) {
+      data.content.forEach((block, index) => {
+        if (block.type === 'SectionBlock' && block.props?.title) {
+          navigationItems.push({
+            id: block.props.id || `section-${index}`,
+            label: block.props.title,
+            type: 'section' as const,
+          });
+        }
+      });
+    }
+
+    return navigationItems;
+  };
+
   const handleNavigationItemClick = (item: any) => {
     if (item.id === 'title') {
       // Scroll to the top of the document
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      // For sections, we'll need to implement finding the section by ID
-      // For now, just scroll to a reasonable position
-      const sectionElement = document.querySelector(
-        `[data-section="${item.id}"]`,
-      );
+      // Scroll to the specific section by its block ID
+      const sectionElement = document.getElementById(item.id);
       if (sectionElement) {
-        sectionElement.scrollIntoView({ behavior: 'smooth' });
-      } else {
-        // Fallback: scroll to approximate position based on section number
-        const sectionNum = parseInt(item.id.split('-')[1]);
-        const scrollPosition = sectionNum * 500; // Adjust this multiplier as needed
-        window.scrollTo({ top: scrollPosition, behavior: 'smooth' });
+        sectionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }
   };
@@ -87,7 +106,7 @@ export const PuckPreview = forwardRef<
     // Show the printable version or actual proc page
     <div>
       {/* Navigation Drawer and Floating Button - Only show in non-preview mode */}
-      {!preview && (
+      {!printPreview && (
         <>
           <NavigationFloatingButton
             onClick={handleDrawerOpen}
@@ -97,6 +116,7 @@ export const PuckPreview = forwardRef<
             isOpen={isDrawerOpen}
             onClose={handleDrawerClose}
             onItemClick={handleNavigationItemClick}
+            items={extractSectionBlocks()}
           />
         </>
       )}
@@ -106,7 +126,7 @@ export const PuckPreview = forwardRef<
         id="printable"
         className={clsx(
           'bg-white',
-          preview
+          printPreview
             ? clsx(
                 size,
                 'mx-auto',
