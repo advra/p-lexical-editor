@@ -45,7 +45,7 @@ export const Header = ({
         <div>
           <VisibilityIcon className="mb-0.5" />
         </div>
-        <div>View Mode</div>
+        <div>Preview Mode</div>
       </div>
     );
   };
@@ -86,16 +86,13 @@ export const Header = ({
           <div className="px-4 mx-auto max-w-screen">
             <div className="flex items-center h-12">
               <BackToDashboardButton />
+              <div className="pl-1">
+                {executionMode && <BackToViewMode path={path} />}
+              </div>
               <div className="flex flex-col gap-4">
                 <div className="text-sm text-gray-500 p-2">
                   Viewers: {presenceDisplay}
                 </div>
-
-                {/* render your Puck view here — TaskItem components will read from the store */}
-                {/* <PuckPreview data={proc.data} /> or your custom renderer */}
-              </div>
-              <div className="pl-1">
-                {executionMode && <BackToViewMode path={path} />}
               </div>
               {executionMode ? <ExecutionModeLabel /> : <ViewModeLabel />}
               <div className="ml-auto flex gap-2">
@@ -111,6 +108,13 @@ export const Header = ({
               </div>
             </div>
           </div>
+          {!executionMode && (
+            <div className="bg-yellow-100 text-center text-yellow-700 text-sm">
+              You are viewing a read-only version of this procedure. Items are
+              displayed based on your current user permissions. If you have
+              permissions, begin a test execution session.
+            </div>
+          )}
         </div>
       </div>
     </>

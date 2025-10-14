@@ -1,7 +1,7 @@
 import { Button, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { useState } from 'react';
-import { useProcPermissions } from '@/context/ProcContext';
+import { useState, useEffect } from 'react';
+import { useProcPermissions, useProc } from '@/context/ProcContext';
 import CompletionStatus from './constants/taskitem/CompletionStatus';
 import { ComponentConfig } from '@measured/puck';
 import { RedlineWrapper } from './ui/redline/RedlineWrapper';
@@ -13,6 +13,8 @@ import {
 } from './ui/redline/RedlineComponent';
 import { RedlineInfo } from './ui/redline/RedlineInfo';
 import { DisplayRedlineText } from './ui/redline/DisplayRedlineText';
+import { toast } from 'sonner';
+import { useStore } from '@/context/StoreContext';
 
 export type TaskItemProps = {
   step: string;
@@ -40,17 +42,152 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
   }: TaskItemProps &
     AddRedlineProps & { onRedlineDelete?: (redlineId: string) => void }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [currentSessionId, setCurrentSessionId] = useState<string | null>(
+      null,
+    );
     const menuOpen = Boolean(anchorEl);
 
     const { canExecute, isOwner } = useProcPermissions();
+    const { procId, viewMode } = useProc();
     const canMarkComplete = canExecute || isOwner;
+    let localStore;
+    if (viewMode === 'view') {
+      localStore = useStore();
+    }
 
-    const onUnmarkComplete = () => {};
+    // Get or create session when component mounts
+    useEffect(() => {
+      const initializeSession = async () => {
+        try {
+          // Check for existing active session
+          const response = await fetch(`/api/proc-sessions?procId=${procId}`);
+          if (response.ok) {
+            const result = await response.json();
+            const activeSession = result.sessions.find(
+              (s: any) => s.status === 'active',
+            );
+
+            if (activeSession) {
+              setCurrentSessionId(activeSession._id);
+            } else {
+              // Create new session
+              const createResponse = await fetch('/api/proc-sessions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ procId }),
+              });
+
+              if (createResponse.ok) {
+                const sessionResult = await createResponse.json();
+                setCurrentSessionId(sessionResult.session._id);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Failed to initialize session:', error);
+        }
+      };
+
+      if (procId) {
+        initializeSession();
+      }
+    }, [procId]);
+
     const handleMenuClose = () => setAnchorEl(null);
     const onIconButton = async (event: any) => {
       setAnchorEl(event.currentTarget);
     };
-    const onMarkComplete = async () => {};
+
+    const onMarkComplete = async () => {
+      if (viewMode === 'view') {
+        toast.info('Item Marked complete. No changes applied in preview mode');
+        return;
+      }
+      if (!currentSessionId) {
+        toast.error('No active session found');
+        return;
+      }
+
+      try {
+        const blockId = record?._id || 'unknown';
+
+        const response = await fetch('/api/proc-sessions', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: currentSessionId,
+            recordId: blockId,
+            blockType: 'TaskItem',
+            state: 'complete',
+            data: {
+              step,
+              content,
+              completedAt: new Date().toISOString(),
+            },
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to mark task complete');
+        }
+
+        const result = await response.json();
+        toast.success('Task marked as complete');
+
+        // TODO: Update local state or trigger refresh
+        console.log('Task marked complete in session:', result.session);
+      } catch (error) {
+        console.error('Failed to mark task complete:', error);
+        toast.error('Failed to mark task as complete');
+      }
+    };
+
+    const onUnmarkComplete = async () => {
+      if (viewMode === 'view') {
+        toast.info(
+          'Item Marked uncomplete. No changes applied in preview mode',
+        );
+        return;
+      }
+      if (!currentSessionId) {
+        toast.error('No active session found');
+        return;
+      }
+
+      try {
+        const blockId = record?._id || 'unknown';
+
+        const response = await fetch('/api/proc-sessions', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: currentSessionId,
+            recordId: blockId,
+            blockType: 'TaskItem',
+            state: 'pending',
+            data: {
+              step,
+              content,
+              unmarkedAt: new Date().toISOString(),
+            },
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to unmark task');
+        }
+
+        const result = await response.json();
+        toast.success('Task unmarked');
+        handleMenuClose();
+
+        // TODO: Update local state or trigger refresh
+        console.log('Task unmarked in session:', result.session);
+      } catch (error) {
+        console.error('Failed to unmark task:', error);
+        toast.error('Failed to unmark task');
+      }
+    };
 
     // redline options
     const handleRedline = redlineOptions(onRedlineClick, handleMenuClose);
@@ -166,12 +303,13 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
                 }}
               >
                 {canMarkComplete && (
-                  <MenuItem onClick={onUnmarkComplete}>
-                    Unmark Complete
-                  </MenuItem>
+                  <MenuItem onClick={onMarkComplete}>Unmark Complete</MenuItem>
                 )}
                 <MenuItem onClick={() => handleRedline(displayContent)}>
-                  Create Redline
+                  Redline (Content)
+                </MenuItem>
+                <MenuItem onClick={() => handleRedline(displayStep)}>
+                  Redline (Step)
                 </MenuItem>
               </Menu>
             </div>

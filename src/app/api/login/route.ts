@@ -42,7 +42,5 @@ export async function POST(request: NextRequest) {
     maxAge: 60 * 60 * 24, // 1 day
   });
 
-  console.log(`XXXXX LOGIN sessionId ${sessionId}`);
-
   return response;
 }

@@ -9,11 +9,14 @@ export type ProcPermissions = {
   execute: boolean;
 };
 
+export type ProcViewModes = 'none' | 'view' | 'edit' | 'execute';
+
 export type ProcContextType = {
   owner: string;
   permissions: ProcPermissions;
   currentUser?: User;
   procId: string;
+  viewMode: ProcViewModes;
 };
 
 const ProcContext = createContext<ProcContextType | null>(null);
@@ -24,6 +27,7 @@ type ProcProviderProps = {
   permissions: ProcPermissions;
   currentUser?: User;
   procId: string;
+  viewMode: ProcViewModes;
 };
 
 export function ProcProvider({
@@ -32,12 +36,14 @@ export function ProcProvider({
   permissions,
   currentUser,
   procId,
+  viewMode,
 }: ProcProviderProps) {
   const value = {
     owner,
     permissions,
     currentUser,
     procId,
+    viewMode,
   };
 
   return <ProcContext.Provider value={value}>{children}</ProcContext.Provider>;
@@ -53,7 +59,7 @@ export function useProc() {
 
 // Helper hook for checking permissions
 export function useProcPermissions() {
-  const { permissions, owner, currentUser } = useProc();
+  const { permissions, owner, currentUser, viewMode } = useProc();
 
   const canRead = permissions.read || currentUser?.username === owner;
   const canEdit = permissions.edit || currentUser?.username === owner;
@@ -63,6 +69,7 @@ export function useProcPermissions() {
   const isAdmin = currentUser?.roles?.includes('admin');
 
   return {
+    viewMode,
     canRead,
     canEdit,
     canExecute,
