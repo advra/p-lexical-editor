@@ -1,4 +1,4 @@
-import { Button, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
+import { IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useState, useEffect } from 'react';
 import { useProcPermissions, useProc } from '@/context/ProcContext';
@@ -14,7 +14,8 @@ import { RedlineInfo } from './ui/redline/RedlineInfo';
 import { DisplayRedlineText } from './ui/redline/DisplayRedlineText';
 import { toast } from 'sonner';
 import { useStore } from '@/context/LocalStoreContext';
-import { unknown } from 'zod';
+import TaskAltIcon from '@mui/icons-material/TaskAlt';
+import Button from '../common/buttons/Button';
 
 export type TaskItemProps = {
   step: string;
@@ -291,79 +292,78 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
                 />
               )}
             </div>
-
-            <div className="flex">
-              <Tooltip
-                title={
-                  !canMarkComplete
-                    ? 'You do not have permission to execute this task'
-                    : ''
-                }
-                disableHoverListener={canMarkComplete}
-                disableFocusListener={canMarkComplete}
-                disableTouchListener={canMarkComplete}
-              >
-                <span>
-                  <Button
-                    className="w-40"
-                    variant="outlined"
-                    color="success"
-                    onClick={onMarkComplete}
-                    disabled={showMarkComplete}
-                  >
-                    Mark Complete
-                  </Button>
-                </span>
-              </Tooltip>
-              <IconButton onClick={onIconButton}>
-                <MoreVertIcon />
-              </IconButton>
-              <Menu
-                disableScrollLock
-                anchorEl={anchorEl}
-                open={menuOpen}
-                onClose={handleMenuClose}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'right',
-                }}
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-              >
-                <div>
-                  {showMarkComplete ? (
-                    <>
-                      <MenuItem
-                        onClick={onRemoveComplete}
-                        disabled={!canMarkComplete}
-                      >
-                        Remove Complete
-                      </MenuItem>
-                    </>
-                  ) : (
-                    <>
-                      <MenuItem
-                        onClick={onMarkComplete}
-                        disabled={!canMarkComplete}
-                      >
-                        Mark Complete
-                      </MenuItem>
-                    </>
-                  )}
-                </div>
-                {/* )} */}
-                <MenuItem onClick={() => handleRedline(displayContent)}>
-                  Redline (Content)
-                </MenuItem>
-                <MenuItem onClick={() => handleRedline(displayStep)}>
-                  Redline (Step)
-                </MenuItem>
-              </Menu>
-            </div>
           </div>
         </div>
+        <div className="flex-1">
+          <div className="flex">
+            <Tooltip
+              title={
+                !canMarkComplete
+                  ? 'You do not have permission to execute this task'
+                  : ''
+              }
+              disableHoverListener={canMarkComplete}
+              disableFocusListener={canMarkComplete}
+              disableTouchListener={canMarkComplete}
+            >
+              <span className="flex gap-2 ml-auto">
+                <Button
+                  className="flex border h-2 rounded-sm text-green-700 hover:bg-green-100/50 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-300
+    disabled:opacity-100"
+                  color="success"
+                  onClick={onMarkComplete}
+                  disabled={showMarkComplete}
+                >
+                  <TaskAltIcon fontSize="small" className="mr-2" />
+                  <span className="text-xs">Mark Complete</span>
+                </Button>
+              </span>
+            </Tooltip>
+            <IconButton onClick={onIconButton}>
+              <MoreVertIcon />
+            </IconButton>
+          </div>
+        </div>
+        <Menu
+          disableScrollLock
+          anchorEl={anchorEl}
+          open={menuOpen}
+          onClose={handleMenuClose}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+        >
+          <div>
+            {showMarkComplete ? (
+              <>
+                <MenuItem
+                  onClick={onRemoveComplete}
+                  disabled={!canMarkComplete}
+                >
+                  Remove Complete
+                </MenuItem>
+              </>
+            ) : (
+              <>
+                <MenuItem onClick={onMarkComplete} disabled={!canMarkComplete}>
+                  Mark Complete
+                </MenuItem>
+              </>
+            )}
+          </div>
+          {/* )} */}
+          <MenuItem onClick={() => handleRedline(displayContent)}>
+            Redline (Content)
+          </MenuItem>
+          <MenuItem onClick={() => handleRedline(displayStep)}>
+            Redline (Step)
+          </MenuItem>
+        </Menu>
       </div>
     );
   },
