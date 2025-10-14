@@ -33,6 +33,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
     content: 'Describe the task here...',
   },
   render: ({
+    id,
     step,
     content,
     record,
@@ -50,10 +51,13 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
     const { canExecute, isOwner } = useProcPermissions();
     const { procId, viewMode } = useProc();
     const canMarkComplete = canExecute || isOwner;
-    let localStore;
-    if (viewMode === 'view') {
-      localStore = useStore();
-    }
+    const localStore = useStore();
+
+    // Get local completion state for this block
+    // reference the block id provided by puck
+    const blockId = id;
+    const localCompletion = localStore.localCompletions[blockId];
+    const isLocallyCompleted = localCompletion?.completed || false;
 
     // Get or create session when component mounts
     useEffect(() => {
@@ -100,17 +104,22 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
 
     const onMarkComplete = async () => {
       if (viewMode === 'view') {
-        toast.info('Item Marked complete. No changes applied in preview mode');
+        // Use local state for view mode
+        localStore.updateLocalCompletion(blockId, {
+          completed: true,
+          completedAt: new Date().toISOString(),
+        });
+        toast.success('(PREVIEW): Task marked as complete');
+        handleMenuClose();
         return;
       }
+
       if (!currentSessionId) {
         toast.error('No active session found');
         return;
       }
 
       try {
-        const blockId = record?._id || 'unknown';
-
         const response = await fetch('/api/proc-sessions', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -142,21 +151,23 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
       }
     };
 
-    const onUnmarkComplete = async () => {
+    const onRemoveComplete = async () => {
       if (viewMode === 'view') {
-        toast.info(
-          'Item Marked uncomplete. No changes applied in preview mode',
-        );
+        // Use local state for view mode
+        localStore.updateLocalCompletion(blockId, {
+          completed: false,
+        });
+        toast.success('(PREVIEW): Removed Complete from task');
+        handleMenuClose();
         return;
       }
+
       if (!currentSessionId) {
         toast.error('No active session found');
         return;
       }
 
       try {
-        const blockId = record?._id || 'unknown';
-
         const response = await fetch('/api/proc-sessions', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -178,14 +189,14 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
         }
 
         const result = await response.json();
-        toast.success('Task unmarked');
+        toast.success('Removed Complete from task');
         handleMenuClose();
 
         // TODO: Update local state or trigger refresh
-        console.log('Task unmarked in session:', result.session);
+        console.log('Removed Complete from task in session:', result.session);
       } catch (error) {
-        console.error('Failed to unmark task:', error);
-        toast.error('Failed to unmark task');
+        console.error('Failed to remove complete from task:', error);
+        toast.error('Failed to remove complete from task');
       }
     };
 
@@ -200,6 +211,9 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
     // Use redline content if available
     const displayContent = redlineContent?.newText || content;
     const displayStep = redlineStep?.newText || step;
+
+    const showMarkComplete =
+      !canMarkComplete || record?.state === 'complete' || isLocallyCompleted;
 
     return (
       <div className="p-2 h-auto my-2 border border-gray-300 rounded-md shadow-sm">
@@ -252,7 +266,12 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
           </div>
           <div className="flex items-start">
             <div className="ml-auto">
-              {record && <CompletionStatus record={record} />}
+              {record && (
+                <CompletionStatus
+                  record={record}
+                  localCompletion={localCompletion}
+                />
+              )}
             </div>
 
             <div className="flex">
@@ -274,12 +293,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
                     variant="outlined"
                     color="success"
                     onClick={onMarkComplete}
-                    disabled={
-                      !canMarkComplete || record?.state === 'complete'
-                      // loadingSession ||
-                      // sessionId == null ||
-                      // loading
-                    }
+                    disabled={showMarkComplete}
                   >
                     Mark Complete
                   </Button>
@@ -302,9 +316,29 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
                   horizontal: 'right',
                 }}
               >
-                {canMarkComplete && (
-                  <MenuItem onClick={onMarkComplete}>Unmark Complete</MenuItem>
-                )}
+                {/* {canMarkComplete && ( */}
+                <div>
+                  {showMarkComplete ? (
+                    <>
+                      <MenuItem
+                        onClick={onRemoveComplete}
+                        disabled={!canMarkComplete}
+                      >
+                        Remove Complete
+                      </MenuItem>
+                    </>
+                  ) : (
+                    <>
+                      <MenuItem
+                        onClick={onMarkComplete}
+                        disabled={!canMarkComplete}
+                      >
+                        Mark Complete
+                      </MenuItem>
+                    </>
+                  )}
+                </div>
+                {/* )} */}
                 <MenuItem onClick={() => handleRedline(displayContent)}>
                   Redline (Content)
                 </MenuItem>
