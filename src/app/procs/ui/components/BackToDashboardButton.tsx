@@ -1,11 +1,11 @@
 'use client';
 
-import Button from "@mui/material/Button";
+import Button from '@mui/material/Button';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import { useRouter } from "next/navigation"
+import { useRouter } from 'next/navigation';
 
 export const BackToDashboardButton = () => {
-  const router = useRouter()
+  const router = useRouter();
   return (
     <>
       <Button
@@ -14,10 +14,11 @@ export const BackToDashboardButton = () => {
         startIcon={<ChevronLeftIcon />}
         aria-label="Back to Dashboard"
         onClick={() => {
-          router.push("/dashboard")
-        }}>
+          router.push('/dashboard');
+        }}
+      >
         Dashboard
       </Button>
     </>
-  )
-}
+  );
+};

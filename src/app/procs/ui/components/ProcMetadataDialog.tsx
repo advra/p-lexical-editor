@@ -104,7 +104,6 @@ export default function ProcMetadataDialog({
       aria-labelledby="create-proc-title"
     >
       <div className="p-4 flex items-center gap-2 my-2">
-        <InfoIcon className="mt-1" />
         <h3>Procedure Details</h3>
       </div>
 

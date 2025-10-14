@@ -7,6 +7,8 @@ import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
 import ProcMetadataDialog, { MetadataInfo } from './ProcMetadataDialog';
 import { ProcMetadataDetailsButton } from './ProcMetadataDetailsButton';
 import { BackToViewMode } from './BackToViewModeButton';
+import { ExecuteModeButton } from './ExecuteModeButton';
+import { SessionButtons } from './SessionButton';
 
 type Props = {
   viewMode: boolean;
@@ -41,7 +43,7 @@ export const Header = ({
 
   const ViewModeLabel = () => {
     return (
-      <div className="ml-auto text-center flex gap-2 text-blue-400">
+      <div className="absolute left-1/2 transform -translate-x-1/2 flex gap-2 text-blue-400">
         <div>
           <VisibilityIcon className="mb-0.5" />
         </div>
@@ -52,7 +54,7 @@ export const Header = ({
 
   const ExecutionModeLabel = () => {
     return (
-      <div className="ml-auto text-center flex gap-2 text-orange-400">
+      <div className="absolute left-1/2 transform -translate-x-1/2 flex gap-2 text-orange-400">
         <div>
           <ElectricBoltIcon className="mb-0.5" />
         </div>
@@ -95,14 +97,17 @@ export const Header = ({
                 </div>
               </div>
               {executionMode ? <ExecutionModeLabel /> : <ViewModeLabel />}
-              <div className="ml-auto flex gap-2">
+              <div className="ml-auto flex gap-2 items-center">
                 <ProcMetadataDetailsButton
                   openMetadataDetails={handleMetadataDetails}
                 />
-                {!executionMode && (
+                {executionMode ? (
+                  <SessionButtons />
+                ) : (
                   <>
                     <ExportPDFButton handlePreviewPrint={handlePreviewPrint} />
                     <EditButton path={path} disabled={!canEdit} />
+                    <ExecuteModeButton path={path} />
                   </>
                 )}
               </div>
