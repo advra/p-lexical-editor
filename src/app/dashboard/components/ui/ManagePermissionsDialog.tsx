@@ -124,6 +124,7 @@ export default function ManagePermissionsDialog({
 
   return (
     <Dialog
+      className="max-h-30vh"
       open={open}
       onClose={onClose}
       fullWidth
@@ -134,161 +135,132 @@ export default function ManagePermissionsDialog({
         Manage Permissions - {proc.data?.root?.props?.title ?? proc.name}
       </DialogTitle>
 
-      <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
-          <Box>
-            <Typography variant="h6" gutterBottom>
-              Add User
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
-              <TextField
-                label="Enter User ID"
-                value={newUserId}
-                onChange={(e) => setNewUserId(e.target.value)}
-                placeholder="Enter user ID or email"
-                fullWidth
-                size="small"
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleAddUser();
-                  }
-                }}
-              />
-              <Button
-                variant="contained"
-                onClick={handleAddUser}
-                disabled={!newUserId.trim()}
-              >
-                <AddIcon />
-              </Button>
-            </Box>
-          </Box>
-
-          <Box>
-            <Typography variant="h6" gutterBottom>
-              Current Permissions
-            </Typography>
-
-            {/* Shared users */}
-            {permissions.length === 0 ? (
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ textAlign: 'center', py: 3 }}
-              >
-                No users have been granted permissions yet
-              </Typography>
-            ) : (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {permissions.map((userPerm) => (
-                  <Box
-                    key={userPerm.userId}
-                    sx={{
-                      p: 2,
-                      border: '1px solid',
-                      borderColor: 'grey.300',
-                      borderRadius: 1,
-                      bgcolor: 'background.paper',
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        mb: 2,
-                      }}
-                    >
-                      <Typography variant="subtitle1" fontWeight="medium">
-                        {userPerm.userId}
-                      </Typography>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleRemoveUser(userPerm.userId)}
-                        color="error"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Box>
-
-                    <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={userPerm.permissions.read}
-                            onChange={(e) =>
-                              handlePermissionChange(
-                                userPerm.userId,
-                                'read',
-                                e.target.checked,
-                              )
-                            }
-                          />
-                        }
-                        label="Read"
-                      />
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={userPerm.permissions.edit}
-                            onChange={(e) =>
-                              handlePermissionChange(
-                                userPerm.userId,
-                                'edit',
-                                e.target.checked,
-                              )
-                            }
-                          />
-                        }
-                        label="Edit"
-                      />
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={userPerm.permissions.execute}
-                            onChange={(e) =>
-                              handlePermissionChange(
-                                userPerm.userId,
-                                'execute',
-                                e.target.checked,
-                              )
-                            }
-                          />
-                        }
-                        label="Execute"
-                      />
-                    </Box>
-                  </Box>
-                ))}
-              </Box>
-            )}
-          </Box>
-
-          {/* Permission Legend */}
-          <Box sx={{ bgcolor: 'info.50', borderRadius: 1 }}>
-            <div>Permission Types:</div>
-            <div>
-              <div>
-                • <strong>Read:</strong> View the procedure
-              </div>
-              <div>
-                • <strong>Edit:</strong> Modify the procedure content
-              </div>
-              <div>
-                • <strong>Execute:</strong> Mark tasks as complete during
-                execution
-              </div>
-            </div>
-          </Box>
+      <div className="p-4">
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+          <TextField
+            label="Enter User ID"
+            value={newUserId}
+            onChange={(e) => setNewUserId(e.target.value)}
+            placeholder="Enter user ID or email"
+            fullWidth
+            size="small"
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleAddUser();
+              }
+            }}
+          />
+          <Button
+            variant="contained"
+            onClick={handleAddUser}
+            disabled={!newUserId.trim()}
+          >
+            <AddIcon />
+          </Button>
         </Box>
+      </div>
+
+      <DialogContent>
+        <div className="flex flex-col gap-2 mt-2">
+          <Typography variant="h6" gutterBottom>
+            Current Permissions
+          </Typography>
+
+          {/* Shared users */}
+          {permissions.length === 0 ? (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ textAlign: 'center', py: 3 }}
+            >
+              No users have been granted permissions yet
+            </Typography>
+          ) : (
+            <div className="flex flex-col gap-2 max-h-64">
+              {permissions.map((userPerm) => (
+                <div className="flex items-center border border-gray-300 rounded-sm px-4 py-2">
+                  <div className="mr-auto">{userPerm.userId}</div>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={userPerm.permissions.read}
+                        onChange={(e) =>
+                          handlePermissionChange(
+                            userPerm.userId,
+                            'read',
+                            e.target.checked,
+                          )
+                        }
+                      />
+                    }
+                    label="Read"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={userPerm.permissions.edit}
+                        onChange={(e) =>
+                          handlePermissionChange(
+                            userPerm.userId,
+                            'edit',
+                            e.target.checked,
+                          )
+                        }
+                      />
+                    }
+                    label="Edit"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={userPerm.permissions.execute}
+                        onChange={(e) =>
+                          handlePermissionChange(
+                            userPerm.userId,
+                            'execute',
+                            e.target.checked,
+                          )
+                        }
+                      />
+                    }
+                    label="Execute"
+                  />
+                  <IconButton
+                    size="small"
+                    onClick={() => handleRemoveUser(userPerm.userId)}
+                    color="error"
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </DialogContent>
+
+      {/* Permission Legend */}
+      <div className="py-2 mx-4 text-xs">
+        <div>Permission Types:</div>
+        <div>
+          <div>
+            • <strong>Read:</strong> View the procedure
+          </div>
+          <div>
+            • <strong>Edit:</strong> Modify the procedure content
+          </div>
+          <div>
+            • <strong>Execute:</strong> Mark tasks as complete during execution
+          </div>
+        </div>
+      </div>
 
       <DialogActions sx={{ p: 3 }}>
         <Button onClick={onClose} disabled={submitting}>
           Cancel
         </Button>
         <Button variant="contained" onClick={handleSave} disabled={submitting}>
-          {submitting ? 'Saving...' : 'Save Permissions'}
+          {submitting ? 'Saving...' : 'Save'}
         </Button>
       </DialogActions>
     </Dialog>
