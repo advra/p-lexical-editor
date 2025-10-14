@@ -2,7 +2,7 @@
 import { notFound } from 'next/navigation';
 import { getPage } from '@/lib/get-page';
 import ProcPageClient from '../../ui/components/ProcPageClient';
-import { StoreProvider } from '@/context/StoreContext';
+import { LocalStoreProvider } from '@/context/LocalStoreContext';
 import {
   ProcPublic,
   ProcPublicWithAcl,
@@ -21,13 +21,13 @@ export default async function Page({
   if (!proc) return notFound();
 
   return (
-    <StoreProvider initialProc={proc}>
+    <LocalStoreProvider initialProc={proc}>
       <ProcPageClient
         executionMode={true}
         proc={proc}
         slug={slug}
         path={`/procs/${slug}`}
       />
-    </StoreProvider>
+    </LocalStoreProvider>
   );
 }

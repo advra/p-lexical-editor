@@ -4,17 +4,17 @@ import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import UpdateIcon from '@mui/icons-material/Update';
 import { useProc } from '@/context/ProcContext';
 
-export default function CompletionStatus({ record, localCompletion }) {
+export default function CompletionStatus({ record, completionData }) {
   const { viewMode } = useProc();
   const getUser = () => record?.last_updated_by || 'UNKNOWN';
   const isRedlined = () => record?.isRedlined;
   const isComplete = () => record?.state === 'complete';
-  const isLocallyComplete = () => localCompletion?.completed || false;
+  const isLocallyComplete = () => completionData?.completed || false;
   const getDCN = () => record?.dcn;
 
   const lastUpdated = new Date(record?.last_updated || Date.now());
-  const localCompletedAt = localCompletion?.completedAt
-    ? new Date(localCompletion.completedAt)
+  const localCompletedAt = completionData?.completedAt
+    ? new Date(completionData.completedAt)
     : null;
 
   const dateStringOptions: Intl.DateTimeFormatOptions = {

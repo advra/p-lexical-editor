@@ -5,7 +5,6 @@ import { useProcPermissions, useProc } from '@/context/ProcContext';
 import CompletionStatus from './constants/taskitem/CompletionStatus';
 import { ComponentConfig } from '@measured/puck';
 import { RedlineWrapper } from './ui/redline/RedlineWrapper';
-import { cn } from '@/lib/utils/cn';
 import {
   redlineOptions,
   AddRedlineProps,
@@ -14,7 +13,8 @@ import {
 import { RedlineInfo } from './ui/redline/RedlineInfo';
 import { DisplayRedlineText } from './ui/redline/DisplayRedlineText';
 import { toast } from 'sonner';
-import { useStore } from '@/context/StoreContext';
+import { useStore } from '@/context/LocalStoreContext';
+import { unknown } from 'zod';
 
 export type TaskItemProps = {
   step: string;
@@ -46,18 +46,34 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
     const [currentSessionId, setCurrentSessionId] = useState<string | null>(
       null,
     );
-    const menuOpen = Boolean(anchorEl);
-
-    const { canExecute, isOwner } = useProcPermissions();
-    const { procId, viewMode } = useProc();
-    const canMarkComplete = canExecute || isOwner;
-    const localStore = useStore();
 
     // Get local completion state for this block
     // reference the block id provided by puck
     const blockId = id;
-    const localCompletion = localStore.localCompletions[blockId];
-    const isLocallyCompleted = localCompletion?.completed || false;
+
+    const setupLocalStorage = () => {
+      let isLocallyCompleted = false;
+      let localStore;
+      let completionData = null;
+      if (viewMode === 'view') {
+        localStore = useStore();
+        if (localStore) {
+          completionData = localStore.localCompletions[blockId];
+          if (completionData) isLocallyCompleted = completionData?.completed;
+        }
+      } else {
+        localStore = null;
+      }
+
+      return { localStore, isLocallyCompleted, completionData };
+    };
+
+    const menuOpen = Boolean(anchorEl);
+    const { canExecute, isOwner } = useProcPermissions();
+    const { procId, viewMode } = useProc();
+    const canMarkComplete = canExecute || isOwner;
+    const { localStore, isLocallyCompleted, completionData } =
+      setupLocalStorage();
 
     // Get or create session when component mounts
     useEffect(() => {
@@ -105,10 +121,12 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
     const onMarkComplete = async () => {
       if (viewMode === 'view') {
         // Use local state for view mode
-        localStore.updateLocalCompletion(blockId, {
-          completed: true,
-          completedAt: new Date().toISOString(),
-        });
+        if (localStore) {
+          localStore.updateLocalCompletion(blockId, {
+            completed: true,
+            completedAt: new Date().toISOString(),
+          });
+        }
         toast.success('(PREVIEW): Task marked as complete');
         handleMenuClose();
         return;
@@ -152,7 +170,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
     };
 
     const onRemoveComplete = async () => {
-      if (viewMode === 'view') {
+      if (viewMode === 'view' && localStore) {
         // Use local state for view mode
         localStore.updateLocalCompletion(blockId, {
           completed: false,
@@ -269,7 +287,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
               {record && (
                 <CompletionStatus
                   record={record}
-                  localCompletion={localCompletion}
+                  completionData={completionData}
                 />
               )}
             </div>
@@ -286,8 +304,6 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
                 disableTouchListener={canMarkComplete}
               >
                 <span>
-                  {' '}
-                  {/* Wrapper span needed for disabled buttons */}
                   <Button
                     className="w-40"
                     variant="outlined"
@@ -316,7 +332,6 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
                   horizontal: 'right',
                 }}
               >
-                {/* {canMarkComplete && ( */}
                 <div>
                   {showMarkComplete ? (
                     <>

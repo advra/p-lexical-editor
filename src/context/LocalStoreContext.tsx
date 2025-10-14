@@ -34,7 +34,7 @@ const StoreContext = createContext<{
   updateLocalCompletion: (blockId: string, state: LocalCompletionState) => void;
 } | null>(null);
 
-export function StoreProvider({
+export function LocalStoreProvider({
   children,
   initialProc,
 }: {
@@ -42,7 +42,7 @@ export function StoreProvider({
   initialProc: ProcPublic | ProcPublicWithAcl;
 }) {
   if (!initialProc)
-    throw new Error('StoreProvider requires valid initial proc data');
+    throw new Error('LocalStoreProvider requires valid initial proc data');
   const initialProcData = extractInitialBlocks(initialProc);
   const [store, setStore] = useState<Store>(
     () =>

@@ -8,7 +8,7 @@ import {
   ProcPublic,
   ProcPublicWithAcl,
 } from '@/modules/procs/models/proc-model';
-import { useStore } from '@/context/StoreContext';
+import { useStore } from '@/context/LocalStoreContext';
 import useUser from '@/hooks/use-user';
 import { getSocket } from '@/lib/socket';
 import { ProcProvider, ProcViewModes } from '@/context/ProcContext';
@@ -70,8 +70,6 @@ export default function ProcPageClient({
 
   // Determine view mode based on path and execution mode
   let procViewMode: ProcViewModes;
-  console.log('path', path);
-
   if (executionMode) {
     procViewMode = 'execute';
   } else if (path.includes('/edit')) {
