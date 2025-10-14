@@ -6,9 +6,11 @@ import config from '@/puck.config';
 import { formatTimestamp } from '@/lib/utils/dateformat';
 import type { PuckPageData } from '@/app/puck/types';
 import clsx from 'clsx';
-import { forwardRef } from 'react';
+import { forwardRef, useState } from 'react';
 import { RedlineRender } from '@/components/puck/ui/redline/RedlineRender';
 import useUser from '@/hooks/use-user';
+import { NavigationDrawer } from '@/components/puck/ui/NavigationDrawer';
+import { NavigationFloatingButton } from '@/components/puck/ui/NavigationFloatingButton';
 
 export const PuckPreview = forwardRef<
   HTMLDivElement,
@@ -36,6 +38,7 @@ export const PuckPreview = forwardRef<
   ref,
 ) {
   const user = useUser();
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const size =
     page === 'a4'
       ? 'w-[210mm] min-h-[297mm] p-[12mm]'
@@ -51,9 +54,53 @@ export const PuckPreview = forwardRef<
     // For now, we'll just log it
   };
 
+  const handleNavigationItemClick = (item: any) => {
+    if (item.id === 'title') {
+      // Scroll to the top of the document
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      // For sections, we'll need to implement finding the section by ID
+      // For now, just scroll to a reasonable position
+      const sectionElement = document.querySelector(
+        `[data-section="${item.id}"]`,
+      );
+      if (sectionElement) {
+        sectionElement.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        // Fallback: scroll to approximate position based on section number
+        const sectionNum = parseInt(item.id.split('-')[1]);
+        const scrollPosition = sectionNum * 500; // Adjust this multiplier as needed
+        window.scrollTo({ top: scrollPosition, behavior: 'smooth' });
+      }
+    }
+  };
+
+  const handleDrawerOpen = () => {
+    setIsDrawerOpen(true);
+  };
+
+  const handleDrawerClose = () => {
+    setIsDrawerOpen(false);
+  };
+
   return (
     // Show the printable version or actual proc page
     <div>
+      {/* Navigation Drawer and Floating Button - Only show in non-preview mode */}
+      {!preview && (
+        <>
+          <NavigationFloatingButton
+            onClick={handleDrawerOpen}
+            isOpen={isDrawerOpen}
+          />
+          <NavigationDrawer
+            isOpen={isDrawerOpen}
+            onClose={handleDrawerClose}
+            onItemClick={handleNavigationItemClick}
+          />
+        </>
+      )}
+
       <div
         ref={ref}
         id="printable"
