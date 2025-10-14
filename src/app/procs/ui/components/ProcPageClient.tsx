@@ -4,10 +4,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { PuckPreview } from './puck-preview';
 import { Header } from './Header';
-import { ProcPublic } from '@/modules/procs/models/proc-model';
-import { useStore } from '@/context/StoreContext';
+import {
+  ProcPublic,
+  ProcPublicWithAcl,
+} from '@/modules/procs/models/proc-model';
+import { useStore } from '@/context/LocalStoreContext';
 import useUser from '@/hooks/use-user';
 import { getSocket } from '@/lib/socket';
+import { ProcProvider, ProcViewModes } from '@/context/ProcContext';
 
 function waitForImages(root: HTMLElement) {
   const imgs = Array.from(root.querySelectorAll('img'));
@@ -25,7 +29,7 @@ function waitForImages(root: HTMLElement) {
 }
 
 type Props = {
-  proc: ProcPublic;
+  proc: ProcPublic | ProcPublicWithAcl;
   slug: string;
   path: string;
   executionMode?: boolean;
@@ -55,12 +59,26 @@ export default function ProcPageClient({
   // Check if user has edit permissions
   const isOwner = proc.owner === user?.username;
   const isAdmin = user?.roles?.includes('admin');
+  // TODO: eproc-2 Add permissions canEdit and canExecute
+  // const hasPermissions = proc.
   const canEdit = !!(isOwner || isAdmin);
   const metadata = {
     title: proc.title,
     description: proc.description ?? '',
     tags: proc.tags,
   };
+
+  // Determine view mode based on path and execution mode
+  let procViewMode: ProcViewModes;
+  if (executionMode) {
+    procViewMode = 'execute';
+  } else if (path.includes('/edit')) {
+    procViewMode = 'edit';
+  } else if (path.includes('/procs/')) {
+    procViewMode = 'view';
+  } else {
+    procViewMode = 'none';
+  }
 
   async function handlePreviewPrint() {
     setPreview(true);
@@ -161,8 +179,21 @@ export default function ProcPageClient({
     };
   }, [room, updateStore, user]);
 
+  // Calculate user permissions based on proc sharedWith data
+  const userPermissions = {
+    read: isOwner || isAdmin || true, // Default to true for now
+    edit: !!(isOwner || isAdmin),
+    execute: !!(isOwner || isAdmin),
+  };
+
   return (
-    <>
+    <ProcProvider
+      viewMode={procViewMode}
+      owner={proc.owner}
+      permissions={userPermissions}
+      currentUser={user}
+      procId={proc._id}
+    >
       <Header
         viewMode={viewMode}
         executionMode={executionMode}
@@ -190,6 +221,6 @@ export default function ProcPageClient({
           }}
         />
       </div>
-    </>
+    </ProcProvider>
   );
 }

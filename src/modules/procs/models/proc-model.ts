@@ -47,7 +47,7 @@ interface Modifications {
   data: PuckPageData;
 }
 
-export const PERMISSIONS = ['read', 'edit'] as const;
+export const PERMISSIONS = ['read', 'edit', 'execute'] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 export type Shared = Readonly<{
   userId: string;

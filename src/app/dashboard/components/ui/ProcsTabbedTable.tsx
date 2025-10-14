@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
@@ -13,6 +14,12 @@ import type { ProcPayload } from './CreateNewProcDialog';
 import { initialProcsData } from '@/app/procs/utils/initialData';
 import { PuckPageData } from '@/app/puck/types';
 import Link from 'next/link';
+import RedirectingDialog from './RedirectingDialog';
+import { Menu, MenuItem } from '@mui/material';
+import { User } from '@/modules/auth/types';
+import ManagePermissionsDialog, {
+  UserPermission,
+} from './ManagePermissionsDialog';
 
 export type Proc = {
   _id: string;
@@ -27,14 +34,22 @@ export type Proc = {
 
 type Props = {
   procs: Proc[];
-  currentUsername: string;
+  currentUser: User | null;
 };
 
 const formatWhen = (v?: string | Date) =>
   v ? new Date(v).toLocaleString() : '—';
 
-export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
+export default function ProcsTabbedTable({ procs, currentUser }: Props) {
   const [showCreateNewProc, setShowCreateNewProc] = useState(false);
+  const [showRedirectDialog, setShowRedirectDialog] = useState(false);
+  const [showManagePermissions, setShowManagePermissions] = useState(false);
+  const [selectedProc, setSelectedProc] = useState<Proc | null>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedProcForMenu, setSelectedProcForMenu] = useState<Proc | null>(
+    null,
+  );
+  const open = Boolean(anchorEl);
   const tabs = ['All', 'My Procs', 'Shared With Me'] as const;
   type Tab = (typeof tabs)[number];
 
@@ -50,13 +65,17 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
     console.log('ALL PROCS: ', procs);
 
     if (active === 'My Procs') {
-      items = procs.filter((p) => p.owner === currentUsername);
+      items = procs.filter((p) => p.owner === currentUser?.username);
     } else if (active === 'Shared With Me') {
-      items = procs.filter(
-        (p) =>
-          p.owner !== currentUsername &&
-          (p.sharedWith?.includes(currentUsername) ?? false),
-      );
+      if (currentUser) {
+        items = procs.filter(
+          (p) =>
+            p.owner !== currentUser?.username &&
+            (p.sharedWith?.includes(currentUser.username) ?? false),
+        );
+      } else {
+        items = [];
+      }
     }
 
     if (!q) return items;
@@ -72,7 +91,7 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
         shared.some((s) => s.includes(q))
       );
     });
-  }, [procs, query, active, currentUsername]);
+  }, [procs, query, active, currentUser]);
 
   // Pagination logic
   const totalItems = filtered.length;
@@ -86,43 +105,98 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
     setCurrentPage(1);
   }, [query, active, filtered.length]);
 
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, proc: Proc) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedProcForMenu(proc);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedProcForMenu(null);
+  };
+
+  const handleManagePermissions = () => {
+    if (selectedProcForMenu) {
+      setSelectedProc(selectedProcForMenu);
+      setShowManagePermissions(true);
+    }
+    handleMenuClose();
+  };
+
+  const handlePermissionsUpdate = async (
+    procId: string,
+    permissions: UserPermission[],
+  ) => {
+    // TODO: Implement API call to update permissions
+    console.log('Updating permissions for proc:', procId, permissions);
+
+    // Mock implementation - replace with actual API call
+    try {
+      const response = await fetch(`/api/puck/proc/${procId}/permissions`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ permissions }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update permissions');
+      }
+
+      // Refresh the procs list or update local state
+      // For now, we'll just log success
+      console.log('Permissions updated successfully');
+    } catch (error) {
+      console.error('Failed to update permissions', error);
+      throw error;
+    }
+  };
+
   const tryCreateNewProc = async ({ name, description, tags }: ProcPayload) => {
     console.log(`Creating: name: ${name} desc: ${description} tag: ${tags}`);
     // 1) generate id
     // const id = crypto.randomUUID();
     // const path = `/procs/${id}`;
 
-    // 2) build the data object in the same shape your DB expects
-    const initialData = initialProcsData({
-      owner: currentUsername,
-      title: name,
-      description: description || undefined,
-      tags: tags ? [] : undefined,
-    });
-
-    console.log('initialData: ', initialData);
-
-    try {
-      const res = await fetch('/api/puck/proc', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: initialData }),
+    // check if valid user
+    if (!currentUser) {
+      console.error(
+        'Creating Eproc failed. No user is logged in to create eproc',
+      );
+    } else {
+      // 2) build the data object in the same shape your DB expects
+      const initialData = initialProcsData({
+        owner: currentUser.username,
+        title: name,
+        description: description || undefined,
+        tags: tags ? [] : undefined,
       });
 
-      if (!res.ok) {
-        const err = await res.text();
-        throw new Error(err || `Request failed: ${res.status}`);
+      console.log('initialData: ', initialData);
+
+      try {
+        const res = await fetch('/api/puck/proc', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: initialData }),
+        });
+
+        if (!res.ok) {
+          const err = await res.text();
+          throw new Error(err || `Request failed: ${res.status}`);
+        }
+
+        // Optionally parse server response
+        const { id, path } = await res.json();
+
+        setShowCreateNewProc(false);
+        // render loading new page message
+        setShowRedirectDialog(true);
+        // The dialog expects this return value to navigate to the new proc
+        return { id, path, initialData } as any;
+      } catch (error) {
+        console.error('Failed to create proc', error);
+        throw error;
       }
-
-      // Optionally parse server response
-      const { id, path } = await res.json();
-
-      setShowCreateNewProc(false);
-      // The dialog expects this return value to navigate to the new proc
-      return { id, path, initialData } as any;
-    } catch (error) {
-      console.error('Failed to create proc', error);
-      throw error;
     }
   };
 
@@ -269,9 +343,48 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
                           <Link href={`procs/${p.slug}/edit`}> Edit</Link>
                         </button>
                         {/* TODO: Add Delete, Edit Metadata, Manage Permissions */}
-                        {/* <button className="text-sm text-gray-600 hover:underline hover:cursor-pointer">
-                          More
-                        </button> */}
+                        {currentUser?.username === p.owner && (
+                          <button
+                            className="text-sm text-blue-600 hover:underline hover:cursor-pointer"
+                            onClick={(e) => handleMenuOpen(e, p)}
+                          >
+                            More
+                          </button>
+                        )}
+                        <Menu
+                          anchorEl={anchorEl}
+                          open={open}
+                          onClose={handleMenuClose}
+                          anchorOrigin={{
+                            vertical: 'bottom',
+                            horizontal: 'right',
+                          }}
+                          transformOrigin={{
+                            vertical: 'top',
+                            horizontal: 'right',
+                          }}
+                          slotProps={{
+                            paper: {
+                              elevation: 0,
+                              sx: {
+                                boxShadow:
+                                  '0 12px 28px rgba(0,0,0,0.01), 0 2px 6px rgba(0,0,0,0.05)',
+                                minWidth: 200,
+                              },
+                            },
+                          }}
+                        >
+                          {/* TODO: eproc-3 Implement Publish and unpublish for drafts *
+                          <MenuItem key="unpublish">
+                            <div>Unpublish</div>
+                          </MenuItem> */}
+                          <MenuItem
+                            key="managePermissions"
+                            onClick={handleManagePermissions}
+                          >
+                            <div>Manage Permissions</div>
+                          </MenuItem>
+                        </Menu>
                       </div>
                     </td>
                   </tr>
@@ -355,13 +468,22 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
         </div>
       )}
 
-      {/* Render NewProcDialog */}
+      {/* Render dialogs */}
       {showCreateNewProc && (
         <CreateNewProcDialog
           open={showCreateNewProc}
           onClose={() => setShowCreateNewProc(false)}
           onCreate={tryCreateNewProc}
           tags={['Viasat', 'Northrop', 'Qualcomm']}
+        />
+      )}
+      {showRedirectDialog && <RedirectingDialog open={showRedirectDialog} />}
+      {showManagePermissions && selectedProc && (
+        <ManagePermissionsDialog
+          open={showManagePermissions}
+          onClose={() => setShowManagePermissions(false)}
+          proc={selectedProc}
+          onPermissionsUpdate={handlePermissionsUpdate}
         />
       )}
     </div>

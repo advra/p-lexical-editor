@@ -1,11 +1,10 @@
 import { Button, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { useState } from 'react';
-import useUser from '@/hooks/use-user';
+import { useState, useEffect } from 'react';
+import { useProcPermissions, useProc } from '@/context/ProcContext';
 import CompletionStatus from './constants/taskitem/CompletionStatus';
 import { ComponentConfig } from '@measured/puck';
 import { RedlineWrapper } from './ui/redline/RedlineWrapper';
-import { cn } from '@/lib/utils/cn';
 import {
   redlineOptions,
   AddRedlineProps,
@@ -13,6 +12,9 @@ import {
 } from './ui/redline/RedlineComponent';
 import { RedlineInfo } from './ui/redline/RedlineInfo';
 import { DisplayRedlineText } from './ui/redline/DisplayRedlineText';
+import { toast } from 'sonner';
+import { useStore } from '@/context/LocalStoreContext';
+import { unknown } from 'zod';
 
 export type TaskItemProps = {
   step: string;
@@ -31,6 +33,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
     content: 'Describe the task here...',
   },
   render: ({
+    id,
     step,
     content,
     record,
@@ -40,18 +43,180 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
   }: TaskItemProps &
     AddRedlineProps & { onRedlineDelete?: (redlineId: string) => void }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [currentSessionId, setCurrentSessionId] = useState<string | null>(
+      null,
+    );
+
+    // Get local completion state for this block
+    // reference the block id provided by puck
+    const blockId = id;
+
+    const setupLocalStorage = () => {
+      let isLocallyCompleted = false;
+      let localStore;
+      let completionData = null;
+      if (viewMode === 'view') {
+        localStore = useStore();
+        if (localStore) {
+          completionData = localStore.localCompletions[blockId];
+          if (completionData) isLocallyCompleted = completionData?.completed;
+        }
+      } else {
+        localStore = null;
+      }
+
+      return { localStore, isLocallyCompleted, completionData };
+    };
+
     const menuOpen = Boolean(anchorEl);
+    const { canExecute, isOwner } = useProcPermissions();
+    const { procId, viewMode } = useProc();
+    const canMarkComplete = canExecute || isOwner;
+    const { localStore, isLocallyCompleted, completionData } =
+      setupLocalStorage();
 
-    const { session, loading } = useUser();
-    // const isViewer = !!session?.user?.roles?.includes('viewer');
-    const isViewer = false;
+    // Get or create session when component mounts
+    useEffect(() => {
+      const initializeSession = async () => {
+        try {
+          // Check for existing active session
+          const response = await fetch(`/api/proc-sessions?procId=${procId}`);
+          if (response.ok) {
+            const result = await response.json();
+            const activeSession = result.sessions.find(
+              (s: any) => s.status === 'active',
+            );
 
-    const onUnmarkComplete = () => {};
+            if (activeSession) {
+              setCurrentSessionId(activeSession._id);
+            } else {
+              // Create new session
+              const createResponse = await fetch('/api/proc-sessions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ procId }),
+              });
+
+              if (createResponse.ok) {
+                const sessionResult = await createResponse.json();
+                setCurrentSessionId(sessionResult.session._id);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Failed to initialize session:', error);
+        }
+      };
+
+      if (procId) {
+        initializeSession();
+      }
+    }, [procId]);
+
     const handleMenuClose = () => setAnchorEl(null);
     const onIconButton = async (event: any) => {
       setAnchorEl(event.currentTarget);
     };
-    const onMarkComplete = async () => {};
+
+    const onMarkComplete = async () => {
+      if (viewMode === 'view') {
+        // Use local state for view mode
+        if (localStore) {
+          localStore.updateLocalCompletion(blockId, {
+            completed: true,
+            completedAt: new Date().toISOString(),
+          });
+        }
+        toast.success('(PREVIEW): Task marked as complete');
+        handleMenuClose();
+        return;
+      }
+
+      if (!currentSessionId) {
+        toast.error('No active session found');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/proc-sessions', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: currentSessionId,
+            recordId: blockId,
+            blockType: 'TaskItem',
+            state: 'complete',
+            data: {
+              step,
+              content,
+              completedAt: new Date().toISOString(),
+            },
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to mark task complete');
+        }
+
+        const result = await response.json();
+        toast.success('Task marked as complete');
+
+        // TODO: Update local state or trigger refresh
+        console.log('Task marked complete in session:', result.session);
+      } catch (error) {
+        console.error('Failed to mark task complete:', error);
+        toast.error('Failed to mark task as complete');
+      }
+    };
+
+    const onRemoveComplete = async () => {
+      if (viewMode === 'view' && localStore) {
+        // Use local state for view mode
+        localStore.updateLocalCompletion(blockId, {
+          completed: false,
+        });
+        toast.success('(PREVIEW): Removed Complete from task');
+        handleMenuClose();
+        return;
+      }
+
+      if (!currentSessionId) {
+        toast.error('No active session found');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/proc-sessions', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: currentSessionId,
+            recordId: blockId,
+            blockType: 'TaskItem',
+            state: 'pending',
+            data: {
+              step,
+              content,
+              unmarkedAt: new Date().toISOString(),
+            },
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to unmark task');
+        }
+
+        const result = await response.json();
+        toast.success('Removed Complete from task');
+        handleMenuClose();
+
+        // TODO: Update local state or trigger refresh
+        console.log('Removed Complete from task in session:', result.session);
+      } catch (error) {
+        console.error('Failed to remove complete from task:', error);
+        toast.error('Failed to remove complete from task');
+      }
+    };
 
     // redline options
     const handleRedline = redlineOptions(onRedlineClick, handleMenuClose);
@@ -64,6 +229,9 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
     // Use redline content if available
     const displayContent = redlineContent?.newText || content;
     const displayStep = redlineStep?.newText || step;
+
+    const showMarkComplete =
+      !canMarkComplete || record?.state === 'complete' || isLocallyCompleted;
 
     return (
       <div className="p-2 h-auto my-2 border border-gray-300 rounded-md shadow-sm">
@@ -116,54 +284,84 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
           </div>
           <div className="flex items-start">
             <div className="ml-auto">
-              {record && <CompletionStatus record={record} />}
+              {record && (
+                <CompletionStatus
+                  record={record}
+                  completionData={completionData}
+                />
+              )}
             </div>
-            <Tooltip
-              title={
-                isViewer ? 'These actions are not permitted by viewers' : ''
-              }
-            >
-              <div className="flex">
-                <Button
-                  className="w-40"
-                  variant="outlined"
-                  color="success"
-                  onClick={onMarkComplete}
-                  disabled={
-                    isViewer || record?.state === 'complete'
-                    // loadingSession ||
-                    // sessionId == null ||
-                    // loading
-                  }
-                >
-                  Mark Complete
-                </Button>
-                <IconButton disabled={isViewer} onClick={onIconButton}>
-                  <MoreVertIcon />
-                </IconButton>
-                <Menu
-                  disableScrollLock
-                  anchorEl={anchorEl}
-                  open={menuOpen}
-                  onClose={handleMenuClose}
-                  anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'right',
-                  }}
-                  transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                >
-                  <MenuItem onClick={onUnmarkComplete}>
-                    Unmark Complete
-                  </MenuItem>
-                  <MenuItem onClick={() => handleRedline(displayContent)}>
-                    Create Redline
-                  </MenuItem>
-                </Menu>
-              </div>
-            </Tooltip>
+
+            <div className="flex">
+              <Tooltip
+                title={
+                  !canMarkComplete
+                    ? 'You do not have permission to execute this task'
+                    : ''
+                }
+                disableHoverListener={canMarkComplete}
+                disableFocusListener={canMarkComplete}
+                disableTouchListener={canMarkComplete}
+              >
+                <span>
+                  <Button
+                    className="w-40"
+                    variant="outlined"
+                    color="success"
+                    onClick={onMarkComplete}
+                    disabled={showMarkComplete}
+                  >
+                    Mark Complete
+                  </Button>
+                </span>
+              </Tooltip>
+              <IconButton onClick={onIconButton}>
+                <MoreVertIcon />
+              </IconButton>
+              <Menu
+                disableScrollLock
+                anchorEl={anchorEl}
+                open={menuOpen}
+                onClose={handleMenuClose}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'right',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+              >
+                <div>
+                  {showMarkComplete ? (
+                    <>
+                      <MenuItem
+                        onClick={onRemoveComplete}
+                        disabled={!canMarkComplete}
+                      >
+                        Remove Complete
+                      </MenuItem>
+                    </>
+                  ) : (
+                    <>
+                      <MenuItem
+                        onClick={onMarkComplete}
+                        disabled={!canMarkComplete}
+                      >
+                        Mark Complete
+                      </MenuItem>
+                    </>
+                  )}
+                </div>
+                {/* )} */}
+                <MenuItem onClick={() => handleRedline(displayContent)}>
+                  Redline (Content)
+                </MenuItem>
+                <MenuItem onClick={() => handleRedline(displayStep)}>
+                  Redline (Step)
+                </MenuItem>
+              </Menu>
+            </div>
           </div>
         </div>
       </div>

@@ -9,10 +9,15 @@ import { Puck, usePuck } from '@measured/puck';
 import config from '../../../puck.config';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { slugSchema } from '@/modules/procs/server/schemas';
 import { DiscardChangesButton } from '@/components/puck/ui/DiscardChangesButton';
 import { BackToDashboardButton } from '@/app/procs/ui/components/BackToDashboardButton';
 import { PublishChangesButton } from '@/components/puck/ui/PublishChangesButton';
+import { ProcProvider } from '@/context/ProcContext';
+import {
+  ProcPublic,
+  ProcPublicWithAcl,
+} from '@/modules/procs/models/proc-model';
+import useUser from '@/hooks/use-user';
 
 function HeaderBar({ onPublish, slug }) {
   const puck = usePuck();
@@ -33,13 +38,27 @@ function HeaderBar({ onPublish, slug }) {
 
 export function PuckClientEditor({
   path,
-  data,
+  proc,
 }: {
   path: string;
-  data: Partial<Data>;
+  proc:
+    | ProcPublic
+    | (ProcPublicWithAcl & {
+        data: Partial<Data>;
+      });
 }) {
   const router = useRouter();
   const slug = path.split('/').filter(Boolean).pop()!;
+  const { session, loading } = useUser();
+  const user = session?.user;
+  // Check if user has edit permissions
+  const isOwner = proc.owner === user?.username;
+  const isAdmin = user?.roles?.includes('admin');
+  const userPermissions = {
+    read: isOwner || isAdmin || true, // Default to true for now
+    edit: !!(isOwner || isAdmin),
+    execute: !!(isOwner || isAdmin),
+  };
 
   const handlePublish = async (data: Partial<Data>) => {
     try {
@@ -66,55 +85,63 @@ export function PuckClientEditor({
 
   return (
     <>
-      <Puck
-        config={config}
-        data={data}
-        onPublish={handlePublish}
-        overrides={{
-          headerActions: ({ children }) => (
-            <>
-              <DiscardChangesButton slug={slug} />
-              {children}
-            </>
-          ),
-
-          // custom fields
-          fieldTypes: {
-            checkbox: ({ field, name, value, onChange }) => (
-              <label>
-                <input
-                  type="checkbox"
-                  checked={value}
-                  onChange={(e) => onChange(e.target.checked)}
-                />
-                {field.label || name}
-              </label>
+      <ProcProvider
+        viewMode={'edit'}
+        owner={proc.owner}
+        permissions={userPermissions}
+        currentUser={user}
+        procId={proc._id}
+      >
+        <Puck
+          config={config}
+          data={proc.data}
+          onPublish={handlePublish}
+          overrides={{
+            headerActions: ({ children }) => (
+              <>
+                <DiscardChangesButton slug={slug} />
+                {children}
+              </>
             ),
-          },
 
-          // Render a custom element for each item in the component list
-          // drawerItem: ({ name }) => (
-          //   <div style={{ backgroundColor: 'hotpink' }}>{name}</div>
-          // ),
-          // header: ({ actions, children }) => {
-          //   const puck = usePuck();
-          //   console.log('PUCK DATA:', puck.appState);
-          //   return (
-          //     <>
-          //       <div className="flex h-12 w-full items-center justify-between p-2">
-          //         <BackToDashboardButton />
-          //         <div className="flex items-center">
-          //           <DiscardChangesButton slug={slug} />
-          //           <PublishChangesButton
-          //             onPublish={() => handlePublish(puck.appState.data)}
-          //           />
-          //         </div>
-          //       </div>
-          //     </>
-          //   );
-          // },
-        }}
-      ></Puck>
+            // custom fields
+            fieldTypes: {
+              checkbox: ({ field, name, value, onChange }) => (
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={value}
+                    onChange={(e) => onChange(e.target.checked)}
+                  />
+                  {field.label || name}
+                </label>
+              ),
+            },
+
+            // Render a custom element for each item in the component list
+            // drawerItem: ({ name }) => (
+            //   <div style={{ backgroundColor: 'hotpink' }}>{name}</div>
+            // ),
+            // header: ({ actions, children }) => {
+            //   const puck = usePuck();
+            //   console.log('PUCK DATA:', puck.appState);
+            //   return (
+            //     <>
+            //       <div className="flex h-12 w-full items-center justify-between p-2">
+            //         <BackToDashboardButton />
+            //         <div className="flex items-center">
+            //           <DiscardChangesButton slug={slug} />
+            //           <PublishChangesButton
+            //             onPublish={() => handlePublish(puck.appState.data)}
+            //           />
+            //         </div>
+            //       </div>
+            //     </>
+            //   );
+            // },
+          }}
+        ></Puck>
+      </ProcProvider>
     </>
   );
 }

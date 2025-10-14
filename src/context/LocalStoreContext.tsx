@@ -19,12 +19,22 @@ import {
 type BlockDoc = { id: string; type: string; props: any };
 type Store = Record<string, BlockDoc>;
 
+// Local completion state for view mode
+type LocalCompletionState = {
+  completed: boolean;
+  completedAt?: string;
+};
+
+type LocalCompletions = Record<string, LocalCompletionState>;
+
 const StoreContext = createContext<{
   store: Store;
   updateStore: (block: BlockDoc) => void;
+  localCompletions: LocalCompletions;
+  updateLocalCompletion: (blockId: string, state: LocalCompletionState) => void;
 } | null>(null);
 
-export function StoreProvider({
+export function LocalStoreProvider({
   children,
   initialProc,
 }: {
@@ -32,7 +42,7 @@ export function StoreProvider({
   initialProc: ProcPublic | ProcPublicWithAcl;
 }) {
   if (!initialProc)
-    throw new Error('StoreProvider requires valid initial proc data');
+    throw new Error('LocalStoreProvider requires valid initial proc data');
   const initialProcData = extractInitialBlocks(initialProc);
   const [store, setStore] = useState<Store>(
     () =>
@@ -43,6 +53,10 @@ export function StoreProvider({
       ) as Store,
   );
 
+  const [localCompletions, setLocalCompletions] = useState<LocalCompletions>(
+    {},
+  );
+
   const updateStore = useCallback((block: BlockDoc) => {
     if (!block?.id) return;
     setStore((prev) => ({
@@ -51,7 +65,26 @@ export function StoreProvider({
     }));
   }, []);
 
-  const value = useMemo(() => ({ store, updateStore }), [store, updateStore]);
+  const updateLocalCompletion = useCallback(
+    (blockId: string, state: LocalCompletionState) => {
+      setLocalCompletions((prev) => ({
+        ...prev,
+        [blockId]: state,
+      }));
+    },
+    [],
+  );
+
+  const value = useMemo(
+    () => ({
+      store,
+      updateStore,
+      localCompletions,
+      updateLocalCompletion,
+    }),
+    [store, updateStore, localCompletions, updateLocalCompletion],
+  );
+
   return (
     <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
   );

@@ -8,6 +8,7 @@ import type { PuckPageData } from '@/app/puck/types';
 import clsx from 'clsx';
 import { forwardRef } from 'react';
 import { RedlineRender } from '@/components/puck/ui/redline/RedlineRender';
+import useUser from '@/hooks/use-user';
 
 export const PuckPreview = forwardRef<
   HTMLDivElement,
@@ -34,6 +35,7 @@ export const PuckPreview = forwardRef<
   },
   ref,
 ) {
+  const user = useUser();
   const size =
     page === 'a4'
       ? 'w-[210mm] min-h-[297mm] p-[12mm]'
@@ -50,37 +52,42 @@ export const PuckPreview = forwardRef<
   };
 
   return (
-    <div
-      ref={ref}
-      id="printable"
-      className={clsx(
-        'bg-white',
-        // use classes only; do not alter structure
-        preview
-          ? clsx(
-              size,
-              'mx-auto',
-              'print:w-auto print:min-h-0 print:p-0 print:shadow-none print:my-0',
-            )
-          : 'mt-24 px-4 mx-auto max-w-6xl my-6 shadow',
-      )}
-    >
-      <div className="flex flex-col text-right">
-        <span className="text-sm text-gray-400">Created By: {owner}</span>
-        <span className="text-sm text-gray-400">
-          Last Updated: {formatTimestamp(updatedAt)}
-        </span>
-      </div>
+    // Show the printable version or actual proc page
+    <div>
+      <div
+        ref={ref}
+        id="printable"
+        className={clsx(
+          'bg-white',
+          preview
+            ? clsx(
+                size,
+                'mx-auto',
+                'print:w-auto print:min-h-0 print:p-0 print:shadow-none print:my-0',
+              )
+            : 'mt-24 px-4 mx-auto max-w-6xl my-6 shadow',
+        )}
+      >
+        <div className="flex flex-col">
+          <span className="flex gap-2 ml-auto text-sm text-gray-400">
+            Created By: {owner}
+            {user.session?.user.username === owner && <>(You)</>}
+          </span>
+          <span className="ml-auto text-sm text-gray-400">
+            Last Updated: {formatTimestamp(updatedAt)}
+          </span>
+        </div>
 
-      {/* inner wrapper is constant */}
-      <div className="min-h-screen">
-        <RedlineRender
-          config={config}
-          data={data}
-          procId={procId}
-          room={room}
-          onRedlineSave={handleRedlineSave}
-        />
+        {/* inner wrapper is constant */}
+        <div className="min-h-screen">
+          <RedlineRender
+            config={config}
+            data={data}
+            procId={procId}
+            room={room}
+            onRedlineSave={handleRedlineSave}
+          />
+        </div>
       </div>
     </div>
   );
