@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils/cn';
 interface NavigationItem {
   id: string;
   label: string;
-  type: 'title' | 'section';
+  type: 'title' | 'section' | 'heading';
 }
 
 interface NavigationDrawerProps {
@@ -95,7 +95,8 @@ export const NavigationDrawer = ({
                     'hover:font-semibold hover:text-blue-700 hover:border-l-4 hover:border-blue-700',
                     'text-gray-700 hover:text-blue-700',
                     item.type === 'title' && 'font-bold',
-                    item.type === 'section' && 'font-semibold',
+                    item.type === 'heading' && 'font-semibold ml-2',
+                    item.type === 'section' && 'font-normal ml-4',
                   )}
                 >
                   {item.label}

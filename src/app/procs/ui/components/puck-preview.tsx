@@ -85,7 +85,7 @@ export const PuckPreview = forwardRef<
         }
       });
     }
-
+    console.log('navigationItems', navigationItems);
     return navigationItems;
   };
 
