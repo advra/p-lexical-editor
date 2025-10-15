@@ -57,7 +57,7 @@ export const PuckPreview = forwardRef<
   };
 
   // Extract SectionBlocks from the proc data
-  const extractSectionBlocks = () => {
+  const extractNavigationBlocks = () => {
     const navigationItems = [];
 
     // Add title as first item
@@ -67,7 +67,7 @@ export const PuckPreview = forwardRef<
       type: 'title' as const,
     });
 
-    // Extract SectionBlocks from content
+    // Extract SectionBlocks and HeadingBlocks from content
     if (data.content) {
       data.content.forEach((block, index) => {
         if (block.type === 'SectionBlock' && block.props?.title) {
@@ -75,6 +75,12 @@ export const PuckPreview = forwardRef<
             id: block.props.id || `section-${index}`,
             label: block.props.title,
             type: 'section' as const,
+          });
+        } else if (block.type === 'HeadingBlock' && block.props?.title) {
+          navigationItems.push({
+            id: block.props.id || `heading-${index}`,
+            label: block.props.title,
+            type: 'heading' as const,
           });
         }
       });
@@ -88,10 +94,10 @@ export const PuckPreview = forwardRef<
       // Scroll to the top of the document
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      // Scroll to the specific section by its block ID
-      const sectionElement = document.getElementById(item.id);
-      if (sectionElement) {
-        sectionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Scroll to the specific section by its block ID for section and heading elements
+      const navElement = document.getElementById(item.id);
+      if (navElement) {
+        navElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }
   };
@@ -105,7 +111,7 @@ export const PuckPreview = forwardRef<
   };
 
   useEffect(() => {
-    extractSectionBlocks();
+    extractNavigationBlocks();
   }, [data]);
 
   return (
@@ -122,7 +128,7 @@ export const PuckPreview = forwardRef<
             isOpen={isDrawerOpen}
             onClose={handleDrawerClose}
             onItemClick={handleNavigationItemClick}
-            items={extractSectionBlocks()}
+            items={extractNavigationBlocks()}
           />
         </>
       )}

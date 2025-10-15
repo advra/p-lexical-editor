@@ -8,7 +8,10 @@ import { RedlineWrapper } from './ui/redline/RedlineWrapper';
 import { redlineOptions, AddRedlineProps } from './ui/redline/RedlineComponent';
 import { RedlineInfo } from './ui/redline/RedlineInfo';
 
-export type SectionBlockProps = { title: string };
+export type SectionBlockProps = {
+  id?: string;
+  title: string;
+};
 
 export const SectionBlock: ComponentConfig<
   SectionBlockProps & AddRedlineProps
@@ -21,19 +24,16 @@ export const SectionBlock: ComponentConfig<
     title: 'Heading',
   },
   render: ({
+    id,
     title,
     onRedlineClick,
     isRedlined,
-    redlineContent,
     redlineDcn,
     redlineDescription,
-    originalContent,
     author,
     createdAt,
-    id, // Add the block ID prop
   }: SectionBlockProps &
     AddRedlineProps & {
-      id?: string;
       isRedlined?: boolean;
       redlineContent?: string;
       redlineDcn?: string;
@@ -46,10 +46,7 @@ export const SectionBlock: ComponentConfig<
     const handleRedline = redlineOptions(onRedlineClick, handleMenuClose);
     return (
       <RedlineWrapper onClick={() => handleRedline(title)}>
-        <div
-          className="text-center mx-16"
-          id={id} // Add the block ID as HTML ID for scrolling
-        >
+        <div className="text-center mx-16" id={id}>
           <span className="text-[32px]">{title}</span>
         </div>
         {isRedlined && (

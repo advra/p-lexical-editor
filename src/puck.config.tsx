@@ -148,13 +148,19 @@ export const config: Config<Props> = {
   categories: {
     typography: {
       title: 'Typography',
-      components: ['HeadingBlock', 'TextBlock'],
+      components: ['HeadingBlock', 'SectionBlock', 'TextBlock'],
       defaultExpanded: true,
     },
     formatting: {
       defaultExpanded: true,
       title: 'Formatting',
-      components: ['Grid', 'ColumnsBlock', 'ToggleBlock', 'Card'],
+      components: [
+        'Grid',
+        'FlexContainer',
+        'ColumnsBlock',
+        'ToggleBlock',
+        'Card',
+      ],
     },
     tasking: {
       title: 'Tasking',

@@ -94,6 +94,8 @@ export const NavigationDrawer = ({
                     'hover:cursor-pointer w-full text-left px-4 py-3 border-l-4 border-transparent transition-colors hover:bg-blue-50 focus:bg-blue-50 focus:outline-none',
                     'hover:font-semibold hover:text-blue-700 hover:border-l-4 hover:border-blue-700',
                     'text-gray-700 hover:text-blue-700',
+                    item.type === 'title' && 'font-bold',
+                    item.type === 'section' && 'font-semibold',
                   )}
                 >
                   {item.label}

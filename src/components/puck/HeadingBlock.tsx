@@ -8,7 +8,10 @@ import { redlineOptions, AddRedlineProps } from './ui/redline/RedlineComponent';
 import { cn } from '@/lib/utils/cn';
 import { RedlineInfo } from './ui/redline/RedlineInfo';
 
-export type HeadingBlockProps = { title: string };
+export type HeadingBlockProps = {
+  id?: string;
+  title: string;
+};
 
 export const HeadingBlock: ComponentConfig<
   HeadingBlockProps & AddRedlineProps
@@ -21,6 +24,7 @@ export const HeadingBlock: ComponentConfig<
     title: 'Heading',
   },
   render: ({
+    id,
     title,
     onRedlineClick,
     isRedlined,
@@ -39,7 +43,7 @@ export const HeadingBlock: ComponentConfig<
     return (
       <>
         <RedlineWrapper onClick={() => handleRedline(displayTitle)}>
-          <div className="text-center mx-16">
+          <div className="text-center mx-16" id={id}>
             <span
               className={cn(
                 'text-[42px] font-semibold',
