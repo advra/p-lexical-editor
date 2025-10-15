@@ -148,9 +148,9 @@ export const PuckPreview = forwardRef<
         )}
       >
         <div className="flex flex-col">
-          <span className="flex gap-2 ml-auto text-sm text-gray-400">
-            Created By: {owner}
-            {user.session?.user.username === owner && <>(You)</>}
+          <span className="flex gap-1 ml-auto text-sm text-gray-400">
+            <span> Created By: {owner}</span>
+            {user.session?.user.username === owner && <span>(You)</span>}
           </span>
           <span className="ml-auto text-sm text-gray-400">
             Last Updated: {formatTimestamp(updatedAt)}

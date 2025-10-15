@@ -18,9 +18,9 @@ export const EditButton = ({ path, disabled, showLabel = false }: Props) => {
     <Box display="flex" alignItems="center" gap={1}>
       <IconButton
         sx={{
-          color: '#d97706',
+          color: '#2ca33e',
           '&:hover': {
-            color: '#e88717',
+            color: '#0d8c20',
           },
         }}
         aria-label="edit"

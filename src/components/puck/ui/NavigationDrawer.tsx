@@ -84,7 +84,7 @@ export const NavigationDrawer = ({
           </div>
 
           {/* Navigation Items */}
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto">
             <nav className="space-y-2">
               {items.map((item) => (
                 <button
@@ -95,11 +95,14 @@ export const NavigationDrawer = ({
                     'hover:font-semibold hover:text-blue-700 hover:border-l-4 hover:border-blue-700',
                     'text-gray-700 hover:text-blue-700',
                     item.type === 'title' && 'font-bold',
-                    item.type === 'heading' && 'font-semibold ml-2',
-                    item.type === 'section' && 'font-normal ml-4',
+                    item.type === 'heading' && 'font-semibold',
+                    item.type === 'section' && 'font-normal',
                   )}
                 >
-                  {item.label}
+                  <div className="flex items-center gap-2">
+                    <div className="w-1 h-1 bg-gray-400 rounded-full" />
+                    {item.label}
+                  </div>
                 </button>
               ))}
             </nav>
