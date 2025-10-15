@@ -161,11 +161,23 @@ export default function ProcPageClient({
       setRedlines((prev) => prev.filter((r) => r._id !== payload.redlineId));
     };
 
+    // Handle session record updates
+    const onSessionRecordUpdated = (payload: {
+      sessionId: string;
+      recordId: string;
+      state: string;
+    }) => {
+      console.log('Session record updated:', payload);
+      // Trigger a refresh of the page to show updated task status
+      window.location.reload();
+    };
+
     socket.on('presence:update', onPresence);
     socket.on('record:patch', onPatch);
     socket.on('redline:created', onRedlineCreated);
     socket.on('redline:updated', onRedlineUpdated);
     socket.on('redline:deleted', onRedlineDeleted);
+    socket.on('session:record-updated', onSessionRecordUpdated);
 
     socket.emit('presence:request', { room });
 
@@ -175,6 +187,7 @@ export default function ProcPageClient({
       socket.off('redline:created', onRedlineCreated);
       socket.off('redline:updated', onRedlineUpdated);
       socket.off('redline:deleted', onRedlineDeleted);
+      socket.off('session:record-updated', onSessionRecordUpdated);
       socket.emit('room:leave', { room });
     };
   }, [room, updateStore, user]);
@@ -205,6 +218,8 @@ export default function ProcPageClient({
         metadata={metadata}
         presenceDisplay={presenceDisplay}
         canEdit={canEdit}
+        loading={loading}
+        user={user}
       />
       <div>
         <PuckPreview

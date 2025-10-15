@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { BackToDashboardButton } from './BackToDashboardButton';
 import { ExportPDFButton } from './ExportPDFButton';
@@ -9,6 +11,8 @@ import { ProcMetadataDetailsButton } from './ProcMetadataDetailsButton';
 import { BackToViewMode } from './BackToViewModeButton';
 import { ExecuteModeButton } from './ExecuteModeButton';
 import { SessionButtons } from './SessionButton';
+import { User } from '@/modules/auth/types';
+import { CircularProgress } from '@mui/material';
 
 type Props = {
   viewMode: boolean;
@@ -21,6 +25,8 @@ type Props = {
   executionMode?: boolean;
   presenceDisplay: any;
   canEdit: boolean;
+  user: User | undefined;
+  loading: boolean;
 };
 
 export const Header = ({
@@ -32,6 +38,8 @@ export const Header = ({
   tags,
   presenceDisplay,
   canEdit,
+  user,
+  loading,
 }: Props) => {
   const [showProcMetadataDetails, setShowProcMetadataDetails] = useState(false);
 
@@ -89,14 +97,21 @@ export const Header = ({
         supports-[backdrop-filter]:bg-white/60 shadow-sm"
         >
           <div className="px-4 mx-auto max-w-screen">
-            <div className="flex items-center h-12">
+            <div className="flex items-center h-12 gap-1">
               <BackToDashboardButton />
               <div className="pl-1">
                 {executionMode && <BackToViewMode path={path} />}
               </div>
-              <div className="flex flex-col gap-2">
-                <div className="text-sm text-gray-500 p-2">
-                  Viewers: {presenceDisplay}
+              <div className="flex gap-1 text-sm text-gray-500">
+                <span>Viewers:</span>
+                <div>
+                  {loading ? (
+                    <>
+                      <CircularProgress size={12} />
+                    </>
+                  ) : (
+                    <>{presenceDisplay}</>
+                  )}
                 </div>
               </div>
               {executionMode ? <ExecutionModeLabel /> : <ViewModeLabel />}
@@ -105,7 +120,7 @@ export const Header = ({
                   openMetadataDetails={handleMetadataDetails}
                 />
                 {executionMode ? (
-                  <SessionButtons />
+                  <SessionButtons user={user} />
                 ) : (
                   <>
                     <ExportPDFButton handlePreviewPrint={handlePreviewPrint} />

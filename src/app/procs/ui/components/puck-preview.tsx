@@ -1,7 +1,6 @@
 // ui/components/puck-preview.tsx
 'use client';
 
-import { Render } from '@measured/puck';
 import config from '@/puck.config';
 import { formatTimestamp } from '@/lib/utils/dateformat';
 import type { PuckPageData } from '@/app/puck/types';
