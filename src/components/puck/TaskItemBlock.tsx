@@ -3,7 +3,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useState, useEffect } from 'react';
 import { useProcPermissions, useProc } from '@/context/ProcContext';
 import CompletionStatus from './constants/taskitem/CompletionStatus';
-import { ComponentConfig } from '@measured/puck';
+import { ComponentConfig, Slot } from '@measured/puck';
 import { RedlineWrapper } from './ui/redline/RedlineWrapper';
 import {
   redlineOptions,
@@ -18,8 +18,14 @@ import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import Button from '../common/buttons/Button';
 
 export type TaskItemProps = {
+  // This id is inherited by default puck's internal props
+  id?: string;
+
   step: string;
   content: string;
+  items?: any;
+  embeddedSlot?: string;
+
   record?: any;
 };
 
@@ -28,15 +34,28 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
   fields: {
     step: { type: 'text', contentEditable: true },
     content: { type: 'textarea', contentEditable: true },
+    embeddedSlot: {
+      type: 'radio',
+      label: 'Show Embedded Grid',
+      options: [
+        { label: 'Yes', value: 'true' },
+        { label: 'No', value: 'false' },
+      ],
+    },
+    items: { type: 'slot', label: 'Grid content' },
   },
   defaultProps: {
     step: '1.',
     content: 'Describe the task here...',
+    embeddedSlot: 'false',
+    items: [],
   },
   render: ({
     id,
     step,
     content,
+    items,
+    embeddedSlot,
     record,
     onRedlineClick,
     redlinesByTarget,
@@ -50,7 +69,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
 
     // Get local completion state for this block
     // reference the block id provided by puck
-    const blockId = id;
+    const blockId = id || '';
 
     const setupLocalStorage = () => {
       let isLocallyCompleted = false;
@@ -58,7 +77,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
       let completionData = null;
       if (viewMode === 'view') {
         localStore = useStore();
-        if (localStore) {
+        if (localStore && blockId) {
           completionData = localStore.localCompletions[blockId];
           if (completionData) isLocallyCompleted = completionData?.completed;
         }
@@ -284,7 +303,13 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
             </div>
           </div>
         </div>
-        <div className="flex-1">{/* ADD GRID */}</div>
+        {items && embeddedSlot === 'true' && (
+          <div className="flex-1 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {items()}
+            </div>
+          </div>
+        )}
         <div className="flex items-start">
           <div className="ml-auto">
             {record && (
