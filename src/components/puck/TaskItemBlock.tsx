@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { useStore } from '@/context/LocalStoreContext';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import Button from '../common/buttons/Button';
+import { getSocket } from '@/lib/socket';
 
 export type TaskItemProps = {
   // This id is inherited by default puck's internal props
@@ -181,8 +182,16 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
         const result = await response.json();
         toast.success('Task marked as complete');
 
-        // TODO: Update local state or trigger refresh
-        console.log('Task marked complete in session:', result.session);
+        // Emit socket event to notify other clients
+        const socket = getSocket();
+        if (socket) {
+          socket.emit('session:record-updated', {
+            room: procId,
+            sessionId: currentSessionId,
+            recordId: blockId,
+            state: 'complete',
+          });
+        }
       } catch (error) {
         console.error('Failed to mark task complete:', error);
         toast.error('Failed to mark task as complete');
@@ -230,8 +239,16 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
         toast.success('Removed Complete from task');
         handleMenuClose();
 
-        // TODO: Update local state or trigger refresh
-        console.log('Removed Complete from task in session:', result.session);
+        // Emit socket event to notify other clients
+        const socket = getSocket();
+        if (socket) {
+          socket.emit('session:record-updated', {
+            room: procId,
+            sessionId: currentSessionId,
+            recordId: blockId,
+            state: 'pending',
+          });
+        }
       } catch (error) {
         console.error('Failed to remove complete from task:', error);
         toast.error('Failed to remove complete from task');

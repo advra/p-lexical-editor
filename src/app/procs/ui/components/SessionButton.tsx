@@ -77,14 +77,15 @@ export const SessionButtons = ({ user }: Props) => {
           }
         } else {
           // If no sessionId in URL, check if user has active session
+          // But DO NOT create a new session automatically
           const userSession = await checkActiveSession(procId, user?.username);
           if (userSession) {
             setActiveSession(userSession);
             setShowShareLink(true);
             setIsSessionOwner(true);
-            // Update URL with user's session
-            updateUrlWithSession(userSession._id);
+            // Don't update URL automatically - only update when user explicitly starts a session
           } else {
+            // No active session found - don't create one automatically
             setActiveSession(null);
             setIsSessionOwner(false);
           }
@@ -212,12 +213,14 @@ export const SessionButtons = ({ user }: Props) => {
         {/* Share Link Display - Show for session owners */}
         {showShareLink && isSessionOwner && (
           <div className="flex items-center gap-1 bg-blue-50 px-2 py-1 rounded border border-blue-200">
-            <span className="text-xs text-blue-700">Share:</span>
+            <span className="hidden lg:block text-xs text-blue-700">
+              Share:
+            </span>
             <input
               type="text"
               value={getShareLink()}
               readOnly
-              className="text-xs bg-white border border-blue-300 rounded px-2 py-1 w-64"
+              className="hidden lg:block text-xs bg-white border border-blue-300 rounded px-2 py-1 w-64"
               onClick={(e) => e.currentTarget.select()}
             />
             <Tooltip title="Copy share link">

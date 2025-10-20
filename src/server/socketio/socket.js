@@ -21,11 +21,11 @@ app.get('/status', (_req, res) => res.send('ONLINE'));
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: '*',
     credentials: false,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'POST', 'DELETE'],
-  }
-})
+  },
+});
 
 // roomsPresence: Map<room, Map<socketId, { id, name }>>
 const roomsPresence = new Map();
@@ -112,6 +112,19 @@ io.on('connection', (socket) => {
     if (!room || !redlineId) return;
     socket.to(room).emit('redline:deleted', { redlineId });
   });
+
+  // Handle session record updates
+  socket.on(
+    'session:record-updated',
+    ({ room, sessionId, recordId, state }) => {
+      if (!room || !sessionId || !recordId) return;
+      socket.to(room).emit('session:record-updated', {
+        sessionId,
+        recordId,
+        state,
+      });
+    },
+  );
 
   // (Optional) Your previous custom action event—kept for compatibility:
   socket.on('send-recordId-actionPerformed', ({ room, ...action }) => {

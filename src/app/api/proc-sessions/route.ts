@@ -1,18 +1,22 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import {
   ProcSessionModel,
   toPublic,
 } from '@/modules/proc-sessions/models/proc-session-model';
-import { appRouter } from '@/trpc/routers/_app';
-import { createTRPCContext } from '@/trpc/init';
 import { getSessionFromCookie } from '@/lib/utils/auth';
+import { _isoDateTime } from 'zod/v4/core';
 
-// GET /api/proc-sessions?procId={procId}&sessionId={sessionId}
+// GET /api/proc-sessions?procId={procId}&sessionId={sessionId}&username={username}&status={status}
+/*
+  Query for sessions using procId, sessionId, username, and status
+*/
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const procId = searchParams.get('procId');
     const sessionId = searchParams.get('sessionId');
+    const username = searchParams.get('username');
+    const status = searchParams.get('status');
 
     if (!procId) {
       return NextResponse.json(
@@ -25,6 +29,14 @@ export async function GET(request: Request) {
 
     if (sessionId) {
       query._id = sessionId;
+    }
+
+    if (username) {
+      query.createdBy = username;
+    }
+
+    if (status) {
+      query.status = status;
     }
 
     const sessions = await ProcSessionModel.find(query).sort({ createdAt: -1 });
@@ -42,7 +54,7 @@ export async function GET(request: Request) {
 }
 
 // POST /api/proc-sessions - Create a new session
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const session = await getSessionFromCookie();
     const user = session?.user ?? null;
@@ -52,7 +64,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { procId, name } = body;
+    const { procId } = body;
 
     if (!procId) {
       return NextResponse.json(
@@ -61,9 +73,23 @@ export async function POST(request: Request) {
       );
     }
 
+    // Check if user already has an active session for this proc
+    const existingUserSession = await ProcSessionModel.findOne({
+      procId,
+      createdBy: user.username,
+      status: 'active',
+    });
+
+    if (existingUserSession) {
+      // Return existing session instead of creating a new one
+      return NextResponse.json({
+        session: toPublic(existingUserSession),
+      });
+    }
+
     const procSession = await ProcSessionModel.create({
       procId,
-      name: name || `Session ${new Date().toLocaleString()}`,
+      name: `session-${user.username}-${new Date(Date.now()).toISOString()}`,
       createdBy: user.username,
       status: 'active',
       records: [],
@@ -82,10 +108,10 @@ export async function POST(request: Request) {
 }
 
 // PUT /api/proc-sessions - Update session or add/update records
-export async function PUT(request: Request) {
+export async function PUT(request: NextRequest) {
   try {
-    const caller = appRouter.createCaller(await createTRPCContext());
-    const user = await caller.auth.me();
+    const session = await getSessionFromCookie();
+    const user = session?.user ?? null;
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -115,15 +141,15 @@ export async function PUT(request: Request) {
       };
 
       // Find if record already exists in session
-      const session = await ProcSessionModel.findById(sessionId);
-      if (!session) {
+      const procSession = await ProcSessionModel.findById(sessionId);
+      if (!procSession) {
         return NextResponse.json(
           { error: 'Session not found' },
           { status: 404 },
         );
       }
 
-      const existingRecordIndex = session.records.findIndex(
+      const existingRecordIndex = procSession.records.findIndex(
         (r) => r.recordId === recordId,
       );
 
@@ -149,18 +175,26 @@ export async function PUT(request: Request) {
       };
     }
 
-    const session = await ProcSessionModel.findByIdAndUpdate(
+    // If no update data was set, return error
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json(
+        { error: 'No valid update data provided' },
+        { status: 400 },
+      );
+    }
+
+    const updatedSession = await ProcSessionModel.findByIdAndUpdate(
       sessionId,
       updateData,
       { new: true },
     );
 
-    if (!session) {
+    if (!updatedSession) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 });
     }
 
     return NextResponse.json({
-      session: toPublic(session),
+      session: toPublic(updatedSession),
     });
   } catch (error) {
     console.error('Failed to update proc session:', error);
@@ -172,10 +206,18 @@ export async function PUT(request: Request) {
 }
 
 // DELETE /api/proc-sessions - Delete a session
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
   try {
-    const caller = appRouter.createCaller(await createTRPCContext());
-    const user = await caller.auth.me();
+    const cookie = request.cookies.get('user-session')?.value;
+    if (!cookie)
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+
+    let user;
+    try {
+      user = JSON.parse(cookie);
+    } catch {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

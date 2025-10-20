@@ -1,12 +1,11 @@
 // app/procs/[[...puckPath]]/execute/page.tsx  (SERVER)
 import { notFound } from 'next/navigation';
 import { getPage } from '@/lib/get-page';
-import ProcPageClient from '../../ui/components/ProcPageClient';
-import { LocalStoreProvider } from '@/context/LocalStoreContext';
 import {
   ProcPublic,
   ProcPublicWithAcl,
 } from '@/modules/procs/models/proc-model';
+import ProcPageExecuteClient from '../../ui/components/ProcPageExecuteClient';
 
 export default async function Page({
   params,
@@ -21,13 +20,11 @@ export default async function Page({
   if (!proc) return notFound();
 
   return (
-    <LocalStoreProvider initialProc={proc}>
-      <ProcPageClient
-        executionMode={true}
-        proc={proc}
-        slug={slug}
-        path={`/procs/${slug}`}
-      />
-    </LocalStoreProvider>
+    <ProcPageExecuteClient
+      executionMode={true}
+      proc={proc}
+      slug={slug}
+      path={`/procs/${slug}`}
+    />
   );
 }

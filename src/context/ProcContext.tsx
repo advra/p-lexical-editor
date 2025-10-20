@@ -11,9 +11,12 @@ export type ProcPermissions = {
 
 export type ProcViewModes = 'none' | 'view' | 'edit' | 'execute';
 
+// map username to their permissions
+export type ProcPermissionMap = Record<string, ProcPermissions>;
+
 export type ProcContextType = {
   owner: string;
-  permissions: ProcPermissions;
+  permissions: ProcPermissionMap;
   currentUser?: User;
   procId: string;
   viewMode: ProcViewModes;

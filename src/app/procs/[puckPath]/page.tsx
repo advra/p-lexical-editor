@@ -1,4 +1,9 @@
 // app/procs/[[...puckPath]]/page.tsx  (SERVER)
+
+/*
+  The preview version enables a LocalStoreProvider to allow users to make 
+  local changes on their end
+*/
 import { notFound } from 'next/navigation';
 import { getPage } from '@/lib/get-page';
 import ProcPageClient from '../ui/components/ProcPageClient';
