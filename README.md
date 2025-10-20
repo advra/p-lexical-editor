@@ -51,7 +51,7 @@ chmod 755 ./scripts/*
 # App hosted and deployed to http://localhost:5770
 ```
 
-For creating changes to the code and spinning up your own dev instance of the app you can stop the container of the app. And then deploy the app
+If you are actively developing new features and want to develop changes to the code you can spin up your own local instance against the docker stack. First stop the nextjs app. And then deploy the app as shown below
 
 ```bash
 # get the docker name you want to stop
@@ -59,6 +59,8 @@ docker ps -a | grep eproc-app
 
 # stop the docker container (it should have a username like so)
 docker stop nextjs-eproc-USER
+
+npm run dev
 
 # Once deployed you should beable to visit the app at: http://localhost:3000
 ```
