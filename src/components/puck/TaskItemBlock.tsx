@@ -96,33 +96,23 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
     const { localStore, isLocallyCompleted, completionData } =
       setupLocalStorage();
 
-    // Get or create session when component mounts
+    // Get existing session when component mounts - DO NOT create automatically
     useEffect(() => {
       const initializeSession = async () => {
         try {
           // Check for existing active session
-          const response = await fetch(`/api/proc-sessions?procId=${procId}`);
+          const response = await fetch(
+            `/api/proc-sessions?procId=${procId}&status=active`,
+          );
           if (response.ok) {
             const result = await response.json();
-            const activeSession = result.sessions.find(
-              (s: any) => s.status === 'active',
-            );
+            const activeSession =
+              result.sessions.length > 0 ? result.sessions[0] : null;
 
             if (activeSession) {
               setCurrentSessionId(activeSession._id);
-            } else {
-              // Create new session
-              const createResponse = await fetch('/api/proc-sessions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ procId }),
-              });
-
-              if (createResponse.ok) {
-                const sessionResult = await createResponse.json();
-                setCurrentSessionId(sessionResult.session._id);
-              }
             }
+            // If no active session found, don't create one automatically
           }
         } catch (error) {
           console.error('Failed to initialize session:', error);

@@ -81,6 +81,7 @@ export const SessionButtons = ({ user }: Props) => {
           const userSession = await checkActiveSession(procId, user?.username);
           if (userSession) {
             setActiveSession(userSession);
+            updateUrlWithSession(userSession._id);
             setShowShareLink(true);
             setIsSessionOwner(true);
             // Don't update URL automatically - only update when user explicitly starts a session
