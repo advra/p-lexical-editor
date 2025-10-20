@@ -13,23 +13,17 @@ import { User } from '@/modules/auth/types';
 
 type Props = {
   user: User | undefined;
+  canExecute: boolean;
 };
 
-export const SessionButtons = ({ user }: Props) => {
-  const { procId, permissions, owner } = useProc();
+export const SessionButtons = ({ user, canExecute }: Props) => {
+  const { procId } = useProc();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [activeSession, setActiveSession] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showShareLink, setShowShareLink] = useState(false);
   const [isSessionOwner, setIsSessionOwner] = useState(false);
-
-  const canExecute = useMemo(() => {
-    const username = user?.username;
-    if (!username) return false;
-    if (username === owner) return true;
-    return !!permissions[username]?.execute;
-  }, [user?.username, owner, permissions]);
 
   // Update URL with sessionId parameter
   const updateUrlWithSession = (sessionId: string | null) => {

@@ -199,6 +199,8 @@ export default function ProcPageClient({
     execute: !!(isOwner || isAdmin),
   };
 
+  console.log('userPermissions', userPermissions);
+
   return (
     <ProcProvider
       viewMode={procViewMode}
@@ -217,7 +219,7 @@ export default function ProcPageClient({
         tags={proc.tags}
         metadata={metadata}
         presenceDisplay={presenceDisplay}
-        canEdit={canEdit}
+        permissions={userPermissions}
         loading={loading}
         user={user}
       />

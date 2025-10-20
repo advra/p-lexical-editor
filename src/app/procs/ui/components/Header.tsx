@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { BackToDashboardButton } from './BackToDashboardButton';
 import { ExportPDFButton } from './ExportPDFButton';
 import { EditButton } from './EditButton';
@@ -13,6 +13,7 @@ import { ExecuteModeButton } from './ExecuteModeButton';
 import { SessionButtons } from './SessionButton';
 import { User } from '@/modules/auth/types';
 import { CircularProgress } from '@mui/material';
+import { ProcPermissions } from '@/context/ProcContext';
 
 type Props = {
   viewMode: boolean;
@@ -24,7 +25,7 @@ type Props = {
   tags?: string[];
   executionMode?: boolean;
   presenceDisplay: any;
-  canEdit: boolean;
+  permissions: ProcPermissions;
   user: User | undefined;
   loading: boolean;
 };
@@ -37,7 +38,7 @@ export const Header = ({
   description,
   tags,
   presenceDisplay,
-  canEdit,
+  permissions,
   user,
   loading,
 }: Props) => {
@@ -120,12 +121,18 @@ export const Header = ({
                   openMetadataDetails={handleMetadataDetails}
                 />
                 {executionMode ? (
-                  <SessionButtons user={user} />
+                  <SessionButtons
+                    user={user}
+                    canExecute={permissions.execute}
+                  />
                 ) : (
                   <>
                     <ExportPDFButton handlePreviewPrint={handlePreviewPrint} />
-                    <EditButton path={path} disabled={!canEdit} />
-                    <ExecuteModeButton path={path} />
+                    <EditButton path={path} disabled={!permissions.edit} />
+                    <ExecuteModeButton
+                      path={path}
+                      disabled={permissions.execute}
+                    />
                   </>
                 )}
               </div>

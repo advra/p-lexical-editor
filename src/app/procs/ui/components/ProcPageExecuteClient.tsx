@@ -10,7 +10,7 @@ import {
 } from '@/modules/procs/models/proc-model';
 import useUser from '@/hooks/use-user';
 import { getSocket } from '@/lib/socket';
-import { ProcProvider, ProcViewModes } from '@/context/ProcContext';
+import { ProcProvider, ProcViewModes, useProc } from '@/context/ProcContext';
 
 function waitForImages(root: HTMLElement) {
   const imgs = Array.from(root.querySelectorAll('img'));
@@ -215,7 +215,7 @@ export default function ProcPageExecuteClient({
         tags={proc.tags}
         metadata={metadata}
         presenceDisplay={presenceDisplay}
-        canEdit={canEdit}
+        permissions={userPermissions}
         loading={loading}
         user={user}
       />
