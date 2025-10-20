@@ -18,6 +18,12 @@ import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import Button from '../common/buttons/Button';
 import { getSocket } from '@/lib/socket';
 
+const taskItemNetworkOptions = [
+  { label: 'Countdown', value: 'countdown' },
+  { label: 'Space 1', value: 'space1' },
+  { label: 'Space 2', value: 'space2' },
+];
+
 export type TaskItemProps = {
   // This id is inherited by default puck's internal props
   id?: string;
@@ -35,20 +41,30 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
   fields: {
     step: { type: 'text', contentEditable: true },
     content: { type: 'textarea', contentEditable: true },
-    embeddedSlot: {
-      type: 'radio',
-      label: 'Show Embedded Grid',
-      options: [
-        { label: 'Yes', value: 'true' },
-        { label: 'No', value: 'false' },
-      ],
+    items: {
+      label: 'Verbal Confirmation',
+      type: 'array',
+      arrayFields: {
+        network: {
+          type: 'select',
+          label: 'Network',
+          options: taskItemNetworkOptions,
+        },
+        message: { type: 'text', contentEditable: true },
+        response: { type: 'text', contentEditable: true },
+      },
+      defaultItemProps: { network: 'countdown', message: '', response: '' },
+      getItemSummary: (item: { network?: string }) => {
+        const opt = taskItemNetworkOptions.find(
+          (o) => o.value === item?.network,
+        );
+        return `Network: ${opt?.label ?? '—'}`;
+      },
     },
-    items: { type: 'slot', label: 'Grid content' },
   },
   defaultProps: {
     step: '1.',
     content: 'Describe the task here...',
-    embeddedSlot: 'false',
     items: [],
   },
   render: ({
@@ -313,13 +329,71 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
             </div>
           </div>
         </div>
-        {items && embeddedSlot === 'true' && (
-          <div className="flex-1 mt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {items()}
+        {/* Verbal Confirmation Table */}
+        {items && items.length > 0 && (
+          <div className="pb-2 flex-1 mt-4">
+            <div className="border border-gray-300 rounded-md overflow-hidden">
+              {/* Table Header */}
+              <div className="grid grid-cols-12 bg-gray-100 border-b border-gray-300">
+                <div className="col-span-2 px-4 py-2 font-semibold text-gray-700 border-r border-gray-300">
+                  Network
+                </div>
+                <div className="col-span-5 px-4 py-2 font-semibold text-gray-700 border-r border-gray-300">
+                  Message
+                </div>
+                <div className="col-span-5 px-4 py-2 font-semibold text-gray-700">
+                  Response
+                </div>
+              </div>
+
+              {/* Table Rows */}
+              <div className="divide-y divide-gray-200">
+                {items.map(
+                  (
+                    item: {
+                      network: string;
+                      message: string;
+                      response: string;
+                    },
+                    index: number,
+                  ) => (
+                    <div key={index} className="grid grid-cols-12">
+                      {/* NET */}
+                      <div className="col-span-2 px-4 py-2 border-r border-gray-300 bg-gray-50">
+                        <span className="text-sm font-medium text-gray-700">
+                          {item.network || 'Countdown'}
+                        </span>
+                      </div>
+
+                      {/* Message */}
+                      {item.message ? (
+                        <div className="col-span-5 px-4 py-2 border-r border-gray-300">
+                          {item.message || ''}
+                        </div>
+                      ) : (
+                        <div className="col-span-5 px-4 py-2 border-r border-gray-300 italic text-gray-400">
+                          N/A
+                        </div>
+                      )}
+
+                      {/* Response */}
+                      {item.response ? (
+                        <div className="col-span-5 px-4 py-2 ">
+                          {item.response || ''}
+                        </div>
+                      ) : (
+                        <div className="col-span-5 px-4 py-2 italic text-gray-400">
+                          N/A
+                        </div>
+                      )}
+                    </div>
+                  ),
+                )}
+              </div>
             </div>
           </div>
         )}
+
         <div className="flex items-start">
           <div className="ml-auto">
             {record && (

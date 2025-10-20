@@ -21,7 +21,7 @@ export const RedlineFloatingButton = ({ onClick, redlineEnabled }: Props) => {
           'scale-100 w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all duration-300',
           redlineEnabled
             ? 'bg-white text-white hover:bg-gray-700 hover:cursor-pointer hover:shadow-xl hover:scale-105 focus:outline-none focus:ring-0 '
-            : 'bg-gray-400 text-white opacity-60 cursor-not-allowed hover:scale-100 hover:shadow-none',
+            : 'bg-gray-400 text-white opacity-60 hover:cursor-pointer hover:scale-100 hover:shadow-none',
         )}
         aria-label={redlineEnabled ? 'Enable redline' : 'Disable redline'}
       >
