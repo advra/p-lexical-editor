@@ -33,6 +33,7 @@ type RedlineRenderProps = {
     blockId: string,
   ) => void;
   onRedlineDeleted?: (redlineId: string) => void;
+  redlineHoverEnabled?: boolean;
 };
 
 export const RedlineRender = ({
@@ -42,6 +43,7 @@ export const RedlineRender = ({
   room,
   onRedlineSave,
   onRedlineDeleted,
+  redlineHoverEnabled = false,
 }: RedlineRenderProps) => {
   const { session } = useUser();
   const user = session?.user;
@@ -280,6 +282,7 @@ export const RedlineRender = ({
       ...block.props,
       onRedlineClick: (originalText: string, target: string = 'content') =>
         handleRedlineClick(originalText, blockId, target),
+      redlineHoverEnabled, // Pass the toggle state to blocks
     };
 
     // Get all redlines for this block

@@ -14,6 +14,7 @@ export type RedlineProps = {
 };
 
 export type AddRedlineProps = {
+  redlineHoverEnabled: boolean;
   onRedlineClick?: (originalText: string, blockId?: string) => void;
   redlinesByTarget?: { [target: string]: RedlineProps };
 };

@@ -58,6 +58,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
     items,
     embeddedSlot,
     record,
+    redlineHoverEnabled,
     onRedlineClick,
     redlinesByTarget,
     onRedlineDelete,
@@ -267,6 +268,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
             <span className="text-xl font-semibold text-left mr-auto">
               <RedlineWrapper
                 onClick={() => handleRedline(displayStep, 'step')}
+                redlineHoverEnabled={redlineHoverEnabled}
               >
                 <DisplayRedlineText
                   isRedlined={isRedlined}
@@ -281,6 +283,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
             <div className="flex flex-col gap-2">
               <RedlineWrapper
                 onClick={() => handleRedline(displayContent, 'content')}
+                redlineHoverEnabled={redlineHoverEnabled}
               >
                 <DisplayRedlineText
                   isRedlined={isRedlined}

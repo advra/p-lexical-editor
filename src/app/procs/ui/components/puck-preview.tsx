@@ -10,6 +10,8 @@ import { RedlineRender } from '@/components/puck/ui/redline/RedlineRender';
 import useUser from '@/hooks/use-user';
 import { NavigationDrawer } from '@/components/puck/ui/NavigationDrawer';
 import { NavigationFloatingButton } from '@/components/puck/ui/NavigationFloatingButton';
+import { RedlineFloatingButton } from '@/components/puck/ui/redline/RedlineFloatingButton';
+import { toast } from 'sonner';
 
 export const PuckPreview = forwardRef<
   HTMLDivElement,
@@ -101,6 +103,17 @@ export const PuckPreview = forwardRef<
     }
   };
 
+  const [redlineHoverEnabled, setRedlineHoverEnabled] = useState(false);
+
+  const toggleRedlineHover = () => {
+    if (redlineHoverEnabled) {
+      toast('Redline Mode Disabled');
+    } else {
+      toast('Redline Mode Enabled');
+    }
+    setRedlineHoverEnabled(!redlineHoverEnabled);
+  };
+
   const handleDrawerOpen = () => {
     setIsDrawerOpen(true);
   };
@@ -119,10 +132,16 @@ export const PuckPreview = forwardRef<
       {/* Navigation Drawer and Floating Button - Only show in non-preview mode */}
       {!printPreview && (
         <>
-          <NavigationFloatingButton
-            onClick={handleDrawerOpen}
-            isOpen={isDrawerOpen}
-          />
+          <div className="flex flex-col gap-2 fixed left-4 top-1/2 transform -translate-y-1/2 z-30">
+            <NavigationFloatingButton
+              onClick={handleDrawerOpen}
+              isOpen={isDrawerOpen}
+            />
+            <RedlineFloatingButton
+              onClick={toggleRedlineHover}
+              redlineEnabled={redlineHoverEnabled}
+            />
+          </div>
           <NavigationDrawer
             isOpen={isDrawerOpen}
             onClose={handleDrawerClose}
@@ -164,6 +183,7 @@ export const PuckPreview = forwardRef<
             procId={procId}
             room={room}
             onRedlineSave={handleRedlineSave}
+            redlineHoverEnabled={redlineHoverEnabled}
           />
         </div>
       </div>

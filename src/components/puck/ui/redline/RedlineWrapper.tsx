@@ -2,38 +2,22 @@
   Use this to add redline modal features to any child this wraps around
 */
 
-import React, { forwardRef, useState, useEffect } from 'react';
+import React, { forwardRef } from 'react';
 import { cn } from '@/lib/utils/cn';
-import useUser from '@/hooks/use-user';
-import { useProc } from '@/context/ProcContext';
 
 type Props = React.ComponentProps<'div'> & {
   children: React.ReactNode;
   onClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
+  redlineHoverEnabled?: boolean;
 };
 
 export const RedlineWrapper = forwardRef<HTMLDivElement, Props>(
-  ({ className, children, onClick, ...rest }, ref) => {
-    const [shouldShowHoverStyles, setShouldShowHoverStyles] = useState(false);
-    const { owner, currentUser } = useProc();
-
-    useEffect(() => {
-      // Check if we're in edit or execute mode by looking at the URL pathname
-      const isEditOrExecuteMode = (p: string) =>
-        /^\/procs?\/[^/]+\/(edit|execute)\/?$/.test(p);
-      // Use currentUser from ProcContext which is properly synchronized
-      const userIsAuthor = owner === currentUser?.username;
-
-      // Show hover styles when user is NOT the author AND we're NOT in edit/execute mode
-      // This indicates that redlines exist but can't be edited
-      const showHover =
-        !userIsAuthor && !isEditOrExecuteMode(window.location.pathname);
-      setShouldShowHoverStyles(showHover);
-    }, [owner, currentUser]);
-
-    // Only apply hover styles when NOT in edit or execute mode AND user is not author
-    // This indicates redlines exist but can't be edited
-    const hoverStyles = shouldShowHoverStyles
+  (
+    { className, children, onClick, redlineHoverEnabled = false, ...rest },
+    ref,
+  ) => {
+    // Apply hover styles when redlineHoverEnabled is true
+    const hoverStyles = redlineHoverEnabled
       ? 'cursor-pointer hover:outline-red-500 hover:[outline-style:dashed]'
       : '';
 
@@ -45,7 +29,7 @@ export const RedlineWrapper = forwardRef<HTMLDivElement, Props>(
           hoverStyles,
           className,
         )}
-        onClick={shouldShowHoverStyles ? onClick : undefined}
+        onClick={redlineHoverEnabled ? onClick : undefined}
         {...rest}
       >
         {children}

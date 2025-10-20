@@ -26,6 +26,7 @@ export const SectionBlock: ComponentConfig<
   render: ({
     id,
     title,
+    redlineHoverEnabled,
     onRedlineClick,
     isRedlined,
     redlineDcn,
@@ -45,7 +46,10 @@ export const SectionBlock: ComponentConfig<
     const handleMenuClose = () => {};
     const handleRedline = redlineOptions(onRedlineClick, handleMenuClose);
     return (
-      <RedlineWrapper onClick={() => handleRedline(title)}>
+      <RedlineWrapper
+        onClick={() => handleRedline(title)}
+        redlineHoverEnabled={redlineHoverEnabled}
+      >
         <div className="text-center mx-16" id={id}>
           <span className="text-[32px]">{title}</span>
         </div>
