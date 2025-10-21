@@ -17,12 +17,8 @@ import { useStore } from '@/context/LocalStoreContext';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import Button from '../common/buttons/Button';
 import { getSocket } from '@/lib/socket';
-
-const taskItemNetworkOptions = [
-  { label: 'Countdown', value: 'countdown' },
-  { label: 'Space 1', value: 'space1' },
-  { label: 'Space 2', value: 'space2' },
-];
+import useUser from '@/hooks/use-user';
+import CompleteTimestamp from './ui/completed/CompleteTimestamp';
 
 export type TaskItemProps = {
   // This id is inherited by default puck's internal props
@@ -36,8 +32,16 @@ export type TaskItemProps = {
   record?: any;
 };
 
+const TASK_ITEM_LABEL = 'Task Item';
+
+const taskItemNetworkOptions = [
+  { label: 'Countdown', value: 'countdown' },
+  { label: 'Space 1', value: 'space1' },
+  { label: 'Space 2', value: 'space2' },
+];
+
 export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
-  label: 'Task Item',
+  label: TASK_ITEM_LABEL,
   fields: {
     step: { type: 'text', contentEditable: true },
     content: { type: 'textarea', contentEditable: true },
@@ -89,6 +93,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
     // reference the block id provided by puck
     const blockId = id || '';
 
+    const { session } = useUser();
     const setupLocalStorage = () => {
       let isLocallyCompleted = false;
       let localStore;
@@ -393,7 +398,6 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
             </div>
           </div>
         )}
-
         <div className="flex items-start">
           <div className="ml-auto">
             {record && (
@@ -434,6 +438,11 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
             </IconButton>
           </div>
         </div>
+        <CompleteTimestamp
+          completionData={completionData}
+          session={session}
+          blockData={{ label: TASK_ITEM_LABEL, id: `${step}` }}
+        />
         <Menu
           disableScrollLock
           anchorEl={anchorEl}
@@ -466,7 +475,6 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
               </>
             )}
           </div>
-          {/* )} */}
           <MenuItem onClick={() => handleRedline(displayContent)}>
             Redline (Content)
           </MenuItem>

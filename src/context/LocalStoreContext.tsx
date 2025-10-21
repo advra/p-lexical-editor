@@ -20,7 +20,7 @@ type BlockDoc = { id: string; type: string; props: any };
 type Store = Record<string, BlockDoc>;
 
 // Local completion state for view mode
-type LocalCompletionState = {
+export type LocalCompletionState = {
   completed: boolean;
   completedAt?: string;
 };
