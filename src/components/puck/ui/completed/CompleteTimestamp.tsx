@@ -1,6 +1,6 @@
 import React from 'react';
 import { Session } from '@/modules/auth/types';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import CheckIcon from '@mui/icons-material/Check';
 import { LocalCompletionState } from '@/context/LocalStoreContext';
 import { formatTimestamp } from '@/lib/utils/dateformat';
 
@@ -19,7 +19,7 @@ function CompleteTimestamp({ blockData, completionData, session }: Props) {
     <>
       {completionData?.completed && session?.user.username && (
         <div className="flex items-center gap-2 text-green-600 bg-green-500/5 border rounded-sm border-green-500/20 p-2">
-          <AccessTimeIcon className="text-green-600" sx={{ fontSize: 20 }} />
+          <CheckIcon className="text-green-600" sx={{ fontSize: 20 }} />
           <div>
             {blockData.label} {blockData.id && <span>({blockData.id})</span>}{' '}
             marked complete by{' '}
