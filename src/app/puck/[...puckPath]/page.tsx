@@ -12,8 +12,8 @@
  */
 
 import '@measured/puck/puck.css';
-import { PuckClientEditor } from './puck-client-editor';
 import { getPage } from '../../../lib/get-page';
+import PuckEditorView from '../../../components/puck/views/puck-editor-view';
 
 export default async function Page({
   params,
@@ -27,7 +27,7 @@ export default async function Page({
 
   return (
     <>
-      <PuckClientEditor path={path} proc={proc} />
+      <PuckEditorView path={path} proc={proc} />
     </>
   );
 }

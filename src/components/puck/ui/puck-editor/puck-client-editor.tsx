@@ -6,7 +6,7 @@
 
 import type { Data } from '@measured/puck';
 import { Puck, usePuck } from '@measured/puck';
-import config from '../../../puck.config';
+import config from '../../../../puck.config';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { DiscardChangesButton } from '@/components/puck/ui/DiscardChangesButton';
@@ -118,28 +118,6 @@ export function PuckClientEditor({
                   </label>
                 ),
               },
-
-              // Render a custom element for each item in the component list
-              // drawerItem: ({ name }) => (
-              //   <div style={{ backgroundColor: 'hotpink' }}>{name}</div>
-              // ),
-              // header: ({ actions, children }) => {
-              //   const puck = usePuck();
-              //   console.log('PUCK DATA:', puck.appState);
-              //   return (
-              //     <>
-              //       <div className="flex h-12 w-full items-center justify-between p-2">
-              //         <BackToDashboardButton />
-              //         <div className="flex items-center">
-              //           <DiscardChangesButton slug={slug} />
-              //           <PublishChangesButton
-              //             onPublish={() => handlePublish(puck.appState.data)}
-              //           />
-              //         </div>
-              //       </div>
-              //     </>
-              //   );
-              // },
             }}
           ></Puck>
         </div>
