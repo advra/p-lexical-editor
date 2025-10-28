@@ -128,10 +128,15 @@ export const Header = ({
                 ) : (
                   <>
                     <ExportPDFButton handlePreviewPrint={handlePreviewPrint} />
-                    <EditButton path={path} disabled={!permissions.edit} />
+                    <EditButton
+                      path={path}
+                      disabled={!permissions.edit}
+                      canEdit={permissions.edit}
+                    />
                     <ExecuteModeButton
                       path={path}
                       disabled={permissions.execute}
+                      canExecute={permissions.execute}
                     />
                   </>
                 )}
