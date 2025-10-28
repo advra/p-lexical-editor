@@ -97,6 +97,7 @@ export function PuckClientEditor({
             config={config}
             data={proc.data}
             onPublish={handlePublish}
+            iframe={{ enabled: false }}
             overrides={{
               headerActions: ({ children }) => (
                 <>
