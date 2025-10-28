@@ -40,6 +40,11 @@ const taskItemNetworkOptions = [
   { label: 'Space 2', value: 'space2' },
 ];
 
+enum REDLINE_TARGETS {
+  CONTENT = 'content',
+  STEP = 'step',
+}
+
 export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
   label: TASK_ITEM_LABEL,
   fields: {
@@ -475,10 +480,16 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
               </>
             )}
           </div>
-          <MenuItem onClick={() => handleRedline(displayContent)}>
+          <MenuItem
+            onClick={() =>
+              handleRedline(displayContent, REDLINE_TARGETS.CONTENT)
+            }
+          >
             Redline (Content)
           </MenuItem>
-          <MenuItem onClick={() => handleRedline(displayStep)}>
+          <MenuItem
+            onClick={() => handleRedline(displayStep, REDLINE_TARGETS.STEP)}
+          >
             Redline (Step)
           </MenuItem>
         </Menu>

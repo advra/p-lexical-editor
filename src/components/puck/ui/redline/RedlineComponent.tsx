@@ -88,13 +88,10 @@ export const RedlineComponent = ({ children }: Props) => {
   Function that can be used directly in components
 */
 export const redlineOptions = (
-  onRedlineClick?: (originalText: string, target?: string) => void,
+  onRedlineClick?: (originalText: string, target: string) => void,
   handleMenuClose?: () => void,
 ) => {
-  const handleOpenRedlineModal = (
-    originalText: string,
-    target: string = 'content',
-  ) => {
+  const handleOpenRedlineModal = (originalText: string, target: string) => {
     if (onRedlineClick) {
       onRedlineClick(originalText, target);
     }
