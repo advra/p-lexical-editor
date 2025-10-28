@@ -101,7 +101,12 @@ export const procUpdateInput = z.object({
     title: z.string().min(1).max(200).optional(),
     description: z.string().max(1000).optional(),
     tags: z.array(z.string()).optional(),
-    sharedWith: z.array(z.string()).optional(),
+    sharedWith: z.array(
+      z.object({
+        userId: z.string().min(1),
+        permission: z.enum(['read', 'edit', 'execute']),
+      }),
+    ).optional(),
     status: z.enum(['draft', 'published', 'archived']).optional(),
     data: puckPageDataSchema.optional(),
   }),

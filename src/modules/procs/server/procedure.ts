@@ -263,7 +263,7 @@ export const procRouter = createTRPCRouter({
       if (!isOwner && !isSharedWithEdit)
         throw new TRPCError({
           code: 'FORBIDDEN',
-          message: 'Only owner or users with edit permission can update',
+          message: `Only owner or users with edit permission can update. Current user: ${username}, Owner: ${existing.owner}, isOwner: ${isOwner}, isSharedWithEdit: ${isSharedWithEdit}`,
         });
 
       const patch: any = { ...input.patch };

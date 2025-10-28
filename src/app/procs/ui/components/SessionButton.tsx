@@ -243,16 +243,16 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
   } else {
     // No active session - show start button
     renderedButton = (
-      <Tooltip title={startButtonToolTip}>
-        <button
-          onClick={startSession}
-          disabled={isLoading || !canExecute}
-          className="rounded-sm aspect-square h-[30px] border-green-500 hover:border-green-400 hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          title={startButtonToolTip}
-        >
+      <button
+        onClick={startSession}
+        disabled={isLoading || !canExecute}
+        className="rounded-sm aspect-square h-[30px] border-green-500 hover:border-green-400 hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        title={startButtonToolTip}
+      >
+        <Tooltip title={startButtonToolTip}>
           <PlayCircleFilledIcon className="m-0.5 text-green-600 hover:text-green-500" />
-        </button>
-      </Tooltip>
+        </Tooltip>
+      </button>
     );
   }
 
