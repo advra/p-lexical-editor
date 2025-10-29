@@ -12,6 +12,7 @@ import { NavigationDrawer } from '@/components/puck/ui/NavigationDrawer';
 import { NavigationFloatingButton } from '@/components/puck/ui/NavigationFloatingButton';
 import { RedlineFloatingButton } from '@/components/puck/ui/redline/RedlineFloatingButton';
 import { toast } from 'sonner';
+import RedlineComment from '@/components/puck/ui/comments/comment';
 
 export const PuckPreview = forwardRef<
   HTMLDivElement,
@@ -151,41 +152,46 @@ export const PuckPreview = forwardRef<
         </>
       )}
 
-      <div
-        ref={ref}
-        id="printable"
-        className={clsx(
-          'bg-white',
-          printPreview
-            ? clsx(
-                size,
-                'mx-auto',
-                'print:w-auto print:min-h-0 print:p-0 print:shadow-none print:my-0',
-              )
-            : 'mt-24 px-4 mx-auto max-w-6xl my-6 shadow',
-        )}
-      >
-        <div className="flex flex-col">
-          <span className="flex gap-1 ml-auto text-sm text-gray-400">
-            <span> Created By: {owner}</span>
-            {user.session?.user.username === owner && <span>(You)</span>}
-          </span>
-          <span className="ml-auto text-sm text-gray-400">
-            Last Updated: {formatTimestamp(updatedAt)}
-          </span>
-        </div>
+      <div className="flex">
+        <div
+          ref={ref}
+          id="printable"
+          className={clsx(
+            'bg-white',
+            printPreview
+              ? clsx(
+                  size,
+                  'mx-auto',
+                  'print:w-auto print:min-h-0 print:p-0 print:shadow-none print:my-0',
+                )
+              : 'mt-24 px-4 mx-auto max-w-[1400px] my-6 shadow',
+          )}
+        >
+          <div className="flex flex-col">
+            <span className="flex gap-1 ml-auto text-sm text-gray-400">
+              <span> Created By: {owner}</span>
+              {user.session?.user.username === owner && <span>(You)</span>}
+            </span>
+            <span className="ml-auto text-sm text-gray-400">
+              Last Updated: {formatTimestamp(updatedAt)}
+            </span>
+          </div>
 
-        {/* inner wrapper is constant */}
-        <div className="min-h-screen">
-          <RedlineRender
-            config={config}
-            data={data}
-            procId={procId}
-            room={room}
-            onRedlineSave={handleRedlineSave}
-            redlineHoverEnabled={redlineHoverEnabled}
-          />
+          {/* inner wrapper is constant */}
+          <div className="min-h-screen">
+            <RedlineRender
+              config={config}
+              data={data}
+              procId={procId}
+              room={room}
+              onRedlineSave={handleRedlineSave}
+              redlineHoverEnabled={redlineHoverEnabled}
+            />
+          </div>
         </div>
+        <aside className="no-print hidden lg:flex mt-24 w-72 h-[calc(100vh-6rem)] overflow-y-auto border-l bg-card/60 backdrop-blur px-4 py-3">
+          <RedlineComment />
+        </aside>
       </div>
     </div>
   );

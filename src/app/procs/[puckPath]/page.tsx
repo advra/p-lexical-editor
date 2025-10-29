@@ -6,7 +6,7 @@
 */
 import { notFound } from 'next/navigation';
 import { getPage } from '@/lib/get-page';
-import ProcPageClient from '../ui/components/ProcPageClient';
+import ProcPageClient from '../../../components/puck/ui/puck-editor/components/ProcPageClient';
 import { LocalStoreProvider } from '@/context/LocalStoreContext';
 import {
   ProcPublic,

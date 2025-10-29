@@ -10,7 +10,7 @@ import config from '../../../../puck.config';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { DiscardChangesButton } from '@/components/puck/ui/DiscardChangesButton';
-import { BackToDashboardButton } from '@/app/procs/ui/components/BackToDashboardButton';
+import { BackToDashboardButton } from '@/components/puck/ui/puck-editor/components/BackToDashboardButton';
 import { PublishChangesButton } from '@/components/puck/ui/PublishChangesButton';
 import { ProcProvider } from '@/context/ProcContext';
 import {

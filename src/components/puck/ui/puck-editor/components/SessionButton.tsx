@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { usePathname } from 'next/navigation';
 import { useSearchParams, useRouter } from 'next/navigation';
 import PlayCircleFilledIcon from '@mui/icons-material/PlayCircleFilled';
 import StopCircleIcon from '@mui/icons-material/StopCircle';
@@ -10,6 +11,8 @@ import { ProcPermissions, useProc } from '@/context/ProcContext';
 import { CircularProgress, Tooltip } from '@mui/material';
 import { checkActiveSession } from '@/services/proc-session-service';
 import { User } from '@/modules/auth/types';
+import { useTRPC } from '@/trpc/client';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 type Props = {
   user: User | undefined;
@@ -17,6 +20,8 @@ type Props = {
 };
 
 export const SessionButtons = ({ user, canExecute }: Props) => {
+  const pathname = usePathname();
+  const trpc = useTRPC();
   const { procId } = useProc();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -24,6 +29,20 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
   const [isLoading, setIsLoading] = useState(true);
   const [showShareLink, setShowShareLink] = useState(false);
   const [isSessionOwner, setIsSessionOwner] = useState(false);
+
+  const SLUG_PREFIX = '/procs/' as const;
+  const hasProcSlug = pathname.startsWith(SLUG_PREFIX);
+  // Extract just the proc slug without any additional paths like /execute/
+  const procSlug = hasProcSlug
+    ? pathname.slice(SLUG_PREFIX.length).split('/')[0]
+    : '';
+
+  const startButtonToolTip = canExecute
+    ? 'Start Session'
+    : 'You do not have Execute permissions to Start a Test Execution Session';
+  const stopButtonToolTip = isSessionOwner
+    ? 'Stop Session'
+    : 'You can only stop sessions that you started';
 
   // Update URL with sessionId parameter
   const updateUrlWithSession = (sessionId: string | null) => {
@@ -39,6 +58,58 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
     router.replace(newUrl, { scroll: false });
   };
 
+  const {
+    mutate: createSession,
+    isPending: isCreatingSession,
+    isSuccess: isCreateSuccess,
+    isError: isCreateError,
+  } = useMutation(
+    trpc.procSessions.createSession.mutationOptions({
+      onSuccess: (data) => {
+        setActiveSession(data.session);
+        setShowShareLink(true);
+        setIsSessionOwner(true);
+        updateUrlWithSession(data.session._id);
+        toast.success('Session started! Share the link with others to join.');
+      },
+      onError: (e: any) => {
+        console.error('Failed to start session:', e);
+        toast.error('Failed to start session');
+      },
+    }),
+  );
+
+  const {
+    mutate: stopSession,
+    isPending: isUpdatingSession,
+    isSuccess: isUpdateSuccess,
+    isError: isUpdateError,
+  } = useMutation(
+    trpc.procSessions.stopSession.mutationOptions({
+      onSuccess: (data) => {
+        setActiveSession(null);
+        setShowShareLink(false);
+        setIsSessionOwner(false);
+        updateUrlWithSession(null);
+        toast.success('Session completed!');
+      },
+      onError: (e: any) => {
+        console.error('Failed to stop session:', e);
+        toast.error('Failed to stop session - check console for details');
+      },
+    }),
+  );
+
+  // Query for sessions from URL parameter
+  const sessionId = searchParams.get('sessionId');
+  const { data: sessionData, isLoading: isSessionLoading } = useQuery({
+    ...trpc.procSessions.getSessions.queryOptions({
+      procId: procId || '',
+      sessionId: sessionId || undefined,
+    }),
+    enabled: !!(sessionId && procId),
+  });
+
   useEffect(() => {
     const checkSession = async () => {
       if (!canExecute || !procId) {
@@ -47,28 +118,33 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
       }
 
       try {
-        // Check if URL has sessionId parameter
-        const sessionId = searchParams.get('sessionId');
-
-        if (sessionId) {
-          // If sessionId is in URL, fetch and set that session
-          const response = await fetch(
-            `/api/proc-sessions?procId=${procId}&sessionId=${sessionId}`,
-          );
-          const result = await response.json();
-
-          if (result.sessions && result.sessions.length > 0) {
-            const session = result.sessions[0];
+        // Check if we have session data from URL query
+        if (
+          sessionData &&
+          sessionData.sessions &&
+          sessionData.sessions.length > 0
+        ) {
+          const session = sessionData.sessions[0];
+          // Only set as active session if it's active status (lowercase from backend)
+          if (session.status === 'active') {
             setActiveSession(session);
             setShowShareLink(true);
-            // Check if current user is the session owner
             setIsSessionOwner(session.createdBy === user?.username);
           } else {
+            // Session exists but is not active (completed or canceled)
             setActiveSession(null);
             setIsSessionOwner(false);
+            setShowShareLink(false);
             // Remove invalid sessionId from URL
             updateUrlWithSession(null);
           }
+        } else if (sessionId) {
+          // Session ID in URL but no session found in database
+          setActiveSession(null);
+          setIsSessionOwner(false);
+          setShowShareLink(false);
+          // Remove invalid sessionId from URL
+          updateUrlWithSession(null);
         } else {
           // If no sessionId in URL, check if user has active session
           // But DO NOT create a new session automatically
@@ -83,100 +159,38 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
             // No active session found - don't create one automatically
             setActiveSession(null);
             setIsSessionOwner(false);
+            setShowShareLink(false);
           }
         }
       } catch (error) {
         console.error('Failed to check session:', error);
         setActiveSession(null);
         setIsSessionOwner(false);
+        setShowShareLink(false);
       } finally {
         setIsLoading(false);
       }
     };
 
     checkSession();
-  }, [procId, user, canExecute]);
+  }, [procId, user, canExecute, sessionData, sessionId]);
 
-  const startSession = async () => {
+  const handleStartSession = async () => {
     if (!procId) return;
-
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/proc-sessions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ procId, user }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to start session');
-      }
-
-      const result = await response.json();
-      setActiveSession(result.session);
-      setShowShareLink(true);
-      setIsSessionOwner(true);
-      // Update URL with new session ID
-      updateUrlWithSession(result.session._id);
-      toast.success('Session started! Share the link with others to join.');
-      console.log('Session started ', result);
-    } catch (error) {
-      console.error('Failed to start session:', error);
-      toast.error('Failed to start session');
-    } finally {
-      setIsLoading(false);
-    }
+    createSession({ procId });
   };
 
-  const startButtonToolTip = canExecute
-    ? 'Start Session'
-    : 'You do not have Execute permissions to Start a Test Execution Session';
-  const stopButtonToolTip = isSessionOwner
-    ? 'Stop Session'
-    : 'You can only stop sessions that you started';
-
-  const stopSession = async () => {
+  const handleStopSession = async () => {
     if (!activeSession?._id || !isSessionOwner) return;
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/proc-sessions', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sessionId: activeSession._id,
-          status: 'completed',
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Stop session error details:', errorData);
-        throw new Error(
-          `Failed to stop session: ${response.status} ${response.statusText}`,
-        );
-      }
-
-      const result = await response.json();
-      console.log('Stop session success:', result);
-
-      setActiveSession(null);
-      setShowShareLink(false);
-      setIsSessionOwner(false);
-      // Remove sessionId from URL
-      updateUrlWithSession(null);
-      toast.success('Session completed!');
-    } catch (error) {
-      console.error('Failed to stop session:', error);
-      toast.error('Failed to stop session - check console for details');
-    } finally {
-      setIsLoading(false);
-    }
+    stopSession({
+      sessionId: activeSession._id,
+    });
   };
 
   const copyShareLink = () => {
     if (!activeSession?._id || !procId) return;
 
-    const shareLink = `${window.location.origin}/procs/${procId}/execute/?sessionId=${activeSession._id}`;
+    const shareLink = `${window.location.origin}/procs/${procSlug}/execute/?sessionId=${activeSession._id}`;
     navigator.clipboard
       .writeText(shareLink)
       .then(() => {
@@ -188,12 +202,12 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
   };
 
   const getShareLink = () => {
-    if (!activeSession?._id || !procId) return '';
-    return `${window.location.origin}/procs/${procId}/execute/?sessionId=${activeSession._id}`;
+    if (!activeSession?._id || !procSlug) return '';
+    return `${window.location.origin}/procs/${procSlug}/execute/?sessionId=${activeSession._id}`;
   };
 
   let renderedButton;
-  if (isLoading) {
+  if (isLoading || isCreatingSession || isUpdatingSession) {
     renderedButton = (
       <div className="h-[30px] w-[30px] grid place-items-center">
         <CircularProgress size={20} sx={{ display: 'block' }} />
@@ -216,7 +230,10 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
               value={getShareLink()}
               readOnly
               className="hidden lg:block text-xs bg-white border border-blue-300 rounded px-2 py-1 w-64"
-              onClick={(e) => e.currentTarget.select()}
+              onClick={(e) => {
+                e.currentTarget.select();
+                copyShareLink();
+              }}
             />
             <Tooltip title="Copy share link">
               <button
@@ -231,8 +248,8 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
         {/* Stop Session Button - Only enabled for session owners */}
         <Tooltip title={stopButtonToolTip}>
           <button
-            onClick={stopSession}
-            disabled={isLoading || !canStopSession}
+            onClick={handleStopSession}
+            disabled={isUpdatingSession || !canStopSession}
             className="rounded-sm aspect-square h-[30px] border-red-500 hover:border-red-400 hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <StopCircleIcon className="m-0.5 text-red-600 hover:text-red-500" />
@@ -244,8 +261,8 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
     // No active session - show start button
     renderedButton = (
       <button
-        onClick={startSession}
-        disabled={isLoading || !canExecute}
+        onClick={handleStartSession}
+        disabled={isCreatingSession || !canExecute}
         className="rounded-sm aspect-square h-[30px] border-green-500 hover:border-green-400 hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         title={startButtonToolTip}
       >

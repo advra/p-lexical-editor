@@ -5,7 +5,7 @@ import {
   ProcPublic,
   ProcPublicWithAcl,
 } from '@/modules/procs/models/proc-model';
-import ProcPageExecuteClient from '../../ui/components/ProcPageExecuteClient';
+import ProcPageExecuteClient from '../../../../components/puck/ui/puck-editor/components/ProcPageExecuteClient';
 
 export default async function Page({
   params,

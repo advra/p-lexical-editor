@@ -8,7 +8,10 @@ type ProcDoc = {
   title: string;
   slug: string;
   owner: string;
-  sharedWith?: string[];
+  sharedWith?: Array<{
+    userId: string;
+    permissions: { read?: boolean; edit?: boolean; execute?: boolean };
+  }>;
   updatedAt?: string | Date;
   data: unknown; // will cast to PuckPageData when needed
 };
@@ -34,6 +37,8 @@ export default function DashboardView({ procs, total }: Props) {
     ...proc,
     name: proc.title, // Map title to name
     data: proc.data as PuckPageData,
+    // Transform sharedWith from objects to string array (userIds)
+    sharedWith: proc.sharedWith?.map((shared) => shared.userId) || [],
   }));
 
   return (
