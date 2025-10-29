@@ -126,6 +126,28 @@ io.on('connection', (socket) => {
     },
   );
 
+  // Handle session status changes
+  socket.on(
+    'session:status-changed',
+    ({ room, sessionId, status, changedBy }) => {
+      if (!room || !sessionId) return;
+
+      const statusUpdate = {
+        sessionId,
+        status,
+        changedBy,
+        timestamp: new Date().toISOString(),
+      };
+
+      // Broadcast to all users in the room (including sender)
+      io.to(room).emit('session:status-updated', statusUpdate);
+
+      console.log(
+        `[socket] Session ${sessionId} status changed to ${status} by ${changedBy} in room ${room}`,
+      );
+    },
+  );
+
   // (Optional) Your previous custom action event—kept for compatibility:
   socket.on('send-recordId-actionPerformed', ({ room, ...action }) => {
     if (!room) return;

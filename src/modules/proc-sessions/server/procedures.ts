@@ -95,6 +95,15 @@ export const procSessionsRouter = createTRPCRouter({
         });
       }
 
+      // Get the session first to get procId for socket room
+      const existingSession = await ProcSessionModel.findById(sessionId);
+      if (!existingSession) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Session not found',
+        });
+      }
+
       let updateData: any = {};
 
       updateData.$set = {
@@ -122,6 +131,20 @@ export const procSessionsRouter = createTRPCRouter({
           code: 'NOT_FOUND',
           message: 'Session not found',
         });
+      }
+
+      // Emit socket event to notify all users in the room
+      try {
+        const { sessionSocketService } = await import('@/services/socket/session-socket');
+        sessionSocketService.emitSessionStatusChanged({
+          room: existingSession.procId,
+          sessionId: sessionId,
+          status: 'completed',
+          changedBy: username,
+        });
+      } catch (error) {
+        console.error('Failed to emit session status change:', error);
+        // Don't fail the mutation if socket emission fails
       }
 
       return {

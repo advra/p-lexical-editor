@@ -13,6 +13,7 @@ import { checkActiveSession } from '@/services/proc-session-service';
 import { User } from '@/modules/auth/types';
 import { useTRPC } from '@/trpc/client';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useSessionSocket } from '@/services/socket';
 
 type Props = {
   user: User | undefined;
@@ -29,6 +30,12 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
   const [isLoading, setIsLoading] = useState(true);
   const [showShareLink, setShowShareLink] = useState(false);
   const [isSessionOwner, setIsSessionOwner] = useState(false);
+
+  // Socket hook for real-time session status updates
+  const { sessionStatus, lastUpdate } = useSessionSocket(
+    procId,
+    user?.username,
+  );
 
   const SLUG_PREFIX = '/procs/' as const;
   const hasProcSlug = pathname.startsWith(SLUG_PREFIX);
@@ -110,70 +117,90 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
     enabled: !!(sessionId && procId),
   });
 
+  // Handle real-time session status updates from socket
+  useEffect(() => {
+    if (sessionStatus && sessionStatus.sessionId === activeSession?._id) {
+      // Session status changed for our current session
+      if (
+        sessionStatus.status === 'completed' ||
+        sessionStatus.status === 'canceled'
+      ) {
+        // Session ended by another user
+        if (!isSessionOwner) {
+          // Show notification for passive users
+          toast.info(`Session completed by ${sessionStatus.changedBy}`);
+        }
+
+        // Update UI state for all users
+        setActiveSession(null);
+        setShowShareLink(false);
+        setIsSessionOwner(false);
+        updateUrlWithSession(null);
+      }
+    }
+  }, [sessionStatus, activeSession?._id, isSessionOwner]);
+
   useEffect(() => {
     const checkSession = async () => {
-      if (!canExecute || !procId) {
+      if (!procId) {
         setIsLoading(false);
         return;
       }
 
-      try {
-        // Check if we have session data from URL query
-        if (
-          sessionData &&
-          sessionData.sessions &&
-          sessionData.sessions.length > 0
-        ) {
-          const session = sessionData.sessions[0];
-          // Only set as active session if it's active status (lowercase from backend)
-          if (session.status === 'active') {
-            setActiveSession(session);
-            setShowShareLink(true);
-            setIsSessionOwner(session.createdBy === user?.username);
-          } else {
-            // Session exists but is not active (completed or canceled)
-            setActiveSession(null);
-            setIsSessionOwner(false);
-            setShowShareLink(false);
-            // Remove invalid sessionId from URL
-            updateUrlWithSession(null);
-          }
-        } else if (sessionId) {
-          // Session ID in URL but no session found in database
+      if (isSessionLoading) {
+        setIsLoading(false);
+        return;
+      }
+
+      // Check if we have session data from URL query
+      if (
+        sessionData &&
+        sessionData.sessions &&
+        sessionData.sessions.length > 0
+      ) {
+        const session = sessionData.sessions[0];
+        // Only set as active session if it's active status (lowercase from backend)
+        if (session.status === 'active') {
+          setActiveSession(session);
+          setShowShareLink(true);
+          setIsSessionOwner(session.createdBy === user?.username);
+        } else {
+          // Session exists but is not active (completed or canceled)
           setActiveSession(null);
           setIsSessionOwner(false);
           setShowShareLink(false);
           // Remove invalid sessionId from URL
           updateUrlWithSession(null);
-        } else {
-          // If no sessionId in URL, check if user has active session
-          // But DO NOT create a new session automatically
-          const userSession = await checkActiveSession(procId, user?.username);
-          if (userSession) {
-            setActiveSession(userSession);
-            updateUrlWithSession(userSession._id);
-            setShowShareLink(true);
-            setIsSessionOwner(true);
-            // Don't update URL automatically - only update when user explicitly starts a session
-          } else {
-            // No active session found - don't create one automatically
-            setActiveSession(null);
-            setIsSessionOwner(false);
-            setShowShareLink(false);
-          }
         }
-      } catch (error) {
-        console.error('Failed to check session:', error);
+      } else if (sessionId) {
+        // Session ID in URL but no session found in database
         setActiveSession(null);
         setIsSessionOwner(false);
         setShowShareLink(false);
-      } finally {
-        setIsLoading(false);
+        // Remove invalid sessionId from URL
+        updateUrlWithSession(null);
+      } else {
+        // If no sessionId in URL, check if user has active session
+        // But DO NOT create a new session automatically
+        const userSession = await checkActiveSession(procId, user?.username);
+        if (userSession) {
+          setActiveSession(userSession);
+          updateUrlWithSession(userSession._id);
+          setShowShareLink(true);
+          setIsSessionOwner(true);
+          // Don't update URL automatically - only update when user explicitly starts a session
+        } else {
+          // No active session found - don't create one automatically
+          setActiveSession(null);
+          setIsSessionOwner(false);
+          setShowShareLink(false);
+        }
       }
+      setIsLoading(false);
     };
 
     checkSession();
-  }, [procId, user, canExecute, sessionData, sessionId]);
+  }, [procId, user, sessionData, sessionId]);
 
   const handleStartSession = async () => {
     if (!procId) return;
@@ -220,7 +247,7 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
     renderedButton = (
       <div className="flex items-center gap-2">
         {/* Share Link Display - Show for session owners */}
-        {showShareLink && isSessionOwner && (
+        {showShareLink && (
           <div className="flex items-center gap-1 bg-blue-50 px-2 py-1 rounded border border-blue-200">
             <span className="hidden lg:block text-xs text-blue-700">
               Share:
@@ -239,6 +266,7 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
               <button
                 onClick={copyShareLink}
                 className="text-blue-600 hover:text-blue-800"
+                disabled={!isSessionOwner}
               >
                 <ShareIcon fontSize="small" />
               </button>
