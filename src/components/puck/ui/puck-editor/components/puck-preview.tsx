@@ -189,9 +189,9 @@ export const PuckPreview = forwardRef<
             />
           </div>
         </div>
-        <aside className="no-print hidden lg:flex mt-24 w-72 h-[calc(100vh-6rem)] overflow-y-auto border-l bg-card/60 backdrop-blur px-4 py-3">
+        {/* <aside className="no-print hidden lg:flex mt-24 w-72 h-[calc(100vh-6rem)] overflow-y-auto border-l bg-card/60 backdrop-blur px-4 py-3">
           <RedlineComment />
-        </aside>
+        </aside> */}
       </div>
     </div>
   );

@@ -13,7 +13,7 @@ import { checkActiveSession } from '@/services/proc-session-service';
 import { User } from '@/modules/auth/types';
 import { useTRPC } from '@/trpc/client';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useSessionSocket } from '@/services/socket';
+import { sessionSocketService, useSessionSocket } from '@/services/socket';
 
 type Props = {
   user: User | undefined;
@@ -31,9 +31,18 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
   const [showShareLink, setShowShareLink] = useState(false);
   const [isSessionOwner, setIsSessionOwner] = useState(false);
 
+  // Query for sessions from URL parameter
+  const sessionId = searchParams.get('sessionId');
+
   // Socket hook for real-time session status updates
-  const { sessionStatus, lastUpdate } = useSessionSocket(
-    procId,
+  const {
+    sessionStatus,
+    lastUpdate,
+    stopSession: socketStopSession,
+  } = useSessionSocket(
+    // Use sessionId from URL if available (for users viewing via share link)
+    // Otherwise use activeSession._id (for session owners)
+    sessionId || activeSession?._id,
     user?.username,
   );
 
@@ -94,11 +103,29 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
   } = useMutation(
     trpc.procSessions.stopSession.mutationOptions({
       onSuccess: (data) => {
+        console.log(
+          '[SessionButton] Stop session success, calling socketStopSession:',
+          {
+            sessionId: activeSession?._id,
+            procId,
+            user: user?.username,
+          },
+        );
+
         setActiveSession(null);
         setShowShareLink(false);
         setIsSessionOwner(false);
         updateUrlWithSession(null);
         toast.success('Session completed!');
+
+        // notify other users
+        if (activeSession?._id) {
+          socketStopSession(activeSession._id, procId, user);
+        } else {
+          console.error(
+            '[SessionButton] Cannot notify other users - activeSession is null',
+          );
+        }
       },
       onError: (e: any) => {
         console.error('Failed to stop session:', e);
@@ -106,9 +133,6 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
       },
     }),
   );
-
-  // Query for sessions from URL parameter
-  const sessionId = searchParams.get('sessionId');
   const { data: sessionData, isLoading: isSessionLoading } = useQuery({
     ...trpc.procSessions.getSessions.queryOptions({
       procId: procId || '',
@@ -117,14 +141,31 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
     enabled: !!(sessionId && procId),
   });
 
+  useEffect(() => {
+    console.log('sessionStatus: ', sessionStatus);
+  }, [sessionStatus]);
+
   // Handle real-time session status updates from socket
   useEffect(() => {
+    console.log('[SessionButton] sessionStatus effect triggered:', {
+      sessionStatus,
+      activeSessionId: activeSession?._id,
+      isSessionOwner,
+    });
+
     if (sessionStatus && sessionStatus.sessionId === activeSession?._id) {
+      console.log(
+        '[SessionButton] Session status update matches our session:',
+        sessionStatus,
+      );
+
       // Session status changed for our current session
       if (
         sessionStatus.status === 'completed' ||
         sessionStatus.status === 'canceled'
       ) {
+        console.log('[SessionButton] Session ended, updating UI');
+
         // Session ended by another user
         if (!isSessionOwner) {
           // Show notification for passive users
@@ -137,6 +178,14 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
         setIsSessionOwner(false);
         updateUrlWithSession(null);
       }
+    } else if (sessionStatus) {
+      console.log(
+        '[SessionButton] Session status update does not match our session:',
+        {
+          receivedSessionId: sessionStatus.sessionId,
+          ourSessionId: activeSession?._id,
+        },
+      );
     }
   }, [sessionStatus, activeSession?._id, isSessionOwner]);
 

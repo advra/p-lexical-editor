@@ -103,9 +103,12 @@ export const procRouter = createTRPCRouter({
           });
       }
 
+      console.log("Searching proc by filter", filter)
       const doc = await ProcModel.findOne(filter).lean();
-      if (!doc)
+      if (!doc) {
+        console.log("Proc not found")
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Proc not found' });
+      }
 
       const isOwner = doc.owner === username;
       const isSharedUser = (doc.sharedWith ?? []).some(

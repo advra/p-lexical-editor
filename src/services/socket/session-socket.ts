@@ -7,11 +7,15 @@ export class SessionSocketService {
   /**
    * Join a session room to receive real-time updates
    */
-  joinSessionRoom(procId: string, username?: string): void {
-    if (!this.socket || !procId) return;
+  joinSessionRoom(sessionId: string, username?: string): void {
+    if (!this.socket || !sessionId) {
+      console.log('[sessionSocketService] Cannot join room - socket or sessionId missing');
+      return;
+    }
     
+    console.log('[sessionSocketService] Joining room:', sessionId, 'for user:', username);
     this.socket.emit('room:join', { 
-      room: procId, 
+      room: sessionId, 
       name: username || 'Anonymous User' 
     });
   }
@@ -19,10 +23,10 @@ export class SessionSocketService {
   /**
    * Leave a session room
    */
-  leaveSessionRoom(procId: string): void {
-    if (!this.socket || !procId) return;
+  leaveSessionRoom(sessionId: string): void {
+    if (!this.socket || !sessionId) return;
     
-    this.socket.emit('room:leave', { room: procId });
+    this.socket.emit('room:leave', { room: sessionId });
   }
 
   /**
@@ -43,8 +47,12 @@ export class SessionSocketService {
    * Emit session status change (for backend procedures)
    */
   emitSessionStatusChanged(data: SessionStatusChangeData): void {
-    if (!this.socket) return;
+    if (!this.socket) {
+      console.log('[sessionSocketService] Socket not available, cannot emit event');
+      return;
+    }
     
+    console.log('[sessionSocketService] Emitting session:status-changed:', data);
     this.socket.emit('session:status-changed', data);
   }
 
@@ -52,7 +60,9 @@ export class SessionSocketService {
    * Check if socket is connected
    */
   isConnected(): boolean {
-    return this.socket?.connected || false;
+    const connected = this.socket?.connected || false;
+    console.log('[sessionSocketService] Socket connected:', connected, 'socket exists:', !!this.socket);
+    return connected;
   }
 
   /**

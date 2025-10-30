@@ -133,11 +133,11 @@ export const procSessionsRouter = createTRPCRouter({
         });
       }
 
-      // Emit socket event to notify all users in the room
+      // Emit socket event to notify all users in the session room
       try {
         const { sessionSocketService } = await import('@/services/socket/session-socket');
         sessionSocketService.emitSessionStatusChanged({
-          room: existingSession.procId,
+          room: sessionId,  // Use sessionId as room for targeted notifications
           sessionId: sessionId,
           status: 'completed',
           changedBy: username,

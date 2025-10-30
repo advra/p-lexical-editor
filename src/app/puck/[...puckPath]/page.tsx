@@ -11,9 +11,8 @@
  * NB this route is public, and you will need to add authentication
  */
 
+import PuckEditorView from '@/components/puck/views/puck-editor-view';
 import '@measured/puck/puck.css';
-import { getPage } from '../../../lib/get-page';
-import PuckEditorView from '../../../components/puck/views/puck-editor-view';
 
 export default async function Page({
   params,
@@ -21,13 +20,10 @@ export default async function Page({
   params: Promise<{ puckPath: string[] }>;
 }) {
   const { puckPath = [] } = await params;
-  const path = `/${puckPath.join('/')}`;
-  const slug = puckPath[puckPath.length - 1];
-  const proc = await getPage(slug);
 
   return (
     <>
-      <PuckEditorView path={path} proc={proc} />
+      <PuckEditorView segments={puckPath} />
     </>
   );
 }

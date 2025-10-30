@@ -45,7 +45,18 @@ io.on('connection', (socket) => {
 
   // JOIN
   socket.on('room:join', ({ room, name }) => {
-    if (!room) return;
+    console.log(
+      '[socket] User joining room:',
+      room,
+      'name:',
+      name,
+      'socketId:',
+      socket.id,
+    );
+    if (!room) {
+      console.log('[socket] No room specified, ignoring join request');
+      return;
+    }
     socket.join(room);
     socket.data.rooms.add(room);
 
@@ -54,6 +65,13 @@ io.on('connection', (socket) => {
       id: socket.id,
       name: name || `User ${socket.id.slice(0, 4)}`,
     });
+
+    console.log(
+      '[socket] User successfully joined room:',
+      room,
+      'total users in room:',
+      roomsPresence.get(room).size,
+    );
 
     // presence:update to everyone in room
     emitPresence(room);
@@ -130,7 +148,17 @@ io.on('connection', (socket) => {
   socket.on(
     'session:status-changed',
     ({ room, sessionId, status, changedBy }) => {
-      if (!room || !sessionId) return;
+      console.log('[socket] Received session:status-changed:', {
+        room,
+        sessionId,
+        status,
+        changedBy,
+      });
+
+      if (!room || !sessionId) {
+        console.log('[socket] Missing room or sessionId, ignoring event');
+        return;
+      }
 
       const statusUpdate = {
         sessionId,
@@ -140,6 +168,7 @@ io.on('connection', (socket) => {
       };
 
       // Broadcast to all users in the room (including sender)
+      console.log(`[socket] Broadcasting to room ${room}:`, statusUpdate);
       io.to(room).emit('session:status-updated', statusUpdate);
 
       console.log(

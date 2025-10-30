@@ -37,18 +37,20 @@ function HeaderBar({ onPublish, slug }) {
 }
 
 export function PuckClientEditor({
-  path,
+  pathName,
   proc,
+  slug,
 }: {
-  path: string;
+  pathName: string;
   proc:
     | ProcPublic
     | (ProcPublicWithAcl & {
         data: Partial<Data>;
       });
+  slug: string;
 }) {
   const router = useRouter();
-  const slug = path.split('/').filter(Boolean).pop()!;
+  // const slug = path.split('/').filter(Boolean).pop()!;
   const { session, loading } = useUser();
   const user = session?.user;
   // Check if user has edit permissions
@@ -76,7 +78,7 @@ export function PuckClientEditor({
 
       toast.success('Changes saved!');
       // Redirect to view mode instead of staying in edit mode
-      const viewPath = path.replace('/edit', '');
+      const viewPath = pathName.replace('/edit', '');
       router.push(viewPath);
     } catch {
       toast.error('Error saving, please try again...');
@@ -94,10 +96,10 @@ export function PuckClientEditor({
       >
         <div className="h-screen overflow-auto">
           <Puck
+            iframe={{ waitForStyles: false }}
             config={config}
             data={proc.data}
             onPublish={handlePublish}
-            iframe={{ enabled: false }}
             overrides={{
               headerActions: ({ children }) => (
                 <>
