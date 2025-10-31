@@ -109,17 +109,17 @@ export default function ManagePermissionsDialog({
   };
 
   const handleSave = async () => {
-    setSubmitting(true);
-    try {
-      await onPermissionsUpdate(proc._id, permissions);
-      toast.success('Permissions updated successfully');
-      onClose();
-    } catch (error) {
-      console.error('Failed to update permissions', error);
-      toast.error('Failed to update permissions');
-    } finally {
-      setSubmitting(false);
-    }
+    // setSubmitting(true);
+    // try {
+    //   await onPermissionsUpdate(proc._id, permissions);
+    //   toast.success('Permissions updated successfully');
+    //   onClose();
+    // } catch (error) {
+    //   console.error('Failed to update permissions', error);
+    //   toast.error('Failed to update permissions');
+    // } finally {
+    //   setSubmitting(false);
+    // }
   };
 
   return (
