@@ -18,22 +18,24 @@ import type { ProcPayload } from './CreateNewProcDialog';
 import { initialProcsData } from '@/app/procs/utils/initialData';
 import { PuckPageData } from '@/app/puck/types';
 import RedirectingDialog from './RedirectingDialog';
-import ManagePermissionsDialog, {
-  UserPermission,
-} from './ManagePermissionsDialog';
 import PreviewButton from './navigation/preview-button';
 import EditButton from './navigation/edit-button';
 import MoreMenu from './navigation/more-menu';
+import ManagePermissionsDialog, {
+  UserPermission,
+} from './dialogs/ManagePermissionsDialog';
+import HistoryDialog from './dialogs/HistoryDialog';
 
 export type Proc = {
   _id: string;
   slug: string;
   tags?: string[];
-  name: string;
+  name: string; //title to match the model?
   owner: string;
   sharedWith?: string[]; // usernames/emails
   version: number;
-  updatedAt?: string | Date;
+  updatedAt: string | Date;
+  createdAt: string | Date;
   data: PuckPageData;
 };
 
@@ -48,13 +50,16 @@ const formatWhen = (v?: string | Date) =>
 export default function ProcsTabbedTable({ procs, currentUser }: Props) {
   const [showCreateNewProc, setShowCreateNewProc] = useState(false);
   const [showRedirectDialog, setShowRedirectDialog] = useState(false);
-  const [showManagePermissions, setShowManagePermissions] = useState(false);
+  const [showManagePermissionsDialog, setShowManagePermissionsDialog] =
+    useState(false);
+  const [showVersionHistoryDialog, setShowVersionHistoryDialog] =
+    useState(false);
   const [selectedProc, setSelectedProc] = useState<Proc | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedProcForMenu, setSelectedProcForMenu] = useState<Proc | null>(
     null,
   );
-  const open = Boolean(anchorEl);
+  const openReference = Boolean(anchorEl);
   const tabs = ['All', 'My Procs', 'Shared With Me'] as const;
   type Tab = (typeof tabs)[number];
 
@@ -123,7 +128,15 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
   const handleManagePermissions = () => {
     if (selectedProcForMenu) {
       setSelectedProc(selectedProcForMenu);
-      setShowManagePermissions(true);
+      setShowManagePermissionsDialog(true);
+    }
+    handleMenuClose();
+  };
+
+  const handleOpenHistoryDialog = () => {
+    if (selectedProcForMenu) {
+      setSelectedProc(selectedProcForMenu);
+      setShowVersionHistoryDialog(true);
     }
     handleMenuClose();
   };
@@ -363,8 +376,9 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
                         <MoreMenu
                           anchorEl={anchorEl}
                           handleManagePermissions={handleManagePermissions}
+                          openHistoryDialog={handleOpenHistoryDialog}
                           handleMenuClose={handleMenuClose}
-                          open={open}
+                          open={openReference}
                         />
                       </div>
                     </td>
@@ -459,12 +473,19 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
         />
       )}
       {showRedirectDialog && <RedirectingDialog open={showRedirectDialog} />}
-      {showManagePermissions && selectedProc && (
+      {showManagePermissionsDialog && selectedProc && (
         <ManagePermissionsDialog
-          open={showManagePermissions}
-          onClose={() => setShowManagePermissions(false)}
+          open={showManagePermissionsDialog}
+          onClose={() => setShowManagePermissionsDialog(false)}
           proc={selectedProc}
           onPermissionsUpdate={handlePermissionsUpdate}
+        />
+      )}
+      {showVersionHistoryDialog && selectedProc && (
+        <HistoryDialog
+          open={showVersionHistoryDialog}
+          onClose={() => setShowVersionHistoryDialog(false)}
+          proc={selectedProc}
         />
       )}
     </div>
