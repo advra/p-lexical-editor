@@ -28,6 +28,7 @@ export type Proc = {
   name: string;
   owner: string;
   sharedWith?: string[]; // usernames/emails
+  version: number;
   updatedAt?: string | Date;
   data: PuckPageData;
 };
@@ -282,6 +283,7 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
                 <th className="px-3 py-2">Owner</th>
                 <th className="px-3 py-2">Shared With</th>
                 <th className="px-3 py-2">Last updated</th>
+                <th className=" py-2">Version</th>
                 <th className="px-3 py-2">Actions</th>
               </tr>
             </thead>
@@ -334,6 +336,7 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
                     <td className="px-3 py-3 text-gray-600">
                       {formatWhen(p.updatedAt)}
                     </td>
+                    <td className="px-3 py-3 text-gray-600">{p.version}</td>
                     <td className="px-3 py-3">
                       <div className="flex gap-2">
                         <button className="text-sm text-blue-600 hover:underline hover:cursor-pointer">
