@@ -96,7 +96,7 @@ export function PuckClientEditor({
       >
         <div className="h-screen overflow-auto">
           <Puck
-            iframe={{ waitForStyles: false }}
+            iframe={{ enabled: false, waitForStyles: false }}
             config={config}
             data={proc.data}
             onPublish={handlePublish}

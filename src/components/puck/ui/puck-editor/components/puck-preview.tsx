@@ -164,7 +164,7 @@ export const PuckPreview = forwardRef<
                   'mx-auto',
                   'print:w-auto print:min-h-0 print:p-0 print:shadow-none print:my-0',
                 )
-              : 'mt-24 px-4 mx-auto max-w-[1400px] my-6 shadow',
+              : 'mt-24 px-4 mx-auto container my-6 shadow',
           )}
         >
           <div className="flex flex-col">

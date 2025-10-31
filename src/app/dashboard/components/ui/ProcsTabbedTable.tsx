@@ -1,25 +1,29 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Menu, MenuItem, Tooltip } from '@mui/material';
+import { User } from '@/modules/auth/types';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+
 import Button from '@/components/common/buttons/Button';
 import CreateNewProcDialog from './CreateNewProcDialog';
 import type { ProcPayload } from './CreateNewProcDialog';
 import { initialProcsData } from '@/app/procs/utils/initialData';
 import { PuckPageData } from '@/app/puck/types';
-import Link from 'next/link';
 import RedirectingDialog from './RedirectingDialog';
-import { Menu, MenuItem } from '@mui/material';
-import { User } from '@/modules/auth/types';
 import ManagePermissionsDialog, {
   UserPermission,
 } from './ManagePermissionsDialog';
+import PreviewButton from './navigation/preview-button';
+import EditButton from './navigation/edit-button';
+import MoreMenu from './navigation/more-menu';
 
 export type Proc = {
   _id: string;
@@ -340,54 +344,28 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
                     <td className="px-3 py-3">
                       <div className="flex gap-2">
                         <button className="text-sm text-blue-600 hover:underline hover:cursor-pointer">
-                          <Link href={`procs/${p.slug}`}> View</Link>
+                          <PreviewButton slug={p.slug} />
                         </button>
                         <button className="text-sm text-blue-600 hover:underline hover:cursor-pointer">
-                          <Link href={`procs/${p.slug}/edit`}> Edit</Link>
+                          <EditButton slug={p.slug} />
                         </button>
                         {/* TODO: Add Delete, Edit Metadata, Manage Permissions */}
                         {currentUser?.username === p.owner && (
-                          <button
-                            className="text-sm text-blue-600 hover:underline hover:cursor-pointer"
-                            onClick={(e) => handleMenuOpen(e, p)}
-                          >
-                            More
-                          </button>
+                          <Tooltip title="More Options">
+                            <button
+                              className="text-sm text-blue-600 hover:underline hover:cursor-pointer"
+                              onClick={(e) => handleMenuOpen(e, p)}
+                            >
+                              <MoreHorizIcon className="m-0.5 text-gray-400 hover:text-gray-500" />
+                            </button>
+                          </Tooltip>
                         )}
-                        <Menu
+                        <MoreMenu
                           anchorEl={anchorEl}
+                          handleManagePermissions={handleManagePermissions}
+                          handleMenuClose={handleMenuClose}
                           open={open}
-                          onClose={handleMenuClose}
-                          anchorOrigin={{
-                            vertical: 'bottom',
-                            horizontal: 'right',
-                          }}
-                          transformOrigin={{
-                            vertical: 'top',
-                            horizontal: 'right',
-                          }}
-                          slotProps={{
-                            paper: {
-                              elevation: 0,
-                              sx: {
-                                boxShadow:
-                                  '0 12px 28px rgba(0,0,0,0.01), 0 2px 6px rgba(0,0,0,0.05)',
-                                minWidth: 200,
-                              },
-                            },
-                          }}
-                        >
-                          {/* TODO: eproc-3 Implement Publish and unpublish for drafts *
-                          <MenuItem key="unpublish">
-                            <div>Unpublish</div>
-                          </MenuItem> */}
-                          <MenuItem
-                            key="managePermissions"
-                            onClick={handleManagePermissions}
-                          >
-                            <div>Manage Permissions</div>
-                          </MenuItem>
-                        </Menu>
+                        />
                       </div>
                     </td>
                   </tr>
