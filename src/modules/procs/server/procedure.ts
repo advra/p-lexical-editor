@@ -77,6 +77,36 @@ export const procRouter = createTRPCRouter({
       return toPublic(doc.toObject(), { includeACL: true });
     }),
 
+  // Get a proc by slug (optimized for performance - simple slug input)
+  getBySlug: protectedProcedure
+    .input(z.object({ slug: z.string().min(1) }))
+    .query(async ({ ctx, input }) => {
+      const username = ctx.session?.user?.username;
+      if (!username) throw new TRPCError({ code: 'UNAUTHORIZED' });
+
+      const doc = await ProcModel.findOne({ 
+        slug: input.slug.toLowerCase() 
+      }).lean();
+      
+      if (!doc) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Proc not found' });
+      }
+
+      const isOwner = doc.owner === username;
+      const isSharedUser = (doc.sharedWith ?? []).some(
+        (s: any) =>
+          s.userId === username &&
+          (s.permission === 'read' || s.permission === 'edit'),
+      );
+      const canRead = doc.status === 'published' || isOwner || isSharedUser;
+      
+      if (!canRead) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Forbidden' });
+      }
+
+      return toPublic(doc, { includeACL: isOwner || isSharedUser });
+    }),
+
   // Get a proc by id OR (owner, slug) OR (slug)
   getOne: protectedProcedure
     .input(procGetOneInput)
@@ -103,10 +133,10 @@ export const procRouter = createTRPCRouter({
           });
       }
 
-      console.log("Searching proc by filter", filter)
+      console.log('Searching proc by filter', filter);
       const doc = await ProcModel.findOne(filter).lean();
       if (!doc) {
-        console.log("Proc not found")
+        console.log('Proc not found');
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Proc not found' });
       }
 
