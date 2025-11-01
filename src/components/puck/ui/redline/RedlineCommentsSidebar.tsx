@@ -172,7 +172,27 @@ export const RedlineCommentsSidebar = ({
           <CloseIcon fontSize="small" />
         </button>
       </div>
-      <div className="px-2 ml-auto">
+      <div className="m-2 p-4 rounded-md border border-gray-200">
+        <div className="flex text-sm text-gray-600">
+          <span className="flex gap-1">
+            <HistoryIcon
+              fontSize="small"
+              color="info"
+              className="align-middle"
+            />
+            <span className="font-semibold">DCN:</span> {redlineData.dcn}
+          </span>
+          <span className="ml-auto text-xs">
+            {formatTimestamp(redlineData.createdAt)}
+          </span>
+        </div>
+        <div className="text-sm text-gray-600">
+          <span className="font-semibold">Author: </span>
+          <span>{redlineData.userId}</span>
+        </div>
+        <span>{redlineData.newText}</span>
+      </div>
+      <div className="ml-auto px-2">
         {isAuthor && (
           <IconButton
             size="small"
@@ -186,23 +206,6 @@ export const RedlineCommentsSidebar = ({
             />
           </IconButton>
         )}
-      </div>
-      <div className="m-2 p-4 rounded-sm border border-gray-200">
-        <div className="flex flex-col text-sm text-gray-600">
-          <span className="flex gap-1">
-            <HistoryIcon
-              fontSize="small"
-              color="info"
-              className="align-middle"
-            />
-            DCN: {redlineData.dcn}
-          </span>
-          <span>Created By {redlineData.userId}</span>
-          <span className="text-xs mb-4">
-            {formatTimestamp(redlineData.createdAt)}
-          </span>
-        </div>
-        <span>{redlineData.newText}</span>
       </div>
 
       {/* Comments List */}
