@@ -14,7 +14,7 @@ export interface Redline {
   procId: string;
   blockId: string;
   dcn: string;
-  // redlineId: string;
+  redlineId: string;
   target: string;
   originalText: string;
   newText: string;
@@ -59,12 +59,12 @@ const RedlineSchema = new Schema<RedlineDoc>(
       trim: true,
       index: true,
     },
-    // redlineId: {
-    //   type: String,
-    //   required: true,
-    //   unique: true,
-    //   index: true,
-    // },
+    redlineId: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
     target: {
       type: String,
       required: true,
@@ -116,7 +116,7 @@ export const redlineSchema = z.object({
   procId: z.string().min(1),
   blockId: z.string().min(1),
   dcn: z.string().min(1),
-  // redlineId: z.string().min(1),
+  redlineId: z.string().min(1),
   target: z.string().min(1),
   originalText: z.string(),
   newText: z.string(),
@@ -142,7 +142,7 @@ export function toPublic(doc: RedlineDoc | any): RedlinePublic {
     procId: docObj.procId,
     blockId: docObj.blockId,
     dcn: docObj.dcn,
-    // redlineId: docObj.redlineId,
+    redlineId: docObj.redlineId,
     target: docObj.target,
     originalText: docObj.originalText,
     newText: docObj.newText,

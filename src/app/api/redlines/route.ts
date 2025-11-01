@@ -47,7 +47,7 @@ export async function POST(request: Request) {
       );
     } else {
       // Create new redline item
-      const redlineId = `${procId}_${blockId}_${dcn}_${Date.now()}`;
+      const redlineId = `${procId}_${blockId}_${dcn}_${target}_${Date.now()}`;
       
       const newRedline = await RedlineModel.create({
         procId,
