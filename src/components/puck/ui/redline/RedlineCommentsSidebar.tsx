@@ -21,12 +21,14 @@ type RedlineCommentsSidebarProps = {
   redlineId: string;
   onClose: () => void;
   onAddComment: (redlineId: string, comment: string) => void;
+  onRedlineDelete?: (redlineId: string) => void;
 };
 
 export const RedlineCommentsSidebar = ({
   redlineId,
   onClose,
   onAddComment,
+  onRedlineDelete,
 }: RedlineCommentsSidebarProps) => {
   const trpc = useTRPC();
   const { procId } = useProc();
@@ -61,17 +63,11 @@ export const RedlineCommentsSidebar = ({
   } = useMutation(trpc.redlines.delete.mutationOptions());
 
   const handleDelete = useCallback(() => {
-    if (redline) {
-      deleteMutate({ id: redline._id });
-
-      // update with socket
-      const socket = getSocket();
-      // TODO: Create a room hook?
-      if (socket) {
-        // socket.emit('redline:delete', { room, redlineId });
-      }
+    if (redline && onRedlineDelete) {
+      onRedlineDelete(redline.redlineId);
+      onClose(); // Close the sidebar after deletion
     }
-  }, [redline, deleteMutate]);
+  }, [redline, onRedlineDelete, onClose]);
 
   // Fetch redline comments when sidebar opens
   useEffect(() => {

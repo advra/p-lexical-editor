@@ -159,6 +159,7 @@ export const RedlineRender = ({
       // Broadcast via socket to other users - use procId as the room
       const socket = getSocket();
       if (socket) {
+        console.log('room deleted redline is', room, redlineId);
         socket.emit('redline:delete', { room, redlineId });
       }
     } catch (error) {

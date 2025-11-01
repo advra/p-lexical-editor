@@ -208,6 +208,44 @@ export default function ProcPageClient({
     // TODO: Implement actual comment addition logic via API
   };
 
+  const handleRedlineDelete = async (redlineId: string) => {
+    console.log('handleRedlineDelete called with redlineId:', redlineId);
+    console.log('Current redlines before deletion:', redlines);
+
+    try {
+      const response = await fetch('/api/redlines', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          procId: proc._id,
+          redlineId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete redline');
+      }
+
+      // Update current user's UI immediately
+      setRedlines((prev) => {
+        const newRedlines = prev.filter((r) => r.redlineId !== redlineId);
+        console.log('Redlines after deletion:', newRedlines);
+        return newRedlines;
+      });
+
+      // Broadcast via socket to other users - use procId as the room
+      const socket = getSocket();
+      if (socket) {
+        console.log('room deleted redline is', room, redlineId);
+        socket.emit('redline:delete', { room, redlineId });
+      }
+    } catch (error) {
+      console.error('Failed to delete redline:', error);
+    }
+  };
+
   return (
     <RedlineProvider>
       <ProcProvider
@@ -235,6 +273,7 @@ export default function ProcPageClient({
           <RedlineLayoutWrapper
             redlines={redlines}
             onAddComment={handleAddComment}
+            onRedlineDelete={handleRedlineDelete}
           >
             <PuckPreview
               ref={rootRef}

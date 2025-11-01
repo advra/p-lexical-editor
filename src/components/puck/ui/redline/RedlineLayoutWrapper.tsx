@@ -9,12 +9,14 @@ type RedlineLayoutWrapperProps = {
   children: React.ReactNode;
   redlines: RedlineProps[];
   onAddComment?: (redlineId: string, comment: string) => void;
+  onRedlineDelete?: (redlineId: string) => void;
 };
 
 export const RedlineLayoutWrapper = ({
   children,
   redlines,
   onAddComment,
+  onRedlineDelete,
 }: RedlineLayoutWrapperProps) => {
   const { selectedRedlineId, openRedlineSidebar, closeRedlineSidebar } =
     useRedline();
@@ -54,6 +56,7 @@ export const RedlineLayoutWrapper = ({
           redlineId={selectedRedlineId}
           onClose={handleCloseSidebar}
           onAddComment={handleAddComment}
+          onRedlineDelete={onRedlineDelete}
         />
       )}
       //{' '}
