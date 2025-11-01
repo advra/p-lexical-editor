@@ -297,6 +297,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
                 redlineHoverEnabled={redlineHoverEnabled}
               >
                 <DisplayRedlineText
+                  blockId={id}
                   isRedlined={isRedlined}
                   redline={redlineStep}
                   fallbackText={step}
@@ -312,6 +313,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
                 redlineHoverEnabled={redlineHoverEnabled}
               >
                 <DisplayRedlineText
+                  blockId={id}
                   isRedlined={isRedlined}
                   redline={redlineContent}
                   fallbackText={content}

@@ -26,6 +26,12 @@ export const redlineGetByBlockInput = z.object({
   blockId: z.string().min(1),
 });
 
+export const redlineGetByRedlineInput = z.object({
+  procId: z.string().min(1),
+  blockId: z.string().min(1),
+  redlineId: z.string().min(1),
+});
+
 export const redlineDeleteInput = z.object({
   id: z.string().min(1),
 });

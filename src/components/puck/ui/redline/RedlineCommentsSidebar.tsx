@@ -1,33 +1,78 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { RedlineComment } from './RedlineComponent';
 import { CommentItem } from './CommentItem';
 import { formatTimestamp } from '@/lib/utils/dateformat';
 import CloseIcon from '@mui/icons-material/Close';
 import SendIcon from '@mui/icons-material/Send';
+import { findRedlineComment } from './mockRedlineData';
+import { useTRPC } from '@/trpc/client';
+import { useProc } from '@/context/ProcContext';
+import { useRedline } from '@/context/RedlineContext';
+import { useQuery } from '@tanstack/react-query';
 
 type RedlineCommentsSidebarProps = {
-  redlineComment: RedlineComment | null;
+  redlineId: string;
   onClose: () => void;
   onAddComment: (redlineId: string, comment: string) => void;
 };
 
 export const RedlineCommentsSidebar = ({
-  redlineComment,
+  redlineId,
   onClose,
   onAddComment,
 }: RedlineCommentsSidebarProps) => {
+  const trpc = useTRPC();
+  const { procId } = useProc();
+  const { selectedRedlineId, selectedBlockId } = useRedline();
   const [newComment, setNewComment] = useState('');
+  const [redlineComment, setRedlineComment] = useState<RedlineComment | null>(
+    null,
+  );
+  const [loading, setLoading] = useState(true);
 
-  if (!redlineComment) {
-    return null;
-  }
+  // Use TRPC query to fetch the redline data
+  const { data: redlineData, isLoading } = useQuery(
+    trpc.redlines.getByRedlineId.queryOptions({
+      procId: procId,
+      blockId: '', // TODO: Get blockId from context or props
+      redlineId: redlineId,
+    }),
+  );
+
+  useEffect(() => {
+    console.log('redlinn redlineID', selectedRedlineId);
+    console.log('redlinn blockID', selectedBlockId);
+  }, [selectedBlockId, selectedRedlineId]);
+
+  // Fetch redline comments when sidebar opens
+  useEffect(() => {
+    const fetchRedlineComments = async () => {
+      setLoading(true);
+      try {
+        // TODO: Replace with actual API call
+        console.log('Fetching comments for redline:', redlineId);
+        const commentData = findRedlineComment(redlineId);
+        setRedlineComment(commentData);
+      } catch (error) {
+        console.error('Error fetching redline comments:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (redlineId) {
+      fetchRedlineComments();
+    }
+  }, [redlineId]);
 
   const handleAddComment = () => {
     if (newComment.trim()) {
-      onAddComment(redlineComment.redlineId, newComment.trim());
+      onAddComment(redlineId, newComment.trim());
       setNewComment('');
+      // TODO: Refresh comments after adding
+      // For now, we'll just log and let the parent handle the update
     }
   };
 
@@ -37,6 +82,52 @@ export const RedlineCommentsSidebar = ({
       handleAddComment();
     }
   };
+
+  if (isLoading || loading) {
+    return (
+      <div className="fixed right-0 top-0 h-screen w-80 bg-white border-l border-gray-200 shadow-lg z-50 flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
+          <div className="animate-pulse">
+            <div className="h-4 bg-gray-300 rounded w-24 mb-2"></div>
+            <div className="h-3 bg-gray-200 rounded w-32"></div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-gray-200 rounded transition-colors"
+            title="Close sidebar"
+          >
+            <CloseIcon fontSize="small" />
+          </button>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-gray-500">Loading comments...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!redlineComment) {
+    return (
+      <div className="fixed right-0 top-0 h-screen w-80 bg-white border-l border-gray-200 shadow-lg z-50 flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
+          <h3 className="font-semibold text-gray-800">Redline Comments</h3>
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-gray-200 rounded transition-colors"
+            title="Close sidebar"
+          >
+            <CloseIcon fontSize="small" />
+          </button>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-gray-500 text-center">
+            <p>Redline not found</p>
+            <p className="text-sm mt-1">ID: {redlineId}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed right-0 top-0 h-screen w-80 bg-white border-l border-gray-200 shadow-lg z-50 flex flex-col">

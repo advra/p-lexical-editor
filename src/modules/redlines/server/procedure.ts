@@ -11,6 +11,7 @@ import {
   redlineGetByProcInput,
   redlineGetByBlockInput,
   redlineDeleteInput,
+  redlineGetByRedlineInput,
 } from './schemas';
 
 // TODO: Update TRPC procedures to work with new redline data model structure
@@ -120,6 +121,35 @@ export const redlineRouter = createTRPCRouter({
       );
 
       return allRedlines;
+    }),
+
+  getByRedlineId: protectedProcedure
+    .input(redlineGetByRedlineInput)
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.session?.user?.username;
+      if (!userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
+
+      // Find the proc redlines document
+      const procRedlines = await ProcRedlinesModel.findOne({
+        procId: input.procId,
+      });
+
+      if (!procRedlines || !procRedlines.blocks) {
+        return null;
+      }
+
+      // Find the specific redline by ID - iterate through the Map
+      for (const [blockId, blockData] of procRedlines.blocks) {
+        if (blockData.redlines) {
+          for (const [target, redline] of blockData.redlines) {
+            if (redline.dcn === input.redlineId) {
+              return redline;
+            }
+          }
+        }
+      }
+
+      return null;
     }),
 
   // TODO: Update delete procedure for new data model

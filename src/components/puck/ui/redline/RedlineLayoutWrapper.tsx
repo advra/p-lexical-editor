@@ -1,42 +1,39 @@
 'use client';
 
-import { useState } from 'react';
-import { RedlineProps, RedlineComment } from './RedlineComponent';
+import { RedlineProps } from './RedlineComponent';
 import { RedlineCommentsSidebar } from './RedlineCommentsSidebar';
 import { RedlineMarginLabels } from './RedlineMarginLabels';
-import { findRedlineComment, addCommentToRedline } from './mockRedlineData';
+import { useRedline } from '@/context/RedlineContext';
 
 type RedlineLayoutWrapperProps = {
   children: React.ReactNode;
   redlines: RedlineProps[];
+  onAddComment?: (redlineId: string, comment: string) => void;
 };
 
 export const RedlineLayoutWrapper = ({
   children,
   redlines,
+  onAddComment,
 }: RedlineLayoutWrapperProps) => {
-  const [selectedRedline, setSelectedRedline] = useState<RedlineComment | null>(
-    null,
-  );
+  const { selectedRedlineId, openRedlineSidebar, closeRedlineSidebar } =
+    useRedline();
 
   const handleRedlineClick = (redline: RedlineProps) => {
-    // Find the corresponding redline comment data
-    const redlineComment = findRedlineComment(redline.dcn);
-    setSelectedRedline(redlineComment);
-  };
-
-  const handleAddComment = (redlineId: string, comment: string) => {
-    // Add comment to the mock data
-    addCommentToRedline(redlineId, comment);
-
-    // Update the selected redline to show the new comment
-    const updatedRedlineComment = findRedlineComment(redlineId);
-    setSelectedRedline(updatedRedlineComment);
+    // Set the redline ID to open the sidebar
+    openRedlineSidebar(redline.dcn);
   };
 
   const handleCloseSidebar = () => {
-    setSelectedRedline(null);
+    closeRedlineSidebar();
   };
+
+  const handleAddComment =
+    onAddComment ||
+    ((redlineId: string, comment: string) => {
+      console.log('Adding comment to redline:', redlineId, comment);
+      // TODO: Implement actual comment addition logic via API
+    });
 
   return (
     <div className="flex min-h-screen">
@@ -53,12 +50,14 @@ export const RedlineLayoutWrapper = ({
         </div>
       </div>
 
-      {/* Comments Sidebar */}
-      <RedlineCommentsSidebar
-        redlineComment={selectedRedline}
-        onClose={handleCloseSidebar}
-        onAddComment={handleAddComment}
-      />
+      {/* Comments Sidebar - Conditionally rendered when redline ID is set */}
+      {selectedRedlineId && (
+        <RedlineCommentsSidebar
+          redlineId={selectedRedlineId}
+          onClose={handleCloseSidebar}
+          onAddComment={handleAddComment}
+        />
+      )}
     </div>
   );
 };
