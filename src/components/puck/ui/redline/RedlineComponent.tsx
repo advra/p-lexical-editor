@@ -4,6 +4,24 @@
 
 import { RedlineWrapper } from './RedlineWrapper';
 
+export type Comment = {
+  id: string;
+  type: string;
+  user: string;
+  createdAt: string;
+  updatedAt: string;
+  comment: string;
+};
+
+export type RedlineComment = {
+  redlineId: string;
+  DCN: string;
+  User: string;
+  createdAt: string;
+  updatedAt: string;
+  comments: Comment[];
+};
+
 export type RedlineProps = {
   isRedlined?: boolean;
   dcn: string;
@@ -11,6 +29,7 @@ export type RedlineProps = {
   originalText: string;
   newText: string;
   createdAt: string;
+  comments?: Comment[];
 };
 
 export type AddRedlineProps = {

@@ -77,7 +77,7 @@ export default function HistoryDialog({ open, onClose, proc }: Props) {
     const base = [
       {
         historyType: HistoryType.CREATED,
-        timestampAt: formatTimestamp(new Date(proc.createdAt)),
+        timestampAt: formatTimestamp(proc.createdAt.toString()),
         timestampMs: new Date(proc.createdAt).getTime(),
         user: 'Steve',
       },
@@ -87,7 +87,7 @@ export default function HistoryDialog({ open, onClose, proc }: Props) {
       const ts = new Date(Date.now() - offsetMin * 60_000);
       return {
         historyType: type,
-        timestampAt: formatTimestamp(ts),
+        timestampAt: formatTimestamp(ts.toISOString()),
         timestampMs: ts.getTime(),
         user,
       };

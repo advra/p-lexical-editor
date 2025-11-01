@@ -16,7 +16,6 @@ import CompleteTimestamp from '../../completed/CompleteTimestamp';
 import { MarkCompleteButton } from './components/MarkCompleteButton';
 import { useCompletion } from '../hooks/use-completion';
 import useUser from '@/hooks/use-user';
-import { string } from 'zod';
 
 export type TaskItemProps = {
   // This id is inherited by default puck's internal props
@@ -48,7 +47,9 @@ enum REDLINE_TARGETS {
 //   response: string;
 // };
 
-export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
+export const TaskItemBlock: ComponentConfig<
+  TaskItemProps & Partial<AddRedlineProps>
+> = {
   label: TASK_ITEM_LABEL,
   fields: {
     step: { type: 'text', contentEditable: true },
@@ -86,12 +87,16 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
     items,
     embeddedSlot,
     record,
-    redlineHoverEnabled,
+    redlineHoverEnabled = false,
     onRedlineClick,
     redlinesByTarget,
     onRedlineDelete,
+    onRedlineTextClick,
   }: TaskItemProps &
-    AddRedlineProps & { onRedlineDelete?: (redlineId: string) => void }) => {
+    Partial<AddRedlineProps> & {
+      onRedlineDelete?: (redlineId: string) => void;
+      onRedlineTextClick?: (redline: any) => void;
+    }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const blockId = id || '';
 
@@ -131,6 +136,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
                   isRedlined={isRedlined}
                   redline={redlineStep}
                   fallbackText={step}
+                  onRedlineClick={onRedlineTextClick}
                 />
               </RedlineWrapper>
             </span>
