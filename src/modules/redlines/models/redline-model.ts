@@ -1,62 +1,73 @@
 import mongoose, { Schema, Model } from 'mongoose';
 import { z } from 'zod';
 
-export interface RedlineItem {
-  // Unique identifier for this redline item
-  redlineId: string;
-  // the block id modified (managed by puck editor)
+export interface Comment {
+  _id: string;
+  comment: string;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Redline {
+  _id: string;
+  procId: string;
   blockId: string;
-  // the specific text target within the block (e.g., 'step', 'content')
-  target: string;
-  // Document Change Number
   dcn: string;
-  // Text before change
+  // redlineId: string;
+  target: string;
   originalText: string;
-  // Text after change
   newText: string;
-  // Who made the change
   userId: string;
   status: 'pending' | 'applied' | 'rejected';
+  comments: Comment[];
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface BlockRedlines {
-  // Block ID
-  blockId: string;
-  // Redlines for this block, organized by target
-  redlines: Map<string, RedlineItem>;
-}
+export type RedlineDoc = mongoose.Document & Redline;
 
-export interface ProcRedlines {
-  // Reference to the proc
-  procId: string;
-  // Redlines organized by block ID for O(1) access
-  blocks: Map<string, BlockRedlines>;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export type ProcRedlinesDoc = mongoose.Document & ProcRedlines;
-
-const RedlineItemSchema = new Schema<RedlineItem>(
+const CommentSchema = new Schema<Comment>(
   {
-    redlineId: {
+    comment: {
       type: String,
       required: true,
+    },
+    userId: {
+      type: String,
+      required: true,
+    },
+  },
+  { timestamps: true },
+);
+
+const RedlineSchema = new Schema<RedlineDoc>(
+  {
+    procId: {
+      type: String,
+      required: true,
+      index: true,
     },
     blockId: {
       type: String,
       required: true,
-    },
-    target: {
-      type: String,
-      required: true,
+      index: true,
     },
     dcn: {
       type: String,
       required: true,
       trim: true,
+      index: true,
+    },
+    // redlineId: {
+    //   type: String,
+    //   required: true,
+    //   unique: true,
+    //   index: true,
+    // },
+    target: {
+      type: String,
+      required: true,
     },
     originalText: {
       type: String,
@@ -69,89 +80,75 @@ const RedlineItemSchema = new Schema<RedlineItem>(
     userId: {
       type: String,
       required: true,
+      index: true,
     },
     status: {
       type: String,
       enum: ['pending', 'applied', 'rejected'],
       default: 'pending',
-    },
-  },
-  { timestamps: true },
-);
-
-const BlockRedlinesSchema = new Schema<BlockRedlines>(
-  {
-    blockId: {
-      type: String,
-      required: true,
-    },
-    redlines: {
-      type: Map,
-      of: RedlineItemSchema,
-      default: new Map(),
-    },
-  },
-  { _id: false },
-);
-
-const ProcRedlinesSchema = new Schema<ProcRedlinesDoc>(
-  {
-    procId: {
-      type: String,
-      required: true,
-      unique: true,
       index: true,
     },
-    blocks: {
-      type: Map,
-      of: BlockRedlinesSchema,
-      default: new Map(),
+    comments: {
+      type: [CommentSchema],
+      default: [],
     },
   },
   { timestamps: true },
 );
 
-// Index for efficient queries
-ProcRedlinesSchema.index({ 'redlines.blockId': 1 });
-ProcRedlinesSchema.index({ 'redlines.userId': 1 });
-ProcRedlinesSchema.index({ 'redlines.status': 1 });
+// Compound indexes for efficient queries
+RedlineSchema.index({ procId: 1, blockId: 1 });
+RedlineSchema.index({ procId: 1, dcn: 1 });
+// RedlineSchema.index({ procId: 1, redlineId: 1 });
+RedlineSchema.index({ procId: 1, status: 1 });
 
 // Zod schemas for validation
-export const redlineItemSchema = z.object({
-  redlineId: z.string().min(1),
+export const commentSchema = z.object({
+  _id: z.string().optional(),
+  comment: z.string().min(1),
+  userId: z.string().min(1),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+});
+
+export const redlineSchema = z.object({
+  _id: z.string().optional(),
+  procId: z.string().min(1),
   blockId: z.string().min(1),
-  target: z.string().min(1),
   dcn: z.string().min(1),
+  // redlineId: z.string().min(1),
+  target: z.string().min(1),
   originalText: z.string(),
   newText: z.string(),
   userId: z.string().min(1),
   status: z.enum(['pending', 'applied', 'rejected']),
+  comments: z.array(commentSchema),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
 });
 
-export const procRedlinesSchema = z.object({
-  _id: z.string().optional(),
-  procId: z.string().min(1),
-  redlines: z.array(redlineItemSchema),
-  createdAt: z.date().optional(),
-  updatedAt: z.date().optional(),
-});
+export type RedlinePublic = z.infer<typeof redlineSchema>;
 
-export type ProcRedlinesPublic = z.infer<typeof procRedlinesSchema>;
-
-export const ProcRedlinesModel: Model<ProcRedlines> =
-  (mongoose.models.ProcRedlines as Model<ProcRedlines>) ||
-  mongoose.model<ProcRedlines>('ProcRedlines', ProcRedlinesSchema);
+export const RedlineModel: Model<Redline> =
+  (mongoose.models.Redline as Model<Redline>) ||
+  mongoose.model<Redline>('Redline', RedlineSchema);
 
 // Helper function to convert to public format
-export function toPublic(doc: ProcRedlinesDoc | any): ProcRedlinesPublic {
+export function toPublic(doc: RedlineDoc | any): RedlinePublic {
   const docObj = doc.toObject ? doc.toObject() : doc;
 
   return {
     _id: docObj._id?.toString() || docObj._id,
     procId: docObj.procId,
-    redlines: docObj.redlines || [],
+    blockId: docObj.blockId,
+    dcn: docObj.dcn,
+    // redlineId: docObj.redlineId,
+    target: docObj.target,
+    originalText: docObj.originalText,
+    newText: docObj.newText,
+    userId: docObj.userId,
+    status: docObj.status,
+    comments: docObj.comments || [],
     createdAt: docObj.createdAt,
     updatedAt: docObj.updatedAt,
   };

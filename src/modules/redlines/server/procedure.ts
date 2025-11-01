@@ -4,7 +4,7 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from '@/trpc/init';
-import { ProcRedlinesModel, toPublic } from '../models/redline-model';
+import { RedlineModel, toPublic } from '../models/redline-model';
 import {
   redlineCreateInput,
   redlineUpdateInput,
@@ -14,113 +14,85 @@ import {
   redlineGetByRedlineInput,
 } from './schemas';
 
-// TODO: Update TRPC procedures to work with new redline data model structure
-// The redline data model has been restructured to organize redlines by procId
-// with an array of redline items. These procedures need to be updated accordingly.
-
 export const redlineRouter = createTRPCRouter({
-  // TODO: Update create procedure for new data model
   create: protectedProcedure
     .input(redlineCreateInput)
     .mutation(async ({ ctx, input }) => {
-      throw new TRPCError({
-        code: 'NOT_IMPLEMENTED',
-        message:
-          'Redline create procedure needs to be updated for new data model',
+      const userId = ctx.session?.user?.username;
+      if (!userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
+
+      // Generate unique redlineId
+      const redlineId = `${input.procId}_${input.blockId}_${input.dcn}_${Date.now()}`;
+      
+      const redline = await RedlineModel.create({
+        procId: input.procId,
+        blockId: input.blockId,
+        dcn: input.dcn,
+        redlineId,
+        target: 'content', // Default target, can be made configurable
+        originalText: input.originalText,
+        newText: input.newText,
+        userId,
+        status: 'pending',
+        comments: [],
       });
+
+      return toPublic(redline);
     }),
 
-  // TODO: Update update procedure for new data model
   update: protectedProcedure
     .input(redlineUpdateInput)
     .mutation(async ({ ctx, input }) => {
-      throw new TRPCError({
-        code: 'NOT_IMPLEMENTED',
-        message:
-          'Redline update procedure needs to be updated for new data model',
-      });
+      const userId = ctx.session?.user?.username;
+      if (!userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
+
+      const redline = await RedlineModel.findById(input.id);
+      if (!redline) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Redline not found' });
+      }
+
+      // Update the redline
+      const updatedRedline = await RedlineModel.findByIdAndUpdate(
+        input.id,
+        { $set: input.patch },
+        { new: true }
+      );
+
+      return toPublic(updatedRedline);
     }),
 
-  // TODO: Update getByProc procedure for new data model
   getByProc: protectedProcedure
     .input(redlineGetByProcInput)
     .query(async ({ ctx, input }) => {
       const userId = ctx.session?.user?.username;
       if (!userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
 
-      // Find the proc redlines document
-      const procRedlines = await ProcRedlinesModel.findOne({
-        procId: input.procId,
-      });
-
-      if (!procRedlines || !procRedlines.blocks) {
-        return [];
-      }
-
-      let allRedlines: any[] = [];
-
-      // Convert blocks map to array of redlines
-      procRedlines.blocks.forEach((block) => {
-        if (block.redlines) {
-          block.redlines.forEach((redline) => {
-            allRedlines.push(redline);
-          });
-        }
-      });
-
-      // Filter by status if provided
+      const query: any = { procId: input.procId };
       if (input.status) {
-        allRedlines = allRedlines.filter((r) => r.status === input.status);
+        query.status = input.status;
       }
 
-      // Sort by creation date (newest first)
-      allRedlines.sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      );
+      const redlines = await RedlineModel.find(query)
+        .sort({ createdAt: -1 })
+        .exec();
 
-      return allRedlines;
+      return redlines.map(toPublic);
     }),
 
-  // TODO: Update getByBlock procedure for new data model
   getByBlock: protectedProcedure
     .input(redlineGetByBlockInput)
     .query(async ({ ctx, input }) => {
       const userId = ctx.session?.user?.username;
       if (!userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
 
-      // Find the proc redlines document
-      const procRedlines = await ProcRedlinesModel.findOne({
+      const redlines = await RedlineModel.find({
         procId: input.procId,
-      });
+        blockId: input.blockId,
+      })
+        .sort({ createdAt: -1 })
+        .exec();
 
-      if (!procRedlines || !procRedlines.blocks) {
-        return [];
-      }
-
-      let allRedlines: any[] = [];
-
-      // Convert blocks map to array of redlines
-      procRedlines.blocks.forEach((block) => {
-        if (block.redlines) {
-          block.redlines.forEach((redline) => {
-            allRedlines.push(redline);
-          });
-        }
-      });
-
-      // Filter by blockId if provided
-      if (input.blockId) {
-        allRedlines = allRedlines.filter((r) => r.blockId === input.blockId);
-      }
-
-      // Sort by creation date (newest first)
-      allRedlines.sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      );
-
-      return allRedlines;
+      return redlines.map(toPublic);
     }),
 
   getByRedlineId: protectedProcedure
@@ -129,37 +101,28 @@ export const redlineRouter = createTRPCRouter({
       const userId = ctx.session?.user?.username;
       if (!userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
 
-      // Find the proc redlines document
-      const procRedlines = await ProcRedlinesModel.findOne({
-        procId: input.procId,
-      });
+      // unique DCN per comment?
+      let redline = await RedlineModel.findOne({
+        dcn: input.redlineId
+      })
 
-      if (!procRedlines || !procRedlines.blocks) {
-        return null;
-      }
+      console.log('FOUND:', redline);
 
-      // Find the specific redline by ID - iterate through the Map
-      for (const [blockId, blockData] of procRedlines.blocks) {
-        if (blockData.redlines) {
-          for (const [target, redline] of blockData.redlines) {
-            if (redline.dcn === input.redlineId) {
-              return redline;
-            }
-          }
-        }
-      }
-
-      return null;
+      return redline ? toPublic(redline) : null;
     }),
 
-  // TODO: Update delete procedure for new data model
   delete: protectedProcedure
     .input(redlineDeleteInput)
     .mutation(async ({ ctx, input }) => {
-      throw new TRPCError({
-        code: 'NOT_IMPLEMENTED',
-        message:
-          'Redline delete procedure needs to be updated for new data model',
-      });
+      const userId = ctx.session?.user?.username;
+      if (!userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
+
+      const redline = await RedlineModel.findById(input.id);
+      if (!redline) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Redline not found' });
+      }
+
+      await RedlineModel.findByIdAndDelete(input.id);
+      return { success: true };
     }),
 });

@@ -36,20 +36,18 @@ export const RedlineLayoutWrapper = ({
     });
 
   return (
-    <div className="flex min-h-screen">
+    <div className="">
       {/* Main Content Area (80% width) */}
-      <div className="w-4/5 relative">
-        {children}
-
-        {/* Right Margin Area (20% width) */}
-        <div className="absolute right-0 top-0 bottom-0 w-1/5 border-l border-gray-200">
+      {/* <div className="w-4/5 relative"> */}
+      {children}
+      {/* Right Margin Area (20% width) */}
+      {/* <div className="absolute right-0 top-0 bottom-0 w-1/5 border-l border-gray-200">
           <RedlineMarginLabels
             redlines={redlines}
             onRedlineClick={handleRedlineClick}
           />
         </div>
-      </div>
-
+      </div> */}
       {/* Comments Sidebar - Conditionally rendered when redline ID is set */}
       {selectedRedlineId && (
         <RedlineCommentsSidebar
@@ -58,6 +56,7 @@ export const RedlineLayoutWrapper = ({
           onAddComment={handleAddComment}
         />
       )}
+      //{' '}
     </div>
   );
 };

@@ -36,8 +36,8 @@ export const RedlineCommentsSidebar = ({
   const { data: redlineData, isLoading } = useQuery(
     trpc.redlines.getByRedlineId.queryOptions({
       procId: procId,
-      blockId: '', // TODO: Get blockId from context or props
-      redlineId: redlineId,
+      blockId: selectedBlockId,
+      redlineId: selectedRedlineId,
     }),
   );
 
@@ -106,11 +106,11 @@ export const RedlineCommentsSidebar = ({
     );
   }
 
-  if (!redlineComment) {
+  if (!redlineData) {
     return (
       <div className="fixed right-0 top-0 h-screen w-80 bg-white border-l border-gray-200 shadow-lg z-50 flex flex-col">
         <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
-          <h3 className="font-semibold text-gray-800">Redline Comments</h3>
+          <h3 className="font-semibold text-gray-800">Redline Thread</h3>
           <button
             onClick={onClose}
             className="p-1 hover:bg-gray-200 rounded transition-colors"
@@ -134,13 +134,14 @@ export const RedlineCommentsSidebar = ({
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
         <div>
-          <h3 className="font-semibold text-gray-800">
-            DCN {redlineComment.DCN}
-          </h3>
-          <p className="text-sm text-gray-600">
-            by {redlineComment.User} •{' '}
-            {formatTimestamp(redlineComment.createdAt)}
-          </p>
+          <h3 className="font-semibold text-gray-800">Redline Thread</h3>
+          <div className="flex flex-col text-sm text-gray-600">
+            <span>DCN: {redlineData.dcn}</span>
+            <span>Created By {redlineData.userId}</span>
+            <span className="text-xs">
+              {formatTimestamp(redlineData.createdAt)}
+            </span>
+          </div>
         </div>
         <button
           onClick={onClose}
@@ -150,17 +151,19 @@ export const RedlineCommentsSidebar = ({
           <CloseIcon fontSize="small" />
         </button>
       </div>
+      <div className="p-4">{redlineData.newText}</div>
 
       {/* Comments List */}
       <div className="flex-1 overflow-y-auto p-4">
-        {redlineComment.comments.length === 0 ? (
+        {redlineData.comments.length === 0 ? (
           <div className="text-center text-gray-500 py-8">
             <p>No comments yet</p>
             <p className="text-sm mt-1">Be the first to add a comment</p>
           </div>
         ) : (
-          redlineComment.comments.map((comment) => (
-            <CommentItem key={comment.id} comment={comment} />
+          redlineData.comments.map((comment) => (
+            // <CommentItem key={comment.id} comment={comment} />
+            <>PLACEHOLDER</>
           ))
         )}
       </div>

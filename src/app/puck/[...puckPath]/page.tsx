@@ -12,6 +12,7 @@
  */
 
 import PuckEditorView from '@/components/puck/views/puck-editor-view';
+import { RedlineProvider } from '@/context/RedlineContext';
 import '@measured/puck/puck.css';
 
 export default async function Page({
@@ -23,7 +24,9 @@ export default async function Page({
 
   return (
     <>
-      <PuckEditorView segments={puckPath} />
+      <RedlineProvider>
+        <PuckEditorView segments={puckPath} />
+      </RedlineProvider>
     </>
   );
 }
