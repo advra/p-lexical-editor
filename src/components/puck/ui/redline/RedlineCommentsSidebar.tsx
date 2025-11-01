@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { RedlineComment } from './RedlineComponent';
 import { CommentItem } from './CommentItem';
+import DeleteIcon from '@mui/icons-material/Delete';
+import HistoryIcon from '@mui/icons-material/History';
 import { formatTimestamp } from '@/lib/utils/dateformat';
 import CloseIcon from '@mui/icons-material/Close';
 import SendIcon from '@mui/icons-material/Send';
@@ -10,7 +12,10 @@ import { findRedlineComment } from './mockRedlineData';
 import { useTRPC } from '@/trpc/client';
 import { useProc } from '@/context/ProcContext';
 import { useRedline } from '@/context/RedlineContext';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import IconButton from '@mui/material/IconButton';
+import { Redline } from '@/modules/redlines/models/redline-model';
+import { getSocket } from '@/lib/socket';
 
 type RedlineCommentsSidebarProps = {
   redlineId: string;
@@ -26,11 +31,14 @@ export const RedlineCommentsSidebar = ({
   const trpc = useTRPC();
   const { procId } = useProc();
   const { selectedRedlineId, selectedBlockId } = useRedline();
+  const [redline, setRedline] = useState<Redline | null>(null);
   const [newComment, setNewComment] = useState('');
   const [redlineComment, setRedlineComment] = useState<RedlineComment | null>(
     null,
   );
   const [loading, setLoading] = useState(true);
+  // TODO get user permissions
+  const isAuthor = true;
 
   // Use TRPC query to fetch the redline data
   const { data: redlineData, isLoading } = useQuery(
@@ -41,10 +49,24 @@ export const RedlineCommentsSidebar = ({
     }),
   );
 
-  useEffect(() => {
-    console.log('redlinn redlineID', selectedRedlineId);
-    console.log('redlinn blockID', selectedBlockId);
-  }, [selectedBlockId, selectedRedlineId]);
+  const {
+    mutate: deleteMutate,
+    isPending: deletePending,
+    isError: deleteHasError,
+  } = useMutation(trpc.redlines.delete.mutationOptions());
+
+  const handleDelete = useCallback(() => {
+    if (redline) {
+      deleteMutate({ id: redline._id });
+
+      // update with socket
+      const socket = getSocket();
+      // TODO: Create a room hook?
+      if (socket) {
+        // socket.emit('redline:delete', { room, redlineId });
+      }
+    }
+  }, [redline, deleteMutate]);
 
   // Fetch redline comments when sidebar opens
   useEffect(() => {
@@ -66,6 +88,13 @@ export const RedlineCommentsSidebar = ({
       fetchRedlineComments();
     }
   }, [redlineId]);
+
+  // Update redline state when redlineData changes
+  useEffect(() => {
+    if (redlineData) {
+      setRedline(redlineData);
+    }
+  }, [redlineData]);
 
   const handleAddComment = () => {
     if (newComment.trim()) {
@@ -110,7 +139,7 @@ export const RedlineCommentsSidebar = ({
     return (
       <div className="fixed right-0 top-0 h-screen w-80 bg-white border-l border-gray-200 shadow-lg z-50 flex flex-col">
         <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
-          <h3 className="font-semibold text-gray-800">Redline Thread</h3>
+          <h3 className="font-semibold text-gray-800">Redline Discussion</h3>
           <button
             onClick={onClose}
             className="p-1 hover:bg-gray-200 rounded transition-colors"
@@ -128,20 +157,12 @@ export const RedlineCommentsSidebar = ({
       </div>
     );
   }
-
   return (
-    <div className="fixed right-0 top-0 h-screen w-80 bg-white border-l border-gray-200 shadow-lg z-50 flex flex-col">
+    <div className="fixed right-0 top-0 h-screen w-[500px] bg-white border-l border-gray-200 shadow-lg z-50 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
         <div>
-          <h3 className="font-semibold text-gray-800">Redline Thread</h3>
-          <div className="flex flex-col text-sm text-gray-600">
-            <span>DCN: {redlineData.dcn}</span>
-            <span>Created By {redlineData.userId}</span>
-            <span className="text-xs">
-              {formatTimestamp(redlineData.createdAt)}
-            </span>
-          </div>
+          <h3 className="font-semibold text-gray-800">Redline Discussion</h3>
         </div>
         <button
           onClick={onClose}
@@ -151,7 +172,38 @@ export const RedlineCommentsSidebar = ({
           <CloseIcon fontSize="small" />
         </button>
       </div>
-      <div className="p-4">{redlineData.newText}</div>
+      <div className="px-2 ml-auto">
+        {isAuthor && (
+          <IconButton
+            size="small"
+            onClick={handleDelete}
+            disabled={loading}
+            title="Delete Redline"
+          >
+            <DeleteIcon
+              fontSize="small"
+              className="text-red-500 hover:text-red-700"
+            />
+          </IconButton>
+        )}
+      </div>
+      <div className="m-2 p-4 rounded-sm border border-gray-200">
+        <div className="flex flex-col text-sm text-gray-600">
+          <span className="flex gap-1">
+            <HistoryIcon
+              fontSize="small"
+              color="info"
+              className="align-middle"
+            />
+            DCN: {redlineData.dcn}
+          </span>
+          <span>Created By {redlineData.userId}</span>
+          <span className="text-xs mb-4">
+            {formatTimestamp(redlineData.createdAt)}
+          </span>
+        </div>
+        <span>{redlineData.newText}</span>
+      </div>
 
       {/* Comments List */}
       <div className="flex-1 overflow-y-auto p-4">
@@ -170,19 +222,19 @@ export const RedlineCommentsSidebar = ({
 
       {/* Add Comment Input */}
       <div className="border-t border-gray-200 p-4 bg-white">
-        <div className="flex gap-2">
+        <div className="flex gap-2 min-h-10 max-h-64 overflow-y-auto">
           <textarea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Add a comment..."
-            className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-0 "
             rows={3}
           />
           <button
             onClick={handleAddComment}
             disabled={!newComment.trim()}
-            className="self-end bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            className="self-end bg-transparent text-gray-500 p-2 rounded-lg hover:text-blue-700 disabled:text-gray-300 disabled:cursor-not-allowed transition-colors"
             title="Send comment"
           >
             <SendIcon fontSize="small" />

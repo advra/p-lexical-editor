@@ -319,7 +319,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
                   fallbackText={content}
                 />
               </RedlineWrapper>
-              {isRedlined && redlinesByTarget && (
+              {/* {isRedlined && redlinesByTarget && (
                 <div className="flex flex-col gap-2">
                   {Object.entries(redlinesByTarget).map(([target, redline]) => {
                     const redlineObj = redline as any;
@@ -337,7 +337,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
                     );
                   })}
                 </div>
-              )}
+              )} */}
             </div>
           </div>
         </div>
