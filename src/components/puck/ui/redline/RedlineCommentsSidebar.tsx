@@ -49,6 +49,11 @@ export const RedlineCommentsSidebar = ({
     }),
   );
 
+  const autoResizeTextarea = (textarea) => {
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 240) + 'px'; // 120px max height
+  };
+
   const {
     mutate: deleteMutate,
     isPending: deletePending,
@@ -114,7 +119,7 @@ export const RedlineCommentsSidebar = ({
 
   if (isLoading || loading) {
     return (
-      <div className="fixed right-0 top-0 h-screen w-80 bg-white border-l border-gray-200 shadow-lg z-50 flex flex-col">
+      <div className="fixed right-0 top-0 h-screen w-[32rem] bg-white border-l border-gray-200 shadow-lg z-50 flex flex-col">
         <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
           <div className="animate-pulse">
             <div className="h-4 bg-gray-300 rounded w-24 mb-2"></div>
@@ -137,7 +142,7 @@ export const RedlineCommentsSidebar = ({
 
   if (!redlineData) {
     return (
-      <div className="fixed right-0 top-0 h-screen w-80 bg-white border-l border-gray-200 shadow-lg z-50 flex flex-col">
+      <div className="fixed right-0 top-0 h-screen w-[32rem] bg-white border-l border-gray-200 shadow-lg z-50 flex flex-col">
         <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
           <h3 className="font-semibold text-gray-800">Redline Discussion</h3>
           <button
@@ -158,7 +163,7 @@ export const RedlineCommentsSidebar = ({
     );
   }
   return (
-    <div className="fixed right-0 top-0 h-screen w-[500px] bg-white border-l border-gray-200 shadow-lg z-50 flex flex-col">
+    <div className="fixed right-0 top-0 h-screen w-[32rem] bg-white border-l border-gray-200 shadow-lg z-50 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
         <div>
@@ -228,11 +233,15 @@ export const RedlineCommentsSidebar = ({
         <div className="flex gap-2 min-h-10 max-h-64 overflow-y-auto">
           <textarea
             value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            onKeyPress={handleKeyPress}
+            // onChange={(e) => setNewComment(e.target.value)}
+            onChange={(e) => {
+              setNewComment(e.target.value);
+              autoResizeTextarea(e.target);
+            }}
+            // onKeyPress={handleKeyPress}
             placeholder="Add a comment..."
             className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-0 "
-            rows={3}
+            rows={1}
           />
           <button
             onClick={handleAddComment}
