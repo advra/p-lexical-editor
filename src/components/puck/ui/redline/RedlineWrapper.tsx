@@ -4,18 +4,16 @@
 
 import React, { forwardRef } from 'react';
 import { cn } from '@/lib/utils/cn';
+import { useRedline } from '@/context/RedlineContext';
 
 type Props = React.ComponentProps<'div'> & {
   children: React.ReactNode;
   onClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
-  redlineHoverEnabled?: boolean;
 };
 
 export const RedlineWrapper = forwardRef<HTMLDivElement, Props>(
-  (
-    { className, children, onClick, redlineHoverEnabled = false, ...rest },
-    ref,
-  ) => {
+  ({ className, children, onClick, ...rest }, ref) => {
+    const { redlineHoverEnabled } = useRedline();
     // Apply hover styles when redlineHoverEnabled is true
     const hoverStyles = redlineHoverEnabled
       ? 'cursor-pointer hover:outline-red-500 hover:[outline-style:dashed]'

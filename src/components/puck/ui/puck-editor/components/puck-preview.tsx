@@ -13,6 +13,7 @@ import { NavigationFloatingButton } from '@/components/puck/ui/NavigationFloatin
 import { RedlineFloatingButton } from '@/components/puck/ui/redline/RedlineFloatingButton';
 import { toast } from 'sonner';
 import RedlineComment from '@/components/puck/ui/comments/comment';
+import { useRedline } from '@/context/RedlineContext';
 
 export const PuckPreview = forwardRef<
   HTMLDivElement,
@@ -104,7 +105,7 @@ export const PuckPreview = forwardRef<
     }
   };
 
-  const [redlineHoverEnabled, setRedlineHoverEnabled] = useState(false);
+  const { redlineHoverEnabled, setRedlineHoverEnabled } = useRedline();
 
   const toggleRedlineHover = () => {
     if (redlineHoverEnabled) {

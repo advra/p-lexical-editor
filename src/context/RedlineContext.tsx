@@ -7,6 +7,8 @@ interface RedlineContextType {
   setSelectedRedlineId: (id: string | false) => void;
   selectedBlockId: string | false;
   setSelectedBlockId: (id: string | false) => void;
+  redlineHoverEnabled: boolean;
+  setRedlineHoverEnabled: (value: boolean) => void;
   openRedlineSidebar: (redlineId: string) => void;
   closeRedlineSidebar: () => void;
 }
@@ -33,11 +35,15 @@ export const RedlineProvider: React.FC<RedlineProviderProps> = ({
     setSelectedRedlineId(false);
   };
 
+  const [redlineHoverEnabled, setRedlineHoverEnabled] = useState(false);
+
   const value = {
     selectedRedlineId,
     setSelectedRedlineId,
     selectedBlockId,
     setSelectedBlockId,
+    redlineHoverEnabled,
+    setRedlineHoverEnabled,
     openRedlineSidebar,
     closeRedlineSidebar,
   };

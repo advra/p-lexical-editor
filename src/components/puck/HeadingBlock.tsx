@@ -26,7 +26,6 @@ export const HeadingBlock: ComponentConfig<
   render: ({
     id,
     title,
-    redlineHoverEnabled,
     onRedlineClick,
     isRedlined,
     redlineContent,
@@ -43,10 +42,7 @@ export const HeadingBlock: ComponentConfig<
 
     return (
       <>
-        <RedlineWrapper
-          onClick={() => handleRedline(displayTitle)}
-          redlineHoverEnabled={redlineHoverEnabled}
-        >
+        <RedlineWrapper onClick={() => handleRedline(displayTitle)}>
           <div className="text-center mx-16" id={id}>
             <span
               className={cn(
