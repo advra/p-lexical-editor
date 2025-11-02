@@ -1,7 +1,7 @@
 import React, { useState, MouseEvent } from 'react';
 import { IconButton, Menu, MenuItem } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertIcon from '@mui/icons-material/MoreHoriz';
+import { useRedline } from '@/context/RedlineContext';
 
 /*
   Options more menu for the redline thread. Users can open to view options such as
@@ -15,6 +15,7 @@ type Props = {
 };
 
 function MoreButton({ isRedlineOwner, deleteRedlineCallback }: Props) {
+  const { setRedlineModalState } = useRedline();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const isOpen = Boolean(anchorEl);
   const menuId = 'redline-more-menu';

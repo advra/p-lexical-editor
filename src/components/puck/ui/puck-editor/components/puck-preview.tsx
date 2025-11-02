@@ -49,16 +49,6 @@ export const PuckPreview = forwardRef<
       ? 'w-[210mm] min-h-[297mm] p-[12mm]'
       : 'w-[8.5in] min-h-[11in] p-[0.5in]';
 
-  const handleRedlineSave = (
-    dcn: string,
-    description: string,
-    originalText: string,
-  ) => {
-    console.log('Redline saved:', { dcn, description, originalText });
-    // Here you would typically save the redline data to your backend
-    // For now, we'll just log it
-  };
-
   // Extract SectionBlocks from the proc data
   const extractNavigationBlocks = () => {
     const navigationItems = [];
@@ -108,11 +98,6 @@ export const PuckPreview = forwardRef<
   const { redlineHoverEnabled, setRedlineHoverEnabled } = useRedline();
 
   const toggleRedlineHover = () => {
-    if (redlineHoverEnabled) {
-      toast('Redline Mode Disabled');
-    } else {
-      toast('Redline Mode Enabled');
-    }
     setRedlineHoverEnabled(!redlineHoverEnabled);
   };
 
@@ -185,14 +170,10 @@ export const PuckPreview = forwardRef<
               data={data}
               procId={procId}
               room={room}
-              onRedlineSave={handleRedlineSave}
               redlineHoverEnabled={redlineHoverEnabled}
             />
           </div>
         </div>
-        {/* <aside className="no-print hidden lg:flex mt-24 w-72 h-[calc(100vh-6rem)] overflow-y-auto border-l bg-card/60 backdrop-blur px-4 py-3">
-          <RedlineComment />
-        </aside> */}
       </div>
     </div>
   );
