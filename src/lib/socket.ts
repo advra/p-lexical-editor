@@ -13,6 +13,7 @@ export function getSocket() {
   if (!socket) {
     const url =
       `${process.env.NEXT_PUBLIC_SOCKET_BASE_URL}:${process.env.NEXT_PUBLIC_SOCKET_PORT}`!;
+    console.log('[socket] Connecting to:', url);
     socket = io(url, {
       // Let socket.io fall back to polling if WS fails locally/proxied
       transports: ['websocket', 'polling'],

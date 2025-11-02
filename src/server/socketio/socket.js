@@ -72,6 +72,10 @@ io.on('connection', (socket) => {
       'total users in room:',
       roomsPresence.get(room).size,
     );
+    console.log(
+      '[socket] Current users in room:',
+      Array.from(roomsPresence.get(room).values()),
+    );
 
     // presence:update to everyone in room
     emitPresence(room);
@@ -128,7 +132,10 @@ io.on('connection', (socket) => {
   // Handle redline deletion events
   socket.on('redline:delete', ({ room, redlineId }) => {
     if (!room || !redlineId) return;
-    socket.to(room).emit('redline:deleted', { redlineId });
+    console.log('[socket] Received redline:delete event:', { room, redlineId });
+    console.log('[socket] Broadcasting redline:deleted to room:', room);
+    io.to(room).emit('redline:deleted', { redlineId });
+    console.log('[socket] Broadcast complete');
   });
 
   // Handle session record updates

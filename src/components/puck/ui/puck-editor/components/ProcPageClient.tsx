@@ -134,10 +134,11 @@ export default function ProcPageClient({
 
     const socket = getSocket();
     if (!socket) return;
-    console.log('GOT SOCKET', socket);
+    console.log('ProcPageClient: GOT SOCKET', socket.id, 'for room:', room);
 
     const name = user?.username || 'Anonymous';
     socket.emit('room:join', { room, name });
+    console.log('ProcPageClient: Emitted room:join for user:', name);
 
     const onPresence = (list: Array<{ id: string; name: string }>) =>
       setPresence(list);
@@ -154,13 +155,28 @@ export default function ProcPageClient({
     const onRedlineUpdated = (payload: { redlineId: string; patch: any }) => {
       setRedlines((prev) =>
         prev.map((r) =>
-          r._id === payload.redlineId ? { ...r, ...payload.patch } : r,
+          r.redlineId === payload.redlineId ? { ...r, ...payload.patch } : r,
         ),
       );
     };
 
     const onRedlineDeleted = (payload: { redlineId: string }) => {
-      setRedlines((prev) => prev.filter((r) => r._id !== payload.redlineId));
+      console.log('ProcPageClient: Received redline:deleted event', payload);
+      console.log(
+        'ProcPageClient: Current redlines before deletion:',
+        redlines,
+      );
+      setRedlines((prev) => {
+        const newRedlines = prev.filter((r) => {
+          const shouldKeep = r.redlineId !== payload.redlineId;
+          console.log(
+            `ProcPageClient: Checking redline ${r.redlineId} vs ${payload.redlineId}: ${shouldKeep ? 'KEEP' : 'REMOVE'}`,
+          );
+          return shouldKeep;
+        });
+        console.log('ProcPageClient: Redlines after deletion:', newRedlines);
+        return newRedlines;
+      });
     };
 
     // Handle session record updates
@@ -228,19 +244,15 @@ export default function ProcPageClient({
         throw new Error('Failed to delete redline');
       }
 
-      // Update current user's UI immediately
-      setRedlines((prev) => {
-        const newRedlines = prev.filter((r) => r.redlineId !== redlineId);
-        console.log('Redlines after deletion:', newRedlines);
-        return newRedlines;
-      });
-
-      // Broadcast via socket to other users - use procId as the room
+      // Broadcast via socket to ALL users including current user
       const socket = getSocket();
       if (socket) {
         console.log('room deleted redline is', room, redlineId);
         socket.emit('redline:delete', { room, redlineId });
       }
+
+      // Let the socket event handle the state update for consistency
+      // This ensures all users (including the one who deleted) get the same update
     } catch (error) {
       console.error('Failed to delete redline:', error);
     }
