@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { RedlineComment } from './RedlineComponent';
-import { CommentItem } from './CommentItem';
+import { RedlineComment } from '../RedlineComponent';
+import { CommentItem } from '../CommentItem';
 import DeleteIcon from '@mui/icons-material/Delete';
 import HistoryIcon from '@mui/icons-material/History';
 import { formatTimestamp } from '@/lib/utils/dateformat';
 import CloseIcon from '@mui/icons-material/Close';
 import SendIcon from '@mui/icons-material/Send';
-import { findRedlineComment } from './mockRedlineData';
+import { findRedlineComment } from '../mockRedlineData';
 import { useTRPC } from '@/trpc/client';
 import { useProc } from '@/context/ProcContext';
 import { useRedline } from '@/context/RedlineContext';
@@ -16,6 +16,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import IconButton from '@mui/material/IconButton';
 import { Redline } from '@/modules/redlines/models/redline-model';
 import { getSocket } from '@/lib/socket';
+import MoreButton from './Cards/MoreButton';
 
 type RedlineCommentsSidebarProps = {
   redlineId: string;
@@ -173,40 +174,32 @@ export const RedlineCommentsSidebar = ({
           <CloseIcon fontSize="small" />
         </button>
       </div>
-      <div className="m-2 p-4 rounded-md border border-gray-200">
-        <div className="flex text-sm text-gray-600">
+      <span className="px-4 pt-2 ml-auto text-sm text-gray-500">
+        {formatTimestamp(redlineData.createdAt)}
+      </span>
+      <div className="flex flex-col m-2 p-4 rounded-md border border-gray-200">
+        <div className="flex text-sm ">
           <span className="flex gap-1">
             <HistoryIcon
               fontSize="small"
               color="info"
               className="align-middle"
             />
-            <span className="font-semibold">DCN:</span> {redlineData.dcn}
-          </span>
-          <span className="ml-auto text-xs">
-            {formatTimestamp(redlineData.createdAt)}
+            <span className="font-semibold text-black">DCN:</span>{' '}
+            {redlineData.dcn}
           </span>
         </div>
-        <div className="text-sm text-gray-600">
-          <span className="font-semibold">Author: </span>
+        <div className="text-sm ">
+          <span className="font-semibold ">Author: </span>
           <span>{redlineData.userId}</span>
         </div>
-        <span>{redlineData.newText}</span>
-      </div>
-      <div className="ml-auto px-2">
-        {isAuthor && (
-          <IconButton
-            size="small"
-            onClick={handleDelete}
-            disabled={loading}
-            title="Delete Redline"
-          >
-            <DeleteIcon
-              fontSize="small"
-              className="text-red-500 hover:text-red-700"
-            />
-          </IconButton>
-        )}
+        <div>{redlineData.newText}</div>
+        <div className="ml-auto">
+          <MoreButton
+            deleteRedlineCallback={handleDelete}
+            isRedlineOwner={isAuthor}
+          />
+        </div>
       </div>
 
       {/* Comments List */}

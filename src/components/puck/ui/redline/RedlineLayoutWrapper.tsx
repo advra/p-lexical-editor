@@ -1,7 +1,7 @@
 'use client';
 
 import { RedlineProps } from './RedlineComponent';
-import { RedlineCommentsSidebar } from './RedlineCommentsSidebar';
+import { RedlineCommentsSidebar } from './redline-side-bar/RedlineCommentsSidebar';
 import { RedlineMarginLabels } from './RedlineMarginLabels';
 import { useRedline } from '@/context/RedlineContext';
 
@@ -14,7 +14,6 @@ type RedlineLayoutWrapperProps = {
 
 export const RedlineLayoutWrapper = ({
   children,
-  redlines,
   onAddComment,
   onRedlineDelete,
 }: RedlineLayoutWrapperProps) => {
