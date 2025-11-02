@@ -170,14 +170,16 @@ export const RedlineRender = ({
 
     if (existingRedline && redlineHoverEnabled) return;
 
-    openRedlineModal(
-      room,
-      procId,
-      blockId,
-      originalText,
-      target,
-      existingRedline,
-    );
+    // new redline modal state data
+    const redlineModalState = {
+      existingRedline: { ...existingRedline },
+      originalText: originalText,
+      target: target,
+    };
+
+    console.log('newRedline', redlineModalState);
+
+    openRedlineModal(room, procId, blockId, redlineModalState);
   };
 
   // Function to apply redlines to block content

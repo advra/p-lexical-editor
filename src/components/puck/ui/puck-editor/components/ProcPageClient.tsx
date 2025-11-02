@@ -283,6 +283,7 @@ export default function ProcPageClient({
         />
         <div>
           <RedlineLayoutWrapper
+            room={room}
             redlines={redlines}
             onAddComment={handleAddComment}
             onRedlineDelete={handleRedlineDelete}

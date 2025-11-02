@@ -42,9 +42,11 @@ interface RedlineContextType {
     room: string,
     procId: string,
     blockId: string,
-    originalText: string,
-    target: string,
-    existingRedline: any,
+    existingRedline: {
+      redline: Redline | null;
+      originalText: string;
+      target: string;
+    },
   ) => void;
 }
 
@@ -75,20 +77,23 @@ export const RedlineProvider: React.FC<RedlineProviderProps> = ({
     room: string,
     procId: string,
     blockId: string,
-    originalText: string,
-    target: string,
-    existingRedline: any,
+    redlineData: {
+      redline?: Redline | undefined;
+      originalText: string;
+      target: string;
+    },
   ) => {
+    console.log('SAVING...', redlineData);
     setRedlineModalState({
       isOpen: true,
-      originalText,
-      dcn: existingRedline?.dcn || '',
-      newText: existingRedline?.newText || '',
+      originalText: redlineData.originalText || '',
+      dcn: redlineData?.redline?.dcn || '',
+      newText: redlineData?.redline?.newText || '',
       onSave: async (dcn: string, newText: string) => {
         try {
-          let redline: any;
+          let redline: Redline | undefined;
 
-          if (existingRedline) {
+          if (redlineData.redline) {
             // Update existing redline
             const response = await fetch('/api/redlines', {
               method: 'PUT',
@@ -97,9 +102,9 @@ export const RedlineProvider: React.FC<RedlineProviderProps> = ({
               },
               body: JSON.stringify({
                 procId,
-                redlineId: existingRedline.redlineId,
-                dcn,
-                newText,
+                redlineId: redlineData.redline.redlineId,
+                dcn: redlineData.redline.dcn,
+                newText: redlineData.redline.newText,
               }),
             });
 
@@ -110,10 +115,14 @@ export const RedlineProvider: React.FC<RedlineProviderProps> = ({
             const result = await response.json();
             redline = result.redline;
 
+            if (!redline) {
+              throw new Error('Failed to create redline');
+            }
+
             // Update current user's UI immediately
             setRedlines((prev) =>
               prev.map((r) =>
-                r.redlineId === existingRedline.redlineId ? redline : r,
+                r.redlineId === redline?.redlineId ? redline : r,
               ),
             );
 
@@ -122,7 +131,7 @@ export const RedlineProvider: React.FC<RedlineProviderProps> = ({
             if (socket) {
               socket.emit('redline:update', {
                 room,
-                redlineId: existingRedline.redlineId,
+                redlineId: redline.redlineId,
                 patch: { dcn, newText },
               });
             }
@@ -136,9 +145,9 @@ export const RedlineProvider: React.FC<RedlineProviderProps> = ({
               body: JSON.stringify({
                 procId,
                 blockId,
-                target,
+                target: redlineData.target,
                 dcn,
-                originalText,
+                originalText: redlineData.originalText,
                 newText,
               }),
             });

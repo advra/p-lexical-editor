@@ -19,6 +19,7 @@ import { getSocket } from '@/lib/socket';
 import MoreButton from './Cards/MoreButton';
 
 type RedlineCommentsSidebarProps = {
+  room: string;
   redlineId: string;
   onClose: () => void;
   onAddComment: (redlineId: string, comment: string) => void;
@@ -26,6 +27,7 @@ type RedlineCommentsSidebarProps = {
 };
 
 export const RedlineCommentsSidebar = ({
+  room,
   redlineId,
   onClose,
   onAddComment,
@@ -33,6 +35,7 @@ export const RedlineCommentsSidebar = ({
 }: RedlineCommentsSidebarProps) => {
   const trpc = useTRPC();
   const { procId } = useProc();
+  const { openRedlineModal } = useRedline();
   const { selectedRedlineId, selectedBlockId } = useRedline();
   const [redline, setRedline] = useState<Redline | null>(null);
   const [newComment, setNewComment] = useState('');
@@ -69,6 +72,18 @@ export const RedlineCommentsSidebar = ({
       onClose(); // Close the sidebar after deletion
     }
   }, [redline, onRedlineDelete, onClose]);
+
+  const handleEdit = useCallback(() => {
+    if (selectedBlockId && redline) {
+      const modalData = {
+        redline: redline,
+        originalText: redline.originalText,
+        target: redline.target,
+      };
+      openRedlineModal(room, procId, selectedBlockId, modalData);
+    }
+    onClose();
+  }, [selectedBlockId, redline, procId, openRedlineModal, onClose]);
 
   // Fetch redline comments when sidebar opens
   useEffect(() => {
@@ -198,6 +213,7 @@ export const RedlineCommentsSidebar = ({
           <MoreButton
             deleteRedlineCallback={handleDelete}
             isRedlineOwner={isAuthor}
+            editRedlineCallback={handleEdit}
           />
         </div>
       </div>

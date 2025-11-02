@@ -7,6 +7,7 @@ import { useRedline } from '@/context/RedlineContext';
 
 type RedlineLayoutWrapperProps = {
   children: React.ReactNode;
+  room: string;
   redlines: RedlineProps[];
   onAddComment?: (redlineId: string, comment: string) => void;
   onRedlineDelete?: (redlineId: string) => void;
@@ -14,6 +15,7 @@ type RedlineLayoutWrapperProps = {
 
 export const RedlineLayoutWrapper = ({
   children,
+  room,
   onAddComment,
   onRedlineDelete,
 }: RedlineLayoutWrapperProps) => {
@@ -52,6 +54,7 @@ export const RedlineLayoutWrapper = ({
       {/* Comments Sidebar - Conditionally rendered when redline ID is set */}
       {selectedRedlineId && (
         <RedlineCommentsSidebar
+          room={room}
           redlineId={selectedRedlineId}
           onClose={handleCloseSidebar}
           onAddComment={handleAddComment}

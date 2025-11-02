@@ -12,10 +12,15 @@ import { useRedline } from '@/context/RedlineContext';
 type Props = {
   isRedlineOwner: boolean;
   deleteRedlineCallback: () => void;
+  editRedlineCallback: () => void;
 };
 
-function MoreButton({ isRedlineOwner, deleteRedlineCallback }: Props) {
-  const { setRedlineModalState } = useRedline();
+function MoreButton({
+  isRedlineOwner,
+  deleteRedlineCallback,
+  editRedlineCallback,
+}: Props) {
+  // const { setRedlineModalState } = useRedline();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const isOpen = Boolean(anchorEl);
   const menuId = 'redline-more-menu';
@@ -50,7 +55,7 @@ function MoreButton({ isRedlineOwner, deleteRedlineCallback }: Props) {
       >
         <MenuItem
           className="flex gap-2"
-          // onClick={deleteRedlineCallback}
+          onClick={editRedlineCallback}
           disabled={!isRedlineOwner}
         >
           Edit
