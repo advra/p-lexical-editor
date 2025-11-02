@@ -118,11 +118,11 @@ export const RedlineRender = ({
     }
   }, [procId, data]); // Add data as dependency to re-fetch when Puck data changes
 
-  const handleCloseRedlineModal = () => {
+  const handleRedlineModalClose = () => {
     setRedlineState((prev) => ({ ...prev, isOpen: false }));
   };
 
-  const handleSaveRedlineModal = () => {
+  const handleRedlineModalSave = () => {
     redlineState.onSave(redlineState.dcn, redlineState.newText);
   };
 
@@ -181,6 +181,8 @@ export const RedlineRender = ({
         r.target === target &&
         r.userId === session?.user?.username,
     );
+
+    if (existingRedline && redlineHoverEnabled) return;
 
     setRedlineState({
       isOpen: true,
@@ -344,8 +346,8 @@ export const RedlineRender = ({
         originalText={redlineState.originalText}
         dcn={redlineState.dcn}
         newText={redlineState.newText}
-        handleCloseRedlineModal={handleCloseRedlineModal}
-        handleSaveRedlineModal={handleSaveRedlineModal}
+        handleCloseRedlineModal={handleRedlineModalClose}
+        handleSaveRedlineModal={handleRedlineModalSave}
         setDcn={(dcn: string) => setRedlineState((prev) => ({ ...prev, dcn }))}
         setNewText={(newText: string) =>
           setRedlineState((prev) => ({ ...prev, newText }))
