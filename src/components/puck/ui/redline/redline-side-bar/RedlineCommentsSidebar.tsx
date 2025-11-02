@@ -13,9 +13,7 @@ import { useTRPC } from '@/trpc/client';
 import { useProc } from '@/context/ProcContext';
 import { useRedline } from '@/context/RedlineContext';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import IconButton from '@mui/material/IconButton';
 import { Redline } from '@/modules/redlines/models/redline-model';
-import { getSocket } from '@/lib/socket';
 import MoreButton from './Cards/MoreButton';
 
 type RedlineCommentsSidebarProps = {

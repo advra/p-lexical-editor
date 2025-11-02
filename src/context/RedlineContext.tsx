@@ -94,6 +94,7 @@ export const RedlineProvider: React.FC<RedlineProviderProps> = ({
           let redline: Redline | undefined;
 
           if (redlineData.redline) {
+            console.log('Creating new modal');
             // Update existing redline
             const response = await fetch('/api/redlines', {
               method: 'PUT',
@@ -103,8 +104,8 @@ export const RedlineProvider: React.FC<RedlineProviderProps> = ({
               body: JSON.stringify({
                 procId,
                 redlineId: redlineData.redline.redlineId,
-                dcn: redlineData.redline.dcn,
-                newText: redlineData.redline.newText,
+                dcn: dcn,
+                newText: newText,
               }),
             });
 
