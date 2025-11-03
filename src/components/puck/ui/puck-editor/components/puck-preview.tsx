@@ -14,7 +14,7 @@ import { RedlineFloatingButton } from '@/components/puck/ui/redline/RedlineFloat
 import { toast } from 'sonner';
 import RedlineComment from '@/components/puck/ui/comments/comment';
 import { useRedline } from '@/context/RedlineContext';
-import { RedlineMarginLabels } from '../../redline/RedlineMarginLabels';
+import { RedlineMarginLabels } from '../../redline/labels/RedlineMarginLabels';
 import { Redline } from '@/modules/redlines/models/redline-model';
 
 export const PuckPreview = forwardRef<

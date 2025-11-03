@@ -1,8 +1,8 @@
 'use client';
 
 import { Redline } from '@/modules/redlines/models/redline-model';
-import { RedlineCommentsSidebar } from './redline-side-bar/RedlineCommentsSidebar';
-import { RedlineMarginLabels } from './RedlineMarginLabels';
+import { RedlineCommentsSidebar } from './side-bar/RedlineCommentsSidebar';
+import { RedlineMarginLabels } from './labels/RedlineMarginLabels';
 import { useRedline } from '@/context/RedlineContext';
 
 type RedlineLayoutWrapperProps = {
@@ -35,7 +35,7 @@ export const RedlineLayoutWrapper = ({
   return (
     <div className="flex">
       {/* Main Content Area (90% width) */}
-      <div className="w-9/10">{children}</div>
+      <div className="w-full">{children}</div>
 
       {/* Comments Sidebar - Conditionally rendered when redline ID is set */}
       {selectedRedlineId && (

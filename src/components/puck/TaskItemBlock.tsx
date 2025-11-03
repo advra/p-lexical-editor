@@ -85,9 +85,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
     record,
     onRedlineClick,
     redlinesByTarget,
-    onRedlineDelete,
-  }: TaskItemProps &
-    AddRedlineProps & { onRedlineDelete?: (redlineId: string) => void }) => {
+  }: TaskItemProps & AddRedlineProps) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [currentSessionId, setCurrentSessionId] = useState<string | null>(
       null,
@@ -413,7 +411,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
           </div>
         </div>
         <div className="flex-1">
-          <div className="flex">
+          <div className="flex gap-2 ">
             <Tooltip
               title={
                 !canMarkComplete
@@ -424,7 +422,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
               disableFocusListener={canMarkComplete}
               disableTouchListener={canMarkComplete}
             >
-              <span className="flex gap-2 ml-auto">
+              <span className="ml-auto">
                 <Button
                   className="flex border h-2 rounded-sm text-green-700 hover:bg-green-100/50 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-300
     disabled:opacity-100"
