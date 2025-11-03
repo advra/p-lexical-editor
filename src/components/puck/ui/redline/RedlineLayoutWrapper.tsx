@@ -1,6 +1,6 @@
 'use client';
 
-import { RedlineProps } from './RedlineComponent';
+import { Redline } from '@/modules/redlines/models/redline-model';
 import { RedlineCommentsSidebar } from './redline-side-bar/RedlineCommentsSidebar';
 import { RedlineMarginLabels } from './RedlineMarginLabels';
 import { useRedline } from '@/context/RedlineContext';
@@ -8,7 +8,7 @@ import { useRedline } from '@/context/RedlineContext';
 type RedlineLayoutWrapperProps = {
   children: React.ReactNode;
   room: string;
-  redlines: RedlineProps[];
+  redlines: Redline[];
   onAddComment?: (redlineId: string, comment: string) => void;
   onRedlineDelete?: (redlineId: string) => void;
 };
@@ -19,13 +19,7 @@ export const RedlineLayoutWrapper = ({
   onAddComment,
   onRedlineDelete,
 }: RedlineLayoutWrapperProps) => {
-  const { selectedRedlineId, openRedlineSidebar, closeRedlineSidebar } =
-    useRedline();
-
-  const handleRedlineClick = (redline: RedlineProps) => {
-    // Set the redline ID to open the sidebar
-    openRedlineSidebar(redline.dcn);
-  };
+  const { selectedRedlineId, closeRedlineSidebar } = useRedline();
 
   const handleCloseSidebar = () => {
     closeRedlineSidebar();
@@ -39,18 +33,10 @@ export const RedlineLayoutWrapper = ({
     });
 
   return (
-    <div className="">
-      {/* Main Content Area (80% width) */}
-      {/* <div className="w-4/5 relative"> */}
-      {children}
-      {/* Right Margin Area (20% width) */}
-      {/* <div className="absolute right-0 top-0 bottom-0 w-1/5 border-l border-gray-200">
-          <RedlineMarginLabels
-            redlines={redlines}
-            onRedlineClick={handleRedlineClick}
-          />
-        </div>
-      </div> */}
+    <div className="flex">
+      {/* Main Content Area (90% width) */}
+      <div className="w-9/10">{children}</div>
+
       {/* Comments Sidebar - Conditionally rendered when redline ID is set */}
       {selectedRedlineId && (
         <RedlineCommentsSidebar
@@ -61,7 +47,6 @@ export const RedlineLayoutWrapper = ({
           onRedlineDelete={onRedlineDelete}
         />
       )}
-      //{' '}
     </div>
   );
 };

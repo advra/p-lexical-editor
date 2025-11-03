@@ -14,6 +14,8 @@ import { RedlineFloatingButton } from '@/components/puck/ui/redline/RedlineFloat
 import { toast } from 'sonner';
 import RedlineComment from '@/components/puck/ui/comments/comment';
 import { useRedline } from '@/context/RedlineContext';
+import { RedlineMarginLabels } from '../../redline/RedlineMarginLabels';
+import { Redline } from '@/modules/redlines/models/redline-model';
 
 export const PuckPreview = forwardRef<
   HTMLDivElement,
@@ -153,6 +155,7 @@ export const PuckPreview = forwardRef<
               : 'mt-24 px-4 mx-auto container my-6 shadow',
           )}
         >
+          <RedlineMarginLabels />
           <div className="flex flex-col">
             <span className="flex gap-1 ml-auto text-sm text-gray-400">
               <span> Created By: {owner}</span>

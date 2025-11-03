@@ -43,6 +43,7 @@ export const DisplayRedlineText = ({
     <div className="whitespace-pre-wrap break-words">
       {isRedlined && redline ? (
         <span
+          id={blockId}
           className="bg-red-100 px-1 rounded  cursor-pointer hover:bg-red-200 transition-colors"
           onClick={handleClick}
         >
