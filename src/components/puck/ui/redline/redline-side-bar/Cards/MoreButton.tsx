@@ -1,7 +1,6 @@
 import React, { useState, MouseEvent } from 'react';
 import { IconButton, Menu, MenuItem } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreHoriz';
-import { useRedline } from '@/context/RedlineContext';
 
 /*
   Options more menu for the redline thread. Users can open to view options such as
@@ -54,14 +53,14 @@ function MoreButton({
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
         <MenuItem
-          className="flex gap-2"
+          className="flex gap-2 min-w-32"
           onClick={editRedlineCallback}
           disabled={!isRedlineOwner}
         >
           Edit
         </MenuItem>
         <MenuItem
-          className="flex gap-2"
+          className="flex gap-2 min-w-32"
           onClick={deleteRedlineCallback}
           disabled={!isRedlineOwner}
         >

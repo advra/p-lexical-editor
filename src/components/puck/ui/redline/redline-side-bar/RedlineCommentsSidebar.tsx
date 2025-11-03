@@ -3,9 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { RedlineComment } from '../RedlineComponent';
 import { CommentItem } from '../CommentItem';
-import DeleteIcon from '@mui/icons-material/Delete';
-import HistoryIcon from '@mui/icons-material/History';
-import { formatTimestamp } from '@/lib/utils/dateformat';
+
 import CloseIcon from '@mui/icons-material/Close';
 import SendIcon from '@mui/icons-material/Send';
 import { findRedlineComment } from '../mockRedlineData';
@@ -14,7 +12,7 @@ import { useProc } from '@/context/ProcContext';
 import { useRedline } from '@/context/RedlineContext';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Redline } from '@/modules/redlines/models/redline-model';
-import MoreButton from './Cards/MoreButton';
+import RedlineThreadCard from './Cards/ThreadCard';
 
 type RedlineCommentsSidebarProps = {
   room: string;
@@ -45,7 +43,7 @@ export const RedlineCommentsSidebar = ({
   const isAuthor = true;
 
   // Use TRPC query to fetch the redline data
-  const { data: redlineData, isLoading } = useQuery(
+  const { data: redlineData, isLoading: redlineDataIsLoading } = useQuery(
     trpc.redlines.getByRedlineId.queryOptions({
       procId: procId,
       blockId: selectedBlockId,
@@ -64,14 +62,14 @@ export const RedlineCommentsSidebar = ({
     isError: deleteHasError,
   } = useMutation(trpc.redlines.delete.mutationOptions());
 
-  const handleDelete = useCallback(() => {
+  const handleDeleteRedline = useCallback(() => {
     if (redline && onRedlineDelete) {
       onRedlineDelete(redline.redlineId);
       onClose(); // Close the sidebar after deletion
     }
   }, [redline, onRedlineDelete, onClose]);
 
-  const handleEdit = useCallback(() => {
+  const handleEditRedline = useCallback(() => {
     if (selectedBlockId && redline) {
       const modalData = {
         redline: redline,
@@ -127,7 +125,7 @@ export const RedlineCommentsSidebar = ({
     }
   };
 
-  if (isLoading || loading) {
+  if (redlineDataIsLoading || loading) {
     return (
       <div className="fixed right-0 top-0 h-screen w-[32rem] bg-white border-l border-gray-200 shadow-lg z-50 flex flex-col">
         <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
@@ -174,47 +172,15 @@ export const RedlineCommentsSidebar = ({
   }
   return (
     <div className="fixed right-0 top-0 h-screen w-[32rem] bg-white border-l border-gray-200 shadow-lg z-50 flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
-        <div>
-          <h3 className="font-semibold text-gray-800">Redline Discussion</h3>
-        </div>
-        <button
-          onClick={onClose}
-          className="p-1 hover:bg-gray-200 rounded transition-colors"
-          title="Close sidebar"
-        >
-          <CloseIcon fontSize="small" />
-        </button>
-      </div>
-      <span className="px-4 pt-2 ml-auto text-sm text-gray-500">
-        {formatTimestamp(redlineData.createdAt)}
-      </span>
-      <div className="flex flex-col m-2 p-4 rounded-md border border-gray-200">
-        <div className="flex text-sm ">
-          <span className="flex gap-1">
-            <HistoryIcon
-              fontSize="small"
-              color="info"
-              className="align-middle"
-            />
-            <span className="font-semibold text-black">DCN:</span>{' '}
-            {redlineData.dcn}
-          </span>
-        </div>
-        <div className="text-sm ">
-          <span className="font-semibold ">Author: </span>
-          <span>{redlineData.userId}</span>
-        </div>
-        <div>{redlineData.newText}</div>
-        <div className="ml-auto">
-          <MoreButton
-            deleteRedlineCallback={handleDelete}
-            isRedlineOwner={isAuthor}
-            editRedlineCallback={handleEdit}
-          />
-        </div>
-      </div>
+      {/* Display Redline Thread */}
+      <RedlineThreadCard
+        redlineData={redlineData}
+        isLoading={redlineDataIsLoading}
+        isAuthor={isAuthor}
+        onClose={onClose}
+        onDeleteRedline={handleDeleteRedline}
+        onEditRedline={handleEditRedline}
+      />
 
       {/* Comments List */}
       <div className="flex-1 overflow-y-auto p-4">
