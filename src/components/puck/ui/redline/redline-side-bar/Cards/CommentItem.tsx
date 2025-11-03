@@ -4,15 +4,20 @@ import { Comment } from '../../RedlineComponent';
 type Props = {
   comment: Comment;
   className: string;
+  index: number;
 };
 
-export const CommentItem = ({ comment, className }: Props) => {
+export const CommentItem = ({ comment, className, index }: Props) => {
+  const backgroundColor = index % 2 === 0 ? 'bg-gray-50' : 'bg-blue-50';
+
   return (
     <div className="flex flex-col">
       <span className="ml-auto text-sm text-gray-500">
         {formatTimestamp(comment.createdAt.toString())}
       </span>
-      <div className="p-4 rounded-lg border border-gray-200 mb-2">
+      <div
+        className={`p-4 rounded-lg border border-gray-200 mb-2 ${backgroundColor}`}
+      >
         <div className="flex justify-between items-start mb-1">
           <span className="font-semibold text-gray-800">{comment.user}</span>
         </div>

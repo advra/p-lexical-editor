@@ -6,6 +6,7 @@ import { formatTimestamp } from '@/lib/utils/dateformat';
 import MoreButton from './MoreButton';
 import { Redline } from '@/modules/redlines/models/redline-model';
 import SkeletonThreadCard from './SkeletonThreadCard';
+import Button from '@/components/common/buttons/Button';
 
 type Props = {
   redlineData: Redline | null;
@@ -79,6 +80,7 @@ function RedlineThreadCard({
             editRedlineCallback={onEditRedline}
           />
         </div>
+        <Button className="border border-gray-200">Mark Resolved</Button>
       </div>
     </>
   );

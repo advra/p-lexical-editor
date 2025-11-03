@@ -96,6 +96,20 @@ export const RedlineCommentsSidebar = ({
       comment:
         'if you can make the changes by today COB I can approve. the changes by today COB I ca the changes by today COB I ca the changes by today COB I ca the changes by today COB I ca',
     },
+    {
+      _id: '2938j-83jd',
+      createdAt: '2025-11-02T22:43:27.685Z',
+      user: 'Steve',
+      comment:
+        'if you can make the changes by today COB I can approve. the changes by today COB I ca the changes by today COB I ca the changes by today COB I ca the changes by today COB I ca',
+    },
+    {
+      _id: '2938j-83jd',
+      createdAt: '2025-11-02T22:43:27.685Z',
+      user: 'Steve',
+      comment:
+        'if you can make the changes by today COB I can approve. the changes by today COB I ca the changes by today COB I ca the changes by today COB I ca the changes by today COB I ca',
+    },
   ];
 
   const handleDeleteRedline = useCallback(() => {
@@ -234,8 +248,15 @@ export const RedlineCommentsSidebar = ({
           // redlineData.comments.map((comment) => (
           //   <CommentItem key={comment.id} comment={comment} />
           // ))
-          comments.map((comment) => {
-            return <CommentItem key={comment.id} comment={comment} />;
+          comments.map((comment, index) => {
+            return (
+              <CommentItem
+                key={comment._id}
+                comment={comment}
+                className=""
+                index={index}
+              />
+            );
           })
         )}
       </div>
