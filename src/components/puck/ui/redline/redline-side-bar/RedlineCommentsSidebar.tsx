@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { RedlineComment } from '../RedlineComponent';
-import { CommentItem } from '../CommentItem';
+import { CommentItem } from './Cards/CommentItem';
 
 import CloseIcon from '@mui/icons-material/Close';
 import SendIcon from '@mui/icons-material/Send';
@@ -61,6 +61,42 @@ export const RedlineCommentsSidebar = ({
     isPending: deletePending,
     isError: deleteHasError,
   } = useMutation(trpc.redlines.delete.mutationOptions());
+
+  const comments: any[] = [
+    {
+      _id: 'kd23-9ruwej',
+      createdAt: '2025-11-02T22:43:27.685Z',
+      user: 'Adrian',
+      comment:
+        'Yes I agree. However, we should also include sfr jeu oaijafasd sfjasew wi fajijfsdijsdafjlkjlksdfji odsfa8dsfsdfsdfh ksdfkjsfdkjfs',
+    },
+    {
+      _id: '2938j-83jd',
+      createdAt: '2025-11-02T22:43:27.685Z',
+      user: 'Steve',
+      comment: 'Concur. Please make the following changes above',
+    },
+    {
+      _id: '2938j-83jd',
+      createdAt: '2025-11-02T22:43:27.685Z',
+      user: 'Kelli',
+      comment:
+        'Yes. Also consider the following: x, y z changes. To go with X, Y, Z. Then Also consider the following: nsidAlso consider the following: x, y z changes. To go with X, Y, Z. ThenAlso consider the following: x, y z changes. To go with X, Y, Z. ThenAlso consider the following: x, y z changeAlso consider the following: x, y z changes. To go with X, Y, Z. Thens. To go with X, Y, Z. ThenAlsoAlso consider the following: x, y z changes. To go with X, Y, Z. Then consider the following: x, y z changes. To go with X, Y, Z. Thener the following: x, y z changes. To go with X, Y, Z. Then',
+    },
+    {
+      _id: '2938j-83jd',
+      createdAt: '2025-11-02T22:43:27.685Z',
+      user: 'Adrian',
+      comment: 'Sounds good!',
+    },
+    {
+      _id: '2938j-83jd',
+      createdAt: '2025-11-02T22:43:27.685Z',
+      user: 'Steve',
+      comment:
+        'if you can make the changes by today COB I can approve. the changes by today COB I ca the changes by today COB I ca the changes by today COB I ca the changes by today COB I ca',
+    },
+  ];
 
   const handleDeleteRedline = useCallback(() => {
     if (redline && onRedlineDelete) {
@@ -183,17 +219,24 @@ export const RedlineCommentsSidebar = ({
       />
 
       {/* Comments List */}
-      <div className="flex-1 overflow-y-auto p-4">
-        {redlineData.comments.length === 0 ? (
+      <div className="flex-1 overflow-y-auto p-2">
+        <span className="my-2 ml-2 text-gray-700">
+          Thread Comments ({comments.length} Total):
+        </span>
+        {/* {redlineData.comments.length === 0 ? ( */}
+        {comments.length === 0 ? (
           <div className="text-center text-gray-500 py-8">
             <p>No comments yet</p>
             <p className="text-sm mt-1">Be the first to add a comment</p>
           </div>
         ) : (
-          redlineData.comments.map((comment) => (
-            // <CommentItem key={comment.id} comment={comment} />
-            <>PLACEHOLDER</>
-          ))
+          // read from redlineData but for now mock
+          // redlineData.comments.map((comment) => (
+          //   <CommentItem key={comment.id} comment={comment} />
+          // ))
+          comments.map((comment) => {
+            return <CommentItem key={comment.id} comment={comment} />;
+          })
         )}
       </div>
 

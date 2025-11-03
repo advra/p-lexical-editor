@@ -53,7 +53,7 @@ function RedlineThreadCard({
       <span className="px-4 pt-2 ml-auto text-sm text-gray-500">
         {formatTimestamp(redlineData.createdAt.toString())}
       </span>
-      <div className="flex flex-col m-2 p-4 rounded-md border border-gray-200">
+      <div className="flex flex-col gap-2 m-2 p-4 rounded-md border border-gray-200">
         <div className="flex text-sm ">
           <span className="flex gap-1">
             <HistoryIcon
