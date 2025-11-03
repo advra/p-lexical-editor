@@ -13,6 +13,7 @@ import { useRedline } from '@/context/RedlineContext';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Redline } from '@/modules/redlines/models/redline-model';
 import RedlineThreadCard from './Cards/ThreadCard';
+import useUser from '@/hooks/use-user';
 
 type RedlineCommentsSidebarProps = {
   room: string;
@@ -30,7 +31,8 @@ export const RedlineCommentsSidebar = ({
   onRedlineDelete,
 }: RedlineCommentsSidebarProps) => {
   const trpc = useTRPC();
-  const { procId } = useProc();
+  const { user } = useUser();
+  const { procId, owner } = useProc();
   const { openRedlineModal } = useRedline();
   const { selectedRedlineId, selectedBlockId } = useRedline();
   const [redline, setRedline] = useState<Redline | null>(null);
@@ -40,7 +42,7 @@ export const RedlineCommentsSidebar = ({
   );
   const [loading, setLoading] = useState(true);
   // TODO get user permissions
-  const isAuthor = true;
+  const isAuthor = user?.username === owner;
 
   // Use TRPC query to fetch the redline data
   const { data: redlineData, isLoading: redlineDataIsLoading } = useQuery(

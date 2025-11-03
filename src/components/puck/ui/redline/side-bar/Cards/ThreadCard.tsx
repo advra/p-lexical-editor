@@ -72,13 +72,15 @@ function RedlineThreadCard({
         </div>
         <div>{redlineData.newText}</div>
         <div className="ml-auto">
-          <MoreButton
-            deleteRedlineCallback={() =>
-              onDeleteRedline?.(redlineData.redlineId)
-            }
-            isRedlineOwner={isAuthor}
-            editRedlineCallback={onEditRedline}
-          />
+          {isAuthor && (
+            <MoreButton
+              deleteRedlineCallback={() =>
+                onDeleteRedline?.(redlineData.redlineId)
+              }
+              isRedlineOwner={isAuthor}
+              editRedlineCallback={onEditRedline}
+            />
+          )}
         </div>
         <Button className="border border-gray-200">Mark Resolved</Button>
       </div>

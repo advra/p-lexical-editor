@@ -10,8 +10,11 @@ const fetcher = (url: string) =>
 export default function useUser() {
   const { data, error, mutate } = useSWR('/api/auth/me', fetcher);
 
+  const user = data?.session?.user;
+
   return {
     session: data?.session ?? null,
+    user,
     loading: !error && !data,
     error,
     mutate,
