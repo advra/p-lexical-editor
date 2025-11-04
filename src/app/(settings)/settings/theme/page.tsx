@@ -12,6 +12,7 @@ import Button from '@/components/common/buttons/Button';
 import { useTheme } from 'next-themes';
 import { WarnMessage } from '@/components/common/notifications/WarnMessage';
 import { useRouter } from 'next/navigation';
+import { BackToDashboardButton } from '@/components/puck/ui/puck-editor/components/BackToDashboardButton';
 
 type SettingItem = {
   active?: boolean;
@@ -51,14 +52,7 @@ export default function Page() {
     <>
       <div className="mx-auto max-w-4xl p-4">
         <div className="mb-4">
-          <span
-            className="hover:underline hover:cursor-pointer"
-            onClick={() => {
-              router.back();
-            }}
-          >
-            Back to EPROC
-          </span>
+          <BackToDashboardButton />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="col-span-1">

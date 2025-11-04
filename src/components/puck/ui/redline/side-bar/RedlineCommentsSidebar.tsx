@@ -23,6 +23,56 @@ type RedlineCommentsSidebarProps = {
   onRedlineDelete?: (redlineId: string) => void;
 };
 
+const comments: any[] = [
+  {
+    _id: 'kd23-9ruwej',
+    createdAt: '2025-11-02T22:43:27.685Z',
+    user: 'Adrian',
+    comment:
+      'Yes I agree. However, we should also include sfr jeu oaijafasd sfjasew wi fajijfsdijsdafjlkjlksdfji odsfa8dsfsdfsdfh ksdfkjsfdkjfs',
+  },
+  {
+    _id: '2938j-83jd',
+    createdAt: '2025-11-02T22:43:27.685Z',
+    user: 'Steve',
+    comment: 'Concur. Please make the following changes above',
+  },
+  {
+    _id: '2938j-83jd',
+    createdAt: '2025-11-02T22:43:27.685Z',
+    user: 'Kelli',
+    comment:
+      'Yes. Also consider the following: x, y z changes. To go with X, Y, Z. Then Also consider the following: nsidAlso consider the following: x, y z changes. To go with X, Y, Z. ThenAlso consider the following: x, y z changes. To go with X, Y, Z. ThenAlso consider the following: x, y z changeAlso consider the following: x, y z changes. To go with X, Y, Z. Thens. To go with X, Y, Z. ThenAlsoAlso consider the following: x, y z changes. To go with X, Y, Z. Then consider the following: x, y z changes. To go with X, Y, Z. Thener the following: x, y z changes. To go with X, Y, Z. Then',
+  },
+  {
+    _id: '2938j-83jd',
+    createdAt: '2025-11-02T22:43:27.685Z',
+    user: 'Adrian',
+    comment: 'Sounds good!',
+  },
+  {
+    _id: '2938j-83jd',
+    createdAt: '2025-11-02T22:43:27.685Z',
+    user: 'Steve',
+    comment:
+      'if you can make the changes by today COB I can approve. the changes by today COB I ca the changes by today COB I ca the changes by today COB I ca the changes by today COB I ca',
+  },
+  {
+    _id: '2938j-83jd',
+    createdAt: '2025-11-02T22:43:27.685Z',
+    user: 'Steve',
+    comment:
+      'if you can make the changes by today COB I can approve. the changes by today COB I ca the changes by today COB I ca the changes by today COB I ca the changes by today COB I ca',
+  },
+  {
+    _id: '2938j-83jd',
+    createdAt: '2025-11-02T22:43:27.685Z',
+    user: 'Steve',
+    comment:
+      'if you can make the changes by today COB I can approve. the changes by today COB I ca the changes by today COB I ca the changes by today COB I ca the changes by today COB I ca',
+  },
+];
+
 export const RedlineCommentsSidebar = ({
   room,
   redlineId,
@@ -53,7 +103,7 @@ export const RedlineCommentsSidebar = ({
     }),
   );
 
-  const autoResizeTextarea = (textarea) => {
+  const autoResizeTextarea = (textarea: EventTarget & HTMLTextAreaElement) => {
     textarea.style.height = 'auto';
     textarea.style.height = Math.min(textarea.scrollHeight, 240) + 'px'; // 120px max height
   };
@@ -63,56 +113,6 @@ export const RedlineCommentsSidebar = ({
     isPending: deletePending,
     isError: deleteHasError,
   } = useMutation(trpc.redlines.delete.mutationOptions());
-
-  const comments: any[] = [
-    {
-      _id: 'kd23-9ruwej',
-      createdAt: '2025-11-02T22:43:27.685Z',
-      user: 'Adrian',
-      comment:
-        'Yes I agree. However, we should also include sfr jeu oaijafasd sfjasew wi fajijfsdijsdafjlkjlksdfji odsfa8dsfsdfsdfh ksdfkjsfdkjfs',
-    },
-    {
-      _id: '2938j-83jd',
-      createdAt: '2025-11-02T22:43:27.685Z',
-      user: 'Steve',
-      comment: 'Concur. Please make the following changes above',
-    },
-    {
-      _id: '2938j-83jd',
-      createdAt: '2025-11-02T22:43:27.685Z',
-      user: 'Kelli',
-      comment:
-        'Yes. Also consider the following: x, y z changes. To go with X, Y, Z. Then Also consider the following: nsidAlso consider the following: x, y z changes. To go with X, Y, Z. ThenAlso consider the following: x, y z changes. To go with X, Y, Z. ThenAlso consider the following: x, y z changeAlso consider the following: x, y z changes. To go with X, Y, Z. Thens. To go with X, Y, Z. ThenAlsoAlso consider the following: x, y z changes. To go with X, Y, Z. Then consider the following: x, y z changes. To go with X, Y, Z. Thener the following: x, y z changes. To go with X, Y, Z. Then',
-    },
-    {
-      _id: '2938j-83jd',
-      createdAt: '2025-11-02T22:43:27.685Z',
-      user: 'Adrian',
-      comment: 'Sounds good!',
-    },
-    {
-      _id: '2938j-83jd',
-      createdAt: '2025-11-02T22:43:27.685Z',
-      user: 'Steve',
-      comment:
-        'if you can make the changes by today COB I can approve. the changes by today COB I ca the changes by today COB I ca the changes by today COB I ca the changes by today COB I ca',
-    },
-    {
-      _id: '2938j-83jd',
-      createdAt: '2025-11-02T22:43:27.685Z',
-      user: 'Steve',
-      comment:
-        'if you can make the changes by today COB I can approve. the changes by today COB I ca the changes by today COB I ca the changes by today COB I ca the changes by today COB I ca',
-    },
-    {
-      _id: '2938j-83jd',
-      createdAt: '2025-11-02T22:43:27.685Z',
-      user: 'Steve',
-      comment:
-        'if you can make the changes by today COB I can approve. the changes by today COB I ca the changes by today COB I ca the changes by today COB I ca the changes by today COB I ca',
-    },
-  ];
 
   const handleDeleteRedline = useCallback(() => {
     if (redline && onRedlineDelete) {
