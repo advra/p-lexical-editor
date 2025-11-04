@@ -4,12 +4,19 @@
 
 import type { ComponentConfig } from '@measured/puck';
 import { RedlineWrapper } from './ui/redline/RedlineWrapper';
-import { redlineOptions, AddRedlineProps } from './ui/redline/RedlineComponent';
+import {
+  redlineOptions,
+  AddRedlineProps,
+  RedlineProps,
+} from './ui/redline/RedlineComponent';
 import { cn } from '@/lib/utils/cn';
-import { RedlineInfo } from './ui/redline/RedlineInfo';
+import { useState } from 'react';
+import { DisplayRedlineText } from './ui/redline/DisplayRedlineText';
 
 export type HeadingBlockProps = {
+  // This id is inherited by default puck's internal props
   id?: string;
+  // block specific
   title: string;
 };
 
@@ -26,23 +33,20 @@ export const HeadingBlock: ComponentConfig<
   render: ({
     id,
     title,
+    redlinesByTarget,
     onRedlineClick,
-    isRedlined,
-    redlineContent,
-    redlineDcn,
-    redlineDescription,
-    originalContent,
-    author,
-    createdAt,
   }: HeadingBlockProps & AddRedlineProps) => {
-    const handleMenuClose = () => {};
+    const redlineData = redlinesByTarget?.['text'] as RedlineProps;
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const handleMenuClose = () => setAnchorEl(null);
     const handleRedline = redlineOptions(onRedlineClick, handleMenuClose);
 
-    const displayTitle = isRedlined && redlineContent ? redlineContent : title;
+    const displayTitle = redlineData?.newText || title;
+    const isRedlined = !!redlineData;
 
     return (
       <>
-        <RedlineWrapper onClick={() => handleRedline(displayTitle)}>
+        <RedlineWrapper onClick={() => handleRedline(displayTitle, 'text')}>
           <div className="text-center mx-16" id={id}>
             <span
               className={cn(
@@ -50,17 +54,14 @@ export const HeadingBlock: ComponentConfig<
                 isRedlined && 'line-through decoration-red-500 decoration-1',
               )}
             >
-              {isRedlined ? originalContent : displayTitle}
+              <DisplayRedlineText
+                blockId={id}
+                isRedlined={isRedlined}
+                redline={redlineData}
+                originalText={displayTitle}
+              />
             </span>
           </div>
-          {isRedlined && (
-            <RedlineInfo
-              dcn={redlineDcn}
-              description={redlineDescription}
-              author={author}
-              createdAt={createdAt}
-            />
-          )}
         </RedlineWrapper>
       </>
     );

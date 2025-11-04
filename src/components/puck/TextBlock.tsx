@@ -16,6 +16,7 @@ import { useState } from 'react';
 export type TextBlockProps = {
   // This id is inherited by default puck's internal props
   id?: string;
+  // block specific
   text: string;
 };
 
@@ -38,20 +39,20 @@ export const TextBlock: ComponentConfig<TextBlockProps & AddRedlineProps> = {
     const handleMenuClose = () => setAnchorEl(null);
     const handleRedline = redlineOptions(onRedlineClick, handleMenuClose);
 
-    const displayStep = redlineData?.newText || text;
+    const displayText = redlineData?.newText || text;
     const isRedlined = !!redlineData;
 
     return (
-      <div className="whitespace-pre-wrap break-words">
-        <RedlineWrapper onClick={() => handleRedline(displayStep, 'text')}>
+      <RedlineWrapper onClick={() => handleRedline(displayText, 'text')}>
+        <div className="whitespace-pre-wrap break-words">
           <DisplayRedlineText
             blockId={id}
             isRedlined={isRedlined}
             redline={redlineData}
-            fallbackText={text}
+            originalText={text}
           />
-        </RedlineWrapper>
-      </div>
+        </div>
+      </RedlineWrapper>
     );
   },
 };

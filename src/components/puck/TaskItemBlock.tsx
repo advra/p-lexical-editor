@@ -296,7 +296,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
                   blockId={id}
                   isRedlined={isRedlined}
                   redline={redlineStep}
-                  fallbackText={step}
+                  originalText={step}
                 />
               </RedlineWrapper>
             </span>
@@ -311,7 +311,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
                   blockId={id}
                   isRedlined={isRedlined}
                   redline={redlineContent}
-                  fallbackText={content}
+                  originalText={content}
                 />
               </RedlineWrapper>
               {/* {isRedlined && redlinesByTarget && (

@@ -7,7 +7,7 @@ type RedlineRenderTextInput = {
   blockId?: string;
   isRedlined: boolean;
   redline: RedlineProps;
-  fallbackText: string;
+  originalText: string;
   onRedlineClick?: (redline: RedlineProps) => void;
 };
 
@@ -15,7 +15,7 @@ export const DisplayRedlineText = ({
   blockId,
   isRedlined,
   redline,
-  fallbackText,
+  originalText,
   onRedlineClick,
 }: RedlineRenderTextInput) => {
   const { selectedRedlineId, setSelectedRedlineId, setSelectedBlockId } =
@@ -47,10 +47,10 @@ export const DisplayRedlineText = ({
           className="bg-red-100 px-1 rounded  cursor-pointer hover:bg-red-200 transition-colors"
           onClick={handleClick}
         >
-          {fallbackText}
+          {originalText}
         </span>
       ) : (
-        fallbackText
+        originalText
       )}
     </div>
   );
