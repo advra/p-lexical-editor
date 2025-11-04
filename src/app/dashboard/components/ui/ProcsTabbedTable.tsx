@@ -219,7 +219,7 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
   };
 
   return (
-    <div className="bg-white rounded-md shadow-xs border border-gray-300 flex flex-col h-full min-h-[800px]">
+    <div className="bg-white rounded-md shadow-xs border border-gray-300 flex flex-col h-[80dvh]">
       {/* Tabs */}
       <div className="pt-2">
         <nav
@@ -309,10 +309,10 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
               {paginatedItems.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={5}
-                    className="px-3 py-6 text-center text-sm text-gray-500 "
+                    colSpan={6}
+                    className="h-auto px-3 py-6 text-center text-sm text-gray-500"
                   >
-                    No procs found
+                    No Procedures Found
                   </td>
                 </tr>
               ) : (
