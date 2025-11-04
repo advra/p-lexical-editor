@@ -235,7 +235,7 @@ export const RedlineCommentsSidebar = ({
       />
 
       {/* Comments List */}
-      <div className="flex-1 overflow-y-auto p-2">
+      <div className="flex-1 overflow-y-auto p-2 m-4">
         <span className="my-2 ml-2 text-gray-700">
           Thread Comments ({comments.length} Total):
         </span>

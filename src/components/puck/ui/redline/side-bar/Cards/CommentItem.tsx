@@ -12,7 +12,7 @@ export const CommentItem = ({ comment, className, index }: Props) => {
 
   return (
     <div className="flex flex-col">
-      <span className="ml-auto text-sm text-gray-500">
+      <span className="ml-auto text-xs text-gray-500">
         {formatTimestamp(comment.createdAt.toString())}
       </span>
       <div

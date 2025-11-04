@@ -51,7 +51,7 @@ function RedlineThreadCard({
           <CloseIcon fontSize="small" />
         </button>
       </div>
-      <span className="px-4 pt-2 ml-auto text-sm text-gray-500">
+      <span className="px-4 pt-2 ml-auto text-xs text-gray-500">
         {formatTimestamp(redlineData.createdAt.toString())}
       </span>
       <div className="flex flex-col gap-2 m-2 p-4 rounded-md border border-gray-200">
