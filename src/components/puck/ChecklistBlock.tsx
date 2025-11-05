@@ -44,7 +44,7 @@ export const ChecklistBlock: ComponentConfig<ChecklistBlockProps> = {
   },
   render: ({ title, listType = 'checklist', items = [] }) => {
     const hasItems = items.length > 0;
-    if (!title && !hasItems) return null;
+    if (!title && !hasItems) return <></>;
 
     const isNumbered = listType === 'numbered';
     const isChecklist = listType === 'checklist';

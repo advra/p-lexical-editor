@@ -418,9 +418,6 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
                   ? 'You do not have permission to execute this task'
                   : ''
               }
-              disableHoverListener={canMarkComplete}
-              disableFocusListener={canMarkComplete}
-              disableTouchListener={canMarkComplete}
             >
               <span className="ml-auto">
                 <Button
