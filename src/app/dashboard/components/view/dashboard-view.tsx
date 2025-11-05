@@ -12,8 +12,10 @@ type ProcDoc = {
     userId: string;
     permissions: { read?: boolean; edit?: boolean; execute?: boolean };
   }>;
-  updatedAt?: string | Date;
+  updatedAt: string | Date;
   data: unknown; // will cast to PuckPageData when needed
+  version: number;
+  createdAt: string;
 };
 
 type Props = {
@@ -47,9 +49,7 @@ export default function DashboardView({ procs, total }: Props) {
         <div className="flex flex-1 min-h-0">
           <ClientDashboardSidebar links={links} />
           <div className="flex-1 min-h-0 min-w-0 overflow-hidden">
-            {/* <div className="h-[90dvh]"> */}
             <ClientDashboard procs={convertedProcs} />
-            {/* </div> */}
           </div>
         </div>
       </div>

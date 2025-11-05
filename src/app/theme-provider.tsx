@@ -19,7 +19,11 @@ import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import { lightTheme, darkTheme } from '@/theme';
 import { useTheme } from 'next-themes';
 
-export const NextThemeProvider = ({ children }) => {
+type Props = {
+  children: React.ReactNode;
+};
+
+export const NextThemeProvider = ({ children }: Props) => {
   const { theme: nextTheme } = useTheme();
   const muiTheme = nextTheme === 'dark' ? darkTheme : lightTheme;
   return (
