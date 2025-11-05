@@ -28,16 +28,18 @@ export const RedlineMarginLabels = ({}: Props) => {
   useEffect(() => {
     const calculatePositions = () => {
       const positions: LabelPosition[] = [];
+      const labelHeight = 32; // Approximate height of a label in pixels
+      const spacing = 4; // Additional spacing between labels
 
-      redlines.forEach((redline) => {
+      // First pass: calculate base positions
+      const basePositions: LabelPosition[] = redlines.map((redline) => {
         if (!redline.blockId) {
-          positions.push({
+          return {
             dcn: redline.dcn,
             redlineId: redline.redlineId,
             top: 0,
             visible: false,
-          });
-          return;
+          };
         }
 
         // Try to find the block element by ID
@@ -46,28 +48,56 @@ export const RedlineMarginLabels = ({}: Props) => {
           console.log(
             `RedlineMarginLabels: Block element not found for ID: ${redline.blockId}`,
           );
-          positions.push({
+          return {
             dcn: redline.dcn,
             redlineId: redline.redlineId,
             top: 0,
             visible: false,
-          });
-          return;
+          };
         }
 
         // Get the position of the block element
         const rect = blockElement.getBoundingClientRect();
         const top = rect.top + window.scrollY;
 
-        positions.push({
+        return {
           dcn: redline.dcn,
           redlineId: redline.redlineId,
           top,
           visible: true,
-        });
+        };
       });
 
-      setLabelPositions(positions);
+      // Second pass: resolve collisions by moving overlapping labels down
+      const resolvedPositions: LabelPosition[] = [];
+
+      basePositions
+        .filter((pos) => pos.visible)
+        .sort((a, b) => a.top - b.top) // Sort by top position
+        .forEach((position, index) => {
+          let adjustedTop = position.top;
+
+          // Check for collisions with previously positioned labels
+          for (let i = 0; i < resolvedPositions.length; i++) {
+            const existingPos = resolvedPositions[i];
+            const distance = Math.abs(adjustedTop - existingPos.top);
+
+            // If labels are too close (overlapping or nearly overlapping)
+            if (distance < labelHeight + spacing) {
+              // Move current label down by the required amount
+              adjustedTop = existingPos.top + labelHeight + spacing;
+            }
+          }
+
+          resolvedPositions.push({
+            ...position,
+            top: adjustedTop,
+          });
+        });
+
+      // Add non-visible positions back
+      const nonVisiblePositions = basePositions.filter((pos) => !pos.visible);
+      setLabelPositions([...resolvedPositions, ...nonVisiblePositions]);
     };
 
     // Calculate positions initially
