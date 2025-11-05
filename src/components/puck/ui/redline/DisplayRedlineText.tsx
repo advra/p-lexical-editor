@@ -20,7 +20,7 @@ export const DisplayRedlineText = ({
 }: RedlineRenderTextInput) => {
   const { selectedRedlineId, setSelectedRedlineId, setSelectedBlockId } =
     useRedline();
-  // const newText = redline?.newText || fallbackText;
+  const newText = redline?.newText || originalText;
 
   const handleClick = () => {
     if (isRedlined) {
@@ -42,13 +42,16 @@ export const DisplayRedlineText = ({
   return (
     <div className="whitespace-pre-wrap break-words">
       {isRedlined && redline ? (
-        <span
-          id={blockId}
-          className="bg-red-100 px-1 rounded  cursor-pointer hover:bg-red-200 transition-colors"
-          onClick={handleClick}
-        >
-          {originalText}
-        </span>
+        <div className="flex gap-2">
+          <span
+            id={blockId}
+            className="bg-red-100 px-1 rounded  cursor-pointer hover:bg-red-200 transition-colors line-through text-red-500"
+            onClick={handleClick}
+          >
+            {originalText}
+          </span>
+          <span>{newText}</span>
+        </div>
       ) : (
         originalText
       )}

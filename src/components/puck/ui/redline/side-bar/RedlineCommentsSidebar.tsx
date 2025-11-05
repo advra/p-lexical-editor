@@ -14,6 +14,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { Redline } from '@/modules/redlines/models/redline-model';
 import RedlineThreadCard from './Cards/ThreadCard';
 import useUser from '@/hooks/use-user';
+import { formatTimestamp } from '@/lib/utils/dateformat';
 
 type RedlineCommentsSidebarProps = {
   room: string;
@@ -234,37 +235,70 @@ export const RedlineCommentsSidebar = ({
         onEditRedline={handleEditRedline}
       />
 
-      {/* Comments List */}
-      <div className="flex-1 overflow-y-auto p-2 m-4">
+      <div className="flex flex-col p-2">
+        <div className={`p-4 rounded-lg border border-gray-200 mb-2`}>
+          <span className="font-semibold">Redline Details:</span>
+          <div className="flex gap-2 items-start mb-1">
+            <span className="font-semibold text-gray-800">Created:</span>{' '}
+            {formatTimestamp(redlineData.createdAt.toString())}
+          </div>
+          <div className="flex gap-2 items-start mb-1">
+            <span className="font-semibold text-gray-800">Updated:</span>{' '}
+            {formatTimestamp(redlineData.createdAt.toString())}
+          </div>
+          <div className="flex gap-2 items-start mb-1">
+            <span className="font-semibold text-gray-800">Amends?:</span> No
+          </div>
+          <div className="flex gap-2 items-start mb-1">
+            <span className="font-semibold text-gray-800">Relates To?:</span>{' '}
+            N/A
+          </div>
+          {/* <div className="text-gray-700 whitespace-pre-wrap">Yes</div> */}
+          {/* {comment.type && (
+        <div className="mt-1">
+          <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+            {comment.type}
+          </span>
+        </div>
+      )} */}
+        </div>
+      </div>
+
+      {/* Comments List 
+        Comments are moved to their own for the doc not redline specifically*/}
+      {/* <div className="flex-1 overflow-y-auto p-2 m-4">
         <span className="my-2 ml-2 text-gray-700">
           Thread Comments ({comments.length} Total):
         </span>
-        {/* {redlineData.comments.length === 0 ? ( */}
-        {comments.length === 0 ? (
-          <div className="text-center text-gray-500 py-8">
-            <p>No comments yet</p>
-            <p className="text-sm mt-1">Be the first to add a comment</p>
-          </div>
-        ) : (
-          // read from redlineData but for now mock
-          // redlineData.comments.map((comment) => (
-          //   <CommentItem key={comment.id} comment={comment} />
-          // ))
-          comments.map((comment, index) => {
-            return (
-              <CommentItem
-                key={comment._id}
-                comment={comment}
-                className=""
-                index={index}
-              />
-            );
-          })
-        )}
-      </div>
+
+        {
+          // redlineData.comments.length === 0 ?
+          comments.length === 0 ? (
+            <div className="text-center text-gray-500 py-8">
+              <p>No comments yet</p>
+              <p className="text-sm mt-1">Be the first to add a comment</p>
+            </div>
+          ) : (
+            // read from redlineData but for now mock
+            // redlineData.comments.map((comment) => (
+            //   <CommentItem key={comment.id} comment={comment} />
+            // ))
+            comments.map((comment, index) => {
+              return (
+                <CommentItem
+                  key={comment._id}
+                  comment={comment}
+                  className=""
+                  index={index}
+                />
+              );
+            })
+          )
+        }
+      </div> */}
 
       {/* Add Comment Input */}
-      <div className="border-t border-gray-200 p-4 bg-white">
+      {/* <div className="border-t border-gray-200 p-4 bg-white">
         <div className="flex gap-2 min-h-10 max-h-64 overflow-y-auto">
           <textarea
             value={newComment}
@@ -287,7 +321,7 @@ export const RedlineCommentsSidebar = ({
             <SendIcon fontSize="small" />
           </button>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };
