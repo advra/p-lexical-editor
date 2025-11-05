@@ -43,6 +43,9 @@ const taskItemNetworkOptions = [
 enum REDLINE_TARGETS {
   CONTENT = 'content',
   STEP = 'step',
+  ITEM_NETWORK = `items.{index}.network`,
+  ITEM_MESSAGE = `items.{index}.message`,
+  ITEM_RESPONSE = `items.{index}.response`,
 }
 
 export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
@@ -277,6 +280,12 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
     const redlineStep = redlinesByTarget?.['step'] as RedlineProps;
     const isRedlined = !!redlineContent || !!redlineStep;
 
+    // Extract redlines for table items
+    const getItemRedline = (index: number, field: string) => {
+      const target = `items.${index}.${field}`;
+      return redlinesByTarget?.[target] as RedlineProps;
+    };
+
     // Use redline content if available
     const displayContent = redlineContent?.newText || content;
     const displayStep = redlineStep?.newText || step;
@@ -363,38 +372,74 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
                       response: string;
                     },
                     index: number,
-                  ) => (
-                    <div key={index} className="grid grid-cols-12">
-                      {/* NET */}
-                      <div className="col-span-2 px-4 py-2 border-r border-gray-300 bg-gray-50">
-                        <span className="text-sm font-medium text-gray-700">
-                          {item.network || 'Countdown'}
-                        </span>
-                      </div>
+                  ) => {
+                    const redlineNetwork = getItemRedline(index, 'network');
+                    const redlineMessage = getItemRedline(index, 'message');
+                    const redlineResponse = getItemRedline(index, 'response');
+                    const isRowRedlined =
+                      !!redlineNetwork || !!redlineMessage || !!redlineResponse;
 
-                      {/* Message */}
-                      {item.message ? (
+                    return (
+                      <div key={index} className="grid grid-cols-12">
+                        {/* NET */}
+                        <div className="col-span-2 px-4 py-2 border-r border-gray-300 bg-gray-50">
+                          <RedlineWrapper
+                            onClick={() =>
+                              handleRedline(
+                                item.network || 'Countdown',
+                                `items.${index}.network`,
+                              )
+                            }
+                          >
+                            <DisplayRedlineText
+                              blockId={id}
+                              isRedlined={isRowRedlined}
+                              redline={redlineNetwork}
+                              originalText={item.network || 'Countdown'}
+                            />
+                          </RedlineWrapper>
+                        </div>
+
+                        {/* Message */}
                         <div className="col-span-5 px-4 py-2 border-r border-gray-300">
-                          {item.message || ''}
+                          <RedlineWrapper
+                            onClick={() =>
+                              handleRedline(
+                                item.message || '',
+                                `items.${index}.message`,
+                              )
+                            }
+                          >
+                            <DisplayRedlineText
+                              blockId={id}
+                              isRedlined={isRowRedlined}
+                              redline={redlineMessage}
+                              originalText={item.message || ''}
+                            />
+                          </RedlineWrapper>
                         </div>
-                      ) : (
-                        <div className="col-span-5 px-4 py-2 border-r border-gray-300 italic text-gray-400">
-                          N/A
-                        </div>
-                      )}
 
-                      {/* Response */}
-                      {item.response ? (
-                        <div className="col-span-5 px-4 py-2 ">
-                          {item.response || ''}
+                        {/* Response */}
+                        <div className="col-span-5 px-4 py-2">
+                          <RedlineWrapper
+                            onClick={() =>
+                              handleRedline(
+                                item.response || '',
+                                `items.${index}.response`,
+                              )
+                            }
+                          >
+                            <DisplayRedlineText
+                              blockId={id}
+                              isRedlined={isRowRedlined}
+                              redline={redlineResponse}
+                              originalText={item.response || ''}
+                            />
+                          </RedlineWrapper>
                         </div>
-                      ) : (
-                        <div className="col-span-5 px-4 py-2 italic text-gray-400">
-                          N/A
-                        </div>
-                      )}
-                    </div>
-                  ),
+                      </div>
+                    );
+                  },
                 )}
               </div>
             </div>
@@ -474,7 +519,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
               </>
             )}
           </div>
-          <MenuItem
+          {/* <MenuItem
             onClick={() =>
               handleRedline(displayContent, REDLINE_TARGETS.CONTENT)
             }
@@ -485,7 +530,49 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
             onClick={() => handleRedline(displayStep, REDLINE_TARGETS.STEP)}
           >
             Redline (Step)
-          </MenuItem>
+          </MenuItem> */}
+          {/* Table Item Redline Options */}
+          {/* {items && items.length > 0 && (
+            <div>
+              <div className="px-4 py-2 text-xs text-gray-500 border-t border-gray-200">
+                Table Items
+              </div>
+              {items.map((item: any, index: number) => (
+                <div key={index}>
+                  <MenuItem
+                    onClick={() =>
+                      handleRedline(
+                        item.network || 'Countdown',
+                        `items.${index}.network`,
+                      )
+                    }
+                  >
+                    Redline Network {index + 1}
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() =>
+                      handleRedline(
+                        item.message || '',
+                        `items.${index}.message`,
+                      )
+                    }
+                  >
+                    Redline Message {index + 1}
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() =>
+                      handleRedline(
+                        item.response || '',
+                        `items.${index}.response`,
+                      )
+                    }
+                  >
+                    Redline Response {index + 1}
+                  </MenuItem>
+                </div>
+              ))}
+            </div>
+          )} */}
         </Menu>
       </div>
     );
