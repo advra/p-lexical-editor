@@ -42,11 +42,12 @@ export const RedlineMarginLabels = ({}: Props) => {
           };
         }
 
-        // Try to find the block element by ID
-        const blockElement = document.getElementById(redline.blockId);
-        if (!blockElement) {
+        // Try to find the redline text element by ID
+        const redlineElementId = `redline-${redline.blockId}-${redline.dcn}-${redline.userId}`;
+        const redlineElement = document.getElementById(redlineElementId);
+        if (!redlineElement) {
           console.log(
-            `RedlineMarginLabels: Block element not found for ID: ${redline.blockId}`,
+            `RedlineMarginLabels: Redline text element not found for ID: ${redlineElementId}`,
           );
           return {
             dcn: redline.dcn,
@@ -56,8 +57,8 @@ export const RedlineMarginLabels = ({}: Props) => {
           };
         }
 
-        // Get the position of the block element
-        const rect = blockElement.getBoundingClientRect();
+        // Get the position of the redline text element
+        const rect = redlineElement.getBoundingClientRect();
         const top = rect.top + window.scrollY;
 
         return {

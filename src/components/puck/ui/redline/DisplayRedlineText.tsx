@@ -21,6 +21,10 @@ export const DisplayRedlineText = ({
   const { selectedRedlineId, setSelectedRedlineId, setSelectedBlockId } =
     useRedline();
   const newText = redline?.newText || originalText;
+  let REDLINE_LABEL_ID =
+    blockId && redline && redline.dcn && redline.userId
+      ? `redline-${blockId}-${redline.dcn}-${redline.userId}`
+      : 'redline-undefined';
 
   const handleClick = () => {
     if (isRedlined) {
@@ -40,7 +44,7 @@ export const DisplayRedlineText = ({
   };
 
   return (
-    <div className="whitespace-pre-wrap break-words">
+    <div className="whitespace-pre-wrap break-words" id={REDLINE_LABEL_ID}>
       {isRedlined && redline ? (
         <div className="flex gap-2">
           <span
