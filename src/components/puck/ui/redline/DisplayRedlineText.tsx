@@ -46,14 +46,14 @@ export const DisplayRedlineText = ({
   return (
     <div className="whitespace-pre-wrap break-words" id={REDLINE_LABEL_ID}>
       {isRedlined && redline ? (
-        <div className="flex gap-2">
+        <div>
           <span
             id={blockId}
             className="bg-red-100 px-1 rounded  cursor-pointer hover:bg-red-200 transition-colors line-through text-red-500"
             onClick={handleClick}
           >
             {originalText}
-          </span>
+          </span>{' '}
           <span>{newText}</span>
         </div>
       ) : (
