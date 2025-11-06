@@ -29,7 +29,7 @@ export const SectionBlock: ComponentConfig<
     text: { type: 'text', contentEditable: true },
   },
   defaultProps: {
-    text: 'Heading',
+    text: 'Section',
   },
   render: ({
     id,

@@ -48,12 +48,7 @@ export const HeadingBlock: ComponentConfig<
       <>
         <RedlineWrapper onClick={() => handleRedline(displayTitle, 'text')}>
           <div className="text-center mx-16" id={id}>
-            <span
-              className={cn(
-                'text-[42px] font-semibold',
-                isRedlined && 'line-through decoration-red-500 decoration-1',
-              )}
-            >
+            <span className={cn('text-[42px] font-semibold')}>
               <DisplayRedlineText
                 blockId={id}
                 isRedlined={isRedlined}
