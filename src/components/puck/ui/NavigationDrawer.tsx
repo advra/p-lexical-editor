@@ -62,7 +62,7 @@ export const NavigationDrawer = ({
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <span className="text-md  text-gray-800">Navigation</span>
+            <span className="text-md  text-gray-800">Page Navigation</span>
             <button
               onClick={onClose}
               className="p-2 hover:cursor-pointer hover:bg-gray-100 rounded-md transition-colors"

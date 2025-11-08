@@ -290,7 +290,7 @@ export default function ProcPageClient({
           >
             <PuckPreview
               ref={rootRef}
-              data={proc.data}
+              puckPageData={proc.data}
               owner={proc.owner}
               updatedAt={(proc.updatedAt ?? proc.createdAt) as string}
               preview={preview}

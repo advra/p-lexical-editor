@@ -11,7 +11,6 @@ import useUser from '@/hooks/use-user';
 import { NavigationDrawer } from '@/components/puck/ui/NavigationDrawer';
 import { NavigationFloatingButton } from '@/components/puck/ui/NavigationFloatingButton';
 import { RedlineFloatingButton } from '@/components/puck/ui/redline/RedlineFloatingButton';
-import { toast } from 'sonner';
 import RedlineComment from '@/components/puck/ui/comments/comment';
 import { useRedline } from '@/context/RedlineContext';
 import { RedlineMarginLabels } from '../../redline/labels/RedlineMarginLabels';
@@ -20,7 +19,7 @@ import { Redline } from '@/modules/redlines/models/redline-model';
 export const PuckPreview = forwardRef<
   HTMLDivElement,
   {
-    data: PuckPageData;
+    puckPageData: PuckPageData;
     printPreview?: boolean; // screen vs print-preview
     page?: 'letter' | 'a4';
     owner: string;
@@ -32,7 +31,7 @@ export const PuckPreview = forwardRef<
   }
 >(function PuckPreview(
   {
-    data,
+    puckPageData,
     printPreview = false,
     page = 'letter',
     owner,
@@ -63,8 +62,8 @@ export const PuckPreview = forwardRef<
     });
 
     // Extract SectionBlocks and HeadingBlocks from content
-    if (data.content) {
-      data.content.forEach((block, index) => {
+    if (puckPageData.content) {
+      puckPageData.content.forEach((block, index) => {
         if (block.type === 'SectionBlock' && block.props?.title) {
           navigationItems.push({
             id: block.props.id || `section-${index}`,
@@ -113,7 +112,7 @@ export const PuckPreview = forwardRef<
 
   useEffect(() => {
     extractNavigationBlocks();
-  }, [data]);
+  }, [puckPageData]);
 
   return (
     // Show the printable version or actual proc page
@@ -170,7 +169,7 @@ export const PuckPreview = forwardRef<
           <div className="min-h-screen">
             <RedlineRender
               config={config}
-              data={data}
+              data={puckPageData}
               procId={procId}
               room={room}
               redlineHoverEnabled={redlineHoverEnabled}
