@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils/cn';
+import TaskAltIcon from '@mui/icons-material/TaskAlt';
+import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
 
 export interface NavigationItem {
   id: string;
@@ -88,25 +90,56 @@ export const NavigationDrawer = ({
           {/* Navigation Items */}
           <div className="flex-1 overflow-y-auto">
             <nav className="space-y-2">
-              {items.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => handleItemClick(item)}
-                  className={cn(
-                    'hover:cursor-pointer w-full text-left px-4 py-3 border-l-4 border-transparent transition-colors hover:bg-blue-50 focus:bg-blue-50 focus:outline-none',
-                    'hover:font-semibold hover:text-blue-700 hover:border-l-4 hover:border-blue-700',
-                    'text-gray-700 hover:text-blue-700',
-                    item.type === 'title' && 'font-bold',
-                    item.type === 'heading' && 'font-semibold',
-                    item.type === 'section' && 'font-normal',
-                  )}
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="w-1 h-1 bg-gray-400 rounded-full" />
-                    {item.label}
-                  </div>
-                </button>
-              ))}
+              {/* Add Title */}
+              <button
+                key={items[0].id}
+                onClick={() => handleItemClick(items[0])}
+                className={cn(
+                  'hover:cursor-pointer w-full text-left px-4 py-3 border-l-4 border-transparent transition-colors hover:bg-blue-50 focus:bg-blue-50 focus:outline-none',
+                  'hover:font-semibold hover:text-blue-700 hover:border-l-4 hover:border-blue-700',
+                  'text-gray-700 hover:text-blue-700 font-bold',
+                )}
+              >
+                <div className="items-center">{items[0].label}</div>
+              </button>
+              {items.map((item) => {
+                if (item.type !== 'title')
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleItemClick(item)}
+                      className={cn(
+                        'hover:cursor-pointer w-full text-left px-4 py-3 border-l-4 border-transparent transition-colors hover:bg-blue-50 focus:bg-blue-50 focus:outline-none',
+                        'hover:border-l-4 hover:border-blue-700',
+                        'text-gray-700 hover:text-blue-700',
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-1 bg-gray-400 rounded-full" />
+                        <div
+                          className={cn(
+                            item.type === 'heading' && 'font-semibold ml-2',
+                            item.type === 'section' && 'font-normal ml-4',
+                          )}
+                        >
+                          {item.label}
+                        </div>
+                        {item.completed === true && (
+                          <TaskAltIcon
+                            fontSize="small"
+                            className="ml-auto text-green-500"
+                          />
+                        )}
+                        {item.completed === false && (
+                          <PanoramaFishEyeIcon
+                            fontSize="small"
+                            className="ml-auto text-gray-300"
+                          />
+                        )}
+                      </div>
+                    </button>
+                  );
+              })}
             </nav>
           </div>
 
