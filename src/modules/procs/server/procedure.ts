@@ -289,11 +289,13 @@ export const procRouter = createTRPCRouter({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Proc not found' });
 
       const isOwner = existing.owner === username;
+      // TODO: Get is admin from db rather than username
+      const isAdmin = username === 'admin';
       const isSharedWithEdit = (existing.sharedWith ?? []).some(
         (s: any) => s.userId === username && s.permission === 'edit',
       );
 
-      if (!isOwner && !isSharedWithEdit)
+      if (!(isAdmin || isOwner || isSharedWithEdit))
         throw new TRPCError({
           code: 'FORBIDDEN',
           message: `Only owner or users with edit permission can update. Current user: ${username}, Owner: ${existing.owner}, isOwner: ${isOwner}, isSharedWithEdit: ${isSharedWithEdit}`,

@@ -7,6 +7,8 @@ export interface NavigationItem {
   id: string;
   label: string;
   type: 'title' | 'section' | 'heading';
+  completed?: boolean;
+  requiresPreviousComplete?: boolean;
 }
 
 interface NavigationDrawerProps {

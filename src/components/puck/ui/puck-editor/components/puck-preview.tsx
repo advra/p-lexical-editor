@@ -67,17 +67,20 @@ export const PuckPreview = forwardRef<
     // Extract SectionBlocks and HeadingBlocks from content
     if (puckPageData.content) {
       puckPageData.content.forEach((block, index) => {
-        if (block.type === 'SectionBlock' && block.props?.title) {
+        console.log(block);
+        if (block.type === 'SectionBlock' && block.props?.text) {
           items.push({
             id: block.props.id || `section-${index}`,
-            label: block.props.title,
-            type: 'section' as const,
+            label: block.props.text,
+            type: 'section',
+            completed: false as const,
           });
         } else if (block.type === 'HeadingBlock' && block.props?.title) {
           items.push({
             id: block.props.id || `heading-${index}`,
             label: block.props.title,
-            type: 'heading' as const,
+            type: 'heading',
+            completed: false as const,
           });
         }
       });
