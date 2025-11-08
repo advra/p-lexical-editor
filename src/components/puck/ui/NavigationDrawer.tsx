@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils/cn';
 
-interface NavigationItem {
+export interface NavigationItem {
   id: string;
   label: string;
   type: 'title' | 'section' | 'heading';

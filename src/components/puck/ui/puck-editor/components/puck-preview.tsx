@@ -5,10 +5,13 @@ import config from '@/puck.config';
 import { formatTimestamp } from '@/lib/utils/dateformat';
 import type { PuckPageData } from '@/app/puck/types';
 import clsx from 'clsx';
-import { forwardRef, useEffect, useState } from 'react';
+import { forwardRef, useEffect, useState, useMemo } from 'react';
 import { RedlineRender } from '@/components/puck/ui/redline/RedlineRender';
 import useUser from '@/hooks/use-user';
-import { NavigationDrawer } from '@/components/puck/ui/NavigationDrawer';
+import {
+  NavigationDrawer,
+  NavigationItem,
+} from '@/components/puck/ui/NavigationDrawer';
 import { NavigationFloatingButton } from '@/components/puck/ui/NavigationFloatingButton';
 import { RedlineFloatingButton } from '@/components/puck/ui/redline/RedlineFloatingButton';
 import RedlineComment from '@/components/puck/ui/comments/comment';
@@ -50,12 +53,12 @@ export const PuckPreview = forwardRef<
       ? 'w-[210mm] min-h-[297mm] p-[12mm]'
       : 'w-[8.5in] min-h-[11in] p-[0.5in]';
 
-  // Extract SectionBlocks from the proc data
-  const extractNavigationBlocks = () => {
-    const navigationItems = [];
+  // Extract SectionBlocks from the proc data - memoized to prevent unnecessary recalculations
+  const navigationItems = useMemo(() => {
+    const items: NavigationItem[] = [];
 
     // Add title as first item
-    navigationItems.push({
+    items.push({
       id: 'title',
       label: title,
       type: 'title' as const,
@@ -65,13 +68,13 @@ export const PuckPreview = forwardRef<
     if (puckPageData.content) {
       puckPageData.content.forEach((block, index) => {
         if (block.type === 'SectionBlock' && block.props?.title) {
-          navigationItems.push({
+          items.push({
             id: block.props.id || `section-${index}`,
             label: block.props.title,
             type: 'section' as const,
           });
         } else if (block.type === 'HeadingBlock' && block.props?.title) {
-          navigationItems.push({
+          items.push({
             id: block.props.id || `heading-${index}`,
             label: block.props.title,
             type: 'heading' as const,
@@ -79,9 +82,8 @@ export const PuckPreview = forwardRef<
         }
       });
     }
-    console.log('navigationItems', navigationItems);
-    return navigationItems;
-  };
+    return items;
+  }, []);
 
   const handleNavigationItemClick = (item: any) => {
     if (item.id === 'title') {
@@ -110,9 +112,8 @@ export const PuckPreview = forwardRef<
     setIsDrawerOpen(false);
   };
 
-  useEffect(() => {
-    extractNavigationBlocks();
-  }, [puckPageData]);
+  // Log navigation items once to verify the fix
+  console.log('navigationItems (memoized):', navigationItems);
 
   return (
     // Show the printable version or actual proc page
@@ -134,7 +135,7 @@ export const PuckPreview = forwardRef<
             isOpen={isDrawerOpen}
             onClose={handleDrawerClose}
             onItemClick={handleNavigationItemClick}
-            items={extractNavigationBlocks()}
+            items={navigationItems}
           />
         </>
       )}
