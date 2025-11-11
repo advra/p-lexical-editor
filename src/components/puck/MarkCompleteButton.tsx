@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useProc } from '@/context/ProcContext';
 import useUser from '@/hooks/use-user';
 import { useCompletionStore } from '@/hooks/use-completion-store';
+import { useSession } from '@/context/SessionContext';
 import { getSocket } from '@/lib/socket';
 import { toast } from 'sonner';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
@@ -32,12 +33,12 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
 }) => {
   const [isCompleted, setIsCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [dependenciesCompleted, setDependenciesCompleted] = useState(false);
 
   const { session } = useUser();
   const { procId, viewMode } = useProc();
   const completionStore = useCompletionStore();
+  const { activeSession } = useSession();
 
   // Check if all dependencies are completed
   const checkDependencies = (): boolean => {
@@ -53,38 +54,36 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
 
   // Initialize completion state and dependencies
   useEffect(() => {
-    if (id) {
-      const completionData = completionStore.completions[id];
-      setIsCompleted(completionData?.completed === true);
-    }
+    const initializeCompletionState = async () => {
+      if (id) {
+        // First check local completion store
+        const completionData = completionStore.completions[id];
+        setIsCompleted(completionData?.completed === true);
 
-    setDependenciesCompleted(checkDependencies());
-  }, [id, completionStore, dependencies]);
-
-  // Get existing session when component mounts
-  useEffect(() => {
-    const initializeSession = async () => {
-      try {
-        const response = await fetch(
-          `/api/proc-sessions?procId=${procId}&status=active`,
-        );
-        if (response.ok) {
-          const result = await response.json();
-          const activeSession =
-            result.sessions.length > 0 ? result.sessions[0] : null;
-          if (activeSession) {
-            setCurrentSessionId(activeSession._id);
+        // If we have an active session, also check session records
+        if (activeSession?._id && viewMode !== 'view') {
+          try {
+            const response = await fetch(
+              `/api/proc-sessions?sessionId=${activeSession._id}&recordId=${id}`,
+            );
+            if (response.ok) {
+              const result = await response.json();
+              if (result.records && result.records.length > 0) {
+                const record = result.records[0];
+                setIsCompleted(record.state === 'complete');
+              }
+            }
+          } catch (error) {
+            console.error('Failed to fetch session record:', error);
           }
         }
-      } catch (error) {
-        console.error('Failed to initialize session:', error);
       }
+
+      setDependenciesCompleted(checkDependencies());
     };
 
-    if (procId) {
-      initializeSession();
-    }
-  }, [procId]);
+    initializeCompletionState();
+  }, [id, completionStore, dependencies, activeSession?._id, viewMode]);
 
   // Listen for dependency completion updates
   useEffect(() => {
@@ -117,7 +116,7 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
       return;
     }
 
-    if (!currentSessionId) {
+    if (!activeSession?._id) {
       toast.error('No active session found');
       setIsLoading(false);
       return;
@@ -128,7 +127,7 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          sessionId: currentSessionId,
+          sessionId: activeSession._id,
           recordId: id,
           blockType: 'TaskItem',
           state: 'complete',
@@ -152,7 +151,7 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
       if (socket) {
         socket.emit('session:record-updated', {
           room: procId,
-          sessionId: currentSessionId,
+          sessionId: activeSession._id,
           recordId: id,
           state: 'complete',
         });
@@ -180,7 +179,7 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
       return;
     }
 
-    if (!currentSessionId) {
+    if (!activeSession?._id) {
       toast.error('No active session found');
       setIsLoading(false);
       return;
@@ -191,7 +190,7 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          sessionId: currentSessionId,
+          sessionId: activeSession._id,
           recordId: id,
           blockType: 'TaskItem',
           state: 'pending',
@@ -215,7 +214,7 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
       if (socket) {
         socket.emit('session:record-updated', {
           room: procId,
-          sessionId: currentSessionId,
+          sessionId: activeSession._id,
           recordId: id,
           state: 'pending',
         });

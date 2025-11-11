@@ -1,19 +1,15 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { useSearchParams, useRouter } from 'next/navigation';
 import PlayCircleFilledIcon from '@mui/icons-material/PlayCircleFilled';
 import StopCircleIcon from '@mui/icons-material/StopCircle';
 import ShareIcon from '@mui/icons-material/Share';
 import { toast } from 'sonner';
-import { ProcPermissions, useProc } from '@/context/ProcContext';
+import { useProc } from '@/context/ProcContext';
 import { CircularProgress, Tooltip } from '@mui/material';
-import { checkActiveSession } from '@/services/proc-session-service';
 import { User } from '@/modules/auth/types';
-import { useTRPC } from '@/trpc/client';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { sessionSocketService, useSessionSocket } from '@/services/socket';
+import { useSession } from '@/context/SessionContext';
 
 type Props = {
   user: User | undefined;
@@ -22,29 +18,27 @@ type Props = {
 
 export const SessionButtons = ({ user, canExecute }: Props) => {
   const pathname = usePathname();
-  const trpc = useTRPC();
   const { procId } = useProc();
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const [activeSession, setActiveSession] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [showShareLink, setShowShareLink] = useState(false);
-  const [isSessionOwner, setIsSessionOwner] = useState(false);
-
-  // Query for sessions from URL parameter
-  const sessionId = searchParams.get('sessionId');
-
-  // Socket hook for real-time session status updates
   const {
-    sessionStatus,
-    lastUpdate,
-    stopSession: socketStopSession,
-  } = useSessionSocket(
-    // Use sessionId from URL if available (for users viewing via share link)
-    // Otherwise use activeSession._id (for session owners)
-    sessionId || activeSession?._id,
-    user?.username,
-  );
+    activeSession,
+    isSessionOwner,
+    isLoading,
+    createSession,
+    stopSession,
+    isCreatingSession,
+    isStoppingSession,
+  } = useSession();
+
+  const [showShareLink, setShowShareLink] = useState(false);
+
+  // Initialize showShareLink based on session ownership
+  useEffect(() => {
+    if (activeSession && isSessionOwner) {
+      setShowShareLink(true);
+    } else {
+      setShowShareLink(false);
+    }
+  }, [activeSession, isSessionOwner]);
 
   const SLUG_PREFIX = '/procs/' as const;
   const hasProcSlug = pathname.startsWith(SLUG_PREFIX);
@@ -60,207 +54,14 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
     ? 'Stop Session'
     : 'You can only stop sessions that you started';
 
-  // Update URL with sessionId parameter
-  const updateUrlWithSession = (sessionId: string | null) => {
-    const currentParams = new URLSearchParams(searchParams.toString());
-
-    if (sessionId) {
-      currentParams.set('sessionId', sessionId);
-    } else {
-      currentParams.delete('sessionId');
-    }
-
-    const newUrl = `${window.location.pathname}?${currentParams.toString()}`;
-    router.replace(newUrl, { scroll: false });
-  };
-
-  const {
-    mutate: createSession,
-    isPending: isCreatingSession,
-    isSuccess: isCreateSuccess,
-    isError: isCreateError,
-  } = useMutation(
-    trpc.procSessions.createSession.mutationOptions({
-      onSuccess: (data) => {
-        setActiveSession(data.session);
-        setShowShareLink(true);
-        setIsSessionOwner(true);
-        updateUrlWithSession(data.session._id);
-        toast.success('Session started! Share the link with others to join.');
-      },
-      onError: (e: any) => {
-        console.error('Failed to start session:', e);
-        toast.error('Failed to start session');
-      },
-    }),
-  );
-
-  const {
-    mutate: stopSession,
-    isPending: isUpdatingSession,
-    isSuccess: isUpdateSuccess,
-    isError: isUpdateError,
-  } = useMutation(
-    trpc.procSessions.stopSession.mutationOptions({
-      onSuccess: (data) => {
-        console.log(
-          '[SessionButton] Stop session success, calling socketStopSession:',
-          {
-            sessionId: activeSession?._id,
-            procId,
-            user: user?.username,
-          },
-        );
-
-        setActiveSession(null);
-        setShowShareLink(false);
-        setIsSessionOwner(false);
-        updateUrlWithSession(null);
-        toast.success('Session completed!');
-
-        // notify other users
-        if (activeSession?._id) {
-          socketStopSession(activeSession._id, procId, user);
-        } else {
-          console.error(
-            '[SessionButton] Cannot notify other users - activeSession is null',
-          );
-        }
-      },
-      onError: (e: any) => {
-        console.error('Failed to stop session:', e);
-        toast.error('Failed to stop session - check console for details');
-      },
-    }),
-  );
-  const { data: sessionData, isLoading: isSessionLoading } = useQuery({
-    ...trpc.procSessions.getSessions.queryOptions({
-      procId: procId || '',
-      sessionId: sessionId || undefined,
-    }),
-    enabled: !!(sessionId && procId),
-  });
-
-  useEffect(() => {
-    console.log('sessionStatus: ', sessionStatus);
-  }, [sessionStatus]);
-
-  // Handle real-time session status updates from socket
-  useEffect(() => {
-    console.log('[SessionButton] sessionStatus effect triggered:', {
-      sessionStatus,
-      activeSessionId: activeSession?._id,
-      isSessionOwner,
-    });
-
-    if (sessionStatus && sessionStatus.sessionId === activeSession?._id) {
-      console.log(
-        '[SessionButton] Session status update matches our session:',
-        sessionStatus,
-      );
-
-      // Session status changed for our current session
-      if (
-        sessionStatus.status === 'completed' ||
-        sessionStatus.status === 'canceled'
-      ) {
-        console.log('[SessionButton] Session ended, updating UI');
-
-        // Session ended by another user
-        if (!isSessionOwner) {
-          // Show notification for passive users
-          toast.info(`Session completed by ${sessionStatus.changedBy}`);
-        }
-
-        // Update UI state for all users
-        setActiveSession(null);
-        setShowShareLink(false);
-        setIsSessionOwner(false);
-        updateUrlWithSession(null);
-      }
-    } else if (sessionStatus) {
-      console.log(
-        '[SessionButton] Session status update does not match our session:',
-        {
-          receivedSessionId: sessionStatus.sessionId,
-          ourSessionId: activeSession?._id,
-        },
-      );
-    }
-  }, [sessionStatus, activeSession?._id, isSessionOwner]);
-
-  useEffect(() => {
-    const checkSession = async () => {
-      if (!procId) {
-        setIsLoading(false);
-        return;
-      }
-
-      if (isSessionLoading) {
-        setIsLoading(false);
-        return;
-      }
-
-      // Check if we have session data from URL query
-      if (
-        sessionData &&
-        sessionData.sessions &&
-        sessionData.sessions.length > 0
-      ) {
-        const session = sessionData.sessions[0];
-        // Only set as active session if it's active status (lowercase from backend)
-        if (session.status === 'active') {
-          setActiveSession(session);
-          setShowShareLink(true);
-          setIsSessionOwner(session.createdBy === user?.username);
-        } else {
-          // Session exists but is not active (completed or canceled)
-          setActiveSession(null);
-          setIsSessionOwner(false);
-          setShowShareLink(false);
-          // Remove invalid sessionId from URL
-          updateUrlWithSession(null);
-        }
-      } else if (sessionId) {
-        // Session ID in URL but no session found in database
-        setActiveSession(null);
-        setIsSessionOwner(false);
-        setShowShareLink(false);
-        // Remove invalid sessionId from URL
-        updateUrlWithSession(null);
-      } else {
-        // If no sessionId in URL, check if user has active session
-        // But DO NOT create a new session automatically
-        const userSession = await checkActiveSession(procId, user?.username);
-        if (userSession) {
-          setActiveSession(userSession);
-          updateUrlWithSession(userSession._id);
-          setShowShareLink(true);
-          setIsSessionOwner(true);
-          // Don't update URL automatically - only update when user explicitly starts a session
-        } else {
-          // No active session found - don't create one automatically
-          setActiveSession(null);
-          setIsSessionOwner(false);
-          setShowShareLink(false);
-        }
-      }
-      setIsLoading(false);
-    };
-
-    checkSession();
-  }, [procId, user, sessionData, sessionId]);
-
   const handleStartSession = async () => {
     if (!procId) return;
-    createSession({ procId });
+    createSession();
   };
 
   const handleStopSession = async () => {
     if (!activeSession?._id || !isSessionOwner) return;
-    stopSession({
-      sessionId: activeSession._id,
-    });
+    stopSession();
   };
 
   const copyShareLink = () => {
@@ -279,11 +80,11 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
 
   const getShareLink = () => {
     if (!activeSession?._id || !procSlug) return '';
-    return `${window.location.origin}/procs/${procSlug}/execute/?sessionId=${activeSession._id}`;
+    return `${window.location.origin}/procs/${procSlug}/execute?sessionId=${activeSession._id}`;
   };
 
   let renderedButton;
-  if (isLoading || isCreatingSession || isUpdatingSession) {
+  if (isLoading || isCreatingSession || isStoppingSession) {
     renderedButton = (
       <div className="h-[30px] w-[30px] grid place-items-center">
         <CircularProgress size={20} sx={{ display: 'block' }} />
@@ -326,7 +127,7 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
         <Tooltip title={stopButtonToolTip}>
           <button
             onClick={handleStopSession}
-            disabled={isUpdatingSession || !canStopSession}
+            disabled={isStoppingSession || !canStopSession}
             className="rounded-sm aspect-square h-[30px] border-red-500 hover:border-red-400 hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <StopCircleIcon className="m-0.5 text-red-600 hover:text-red-500" />
