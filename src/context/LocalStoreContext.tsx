@@ -30,8 +30,8 @@ type LocalCompletions = Record<string, LocalCompletionState>;
 const StoreContext = createContext<{
   store: Store;
   updateStore: (block: BlockDoc) => void;
-  localCompletions: LocalCompletions;
-  updateLocalCompletion: (blockId: string, state: LocalCompletionState) => void;
+  completions: LocalCompletions;
+  updateCompletion: (blockId: string, state: LocalCompletionState) => void;
 } | null>(null);
 
 export function LocalStoreProvider({
@@ -53,9 +53,7 @@ export function LocalStoreProvider({
       ) as Store,
   );
 
-  const [localCompletions, setLocalCompletions] = useState<LocalCompletions>(
-    {},
-  );
+  const [completions, setLocalCompletions] = useState<LocalCompletions>({});
 
   const updateStore = useCallback((block: BlockDoc) => {
     if (!block?.id) return;
@@ -65,7 +63,7 @@ export function LocalStoreProvider({
     }));
   }, []);
 
-  const updateLocalCompletion = useCallback(
+  const updateCompletion = useCallback(
     (blockId: string, state: LocalCompletionState) => {
       setLocalCompletions((prev) => ({
         ...prev,
@@ -79,10 +77,10 @@ export function LocalStoreProvider({
     () => ({
       store,
       updateStore,
-      localCompletions,
-      updateLocalCompletion,
+      completions,
+      updateCompletion,
     }),
-    [store, updateStore, localCompletions, updateLocalCompletion],
+    [store, updateStore, completions, updateCompletion],
   );
 
   return (
@@ -98,6 +96,7 @@ function extractInitialBlocks(proc: ProcPublic): BlockDoc[] {
 
 export function useStore() {
   const ctx = useContext(StoreContext);
-  if (!ctx) throw new Error('useStore must be used within <StoreProvider>');
+  if (!ctx)
+    throw new Error('useStore must be used within <LocalStoreProvider>');
   return ctx;
 }

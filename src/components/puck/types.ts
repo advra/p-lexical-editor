@@ -14,3 +14,11 @@ export type RecordData = {
 export type UseUserProps = {
   user?: User;
 };
+
+/*
+  Default props of puck blocks
+*/
+export type DefaultPuckProps = {
+  id?: string;
+} 
+

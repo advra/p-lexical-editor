@@ -6,6 +6,8 @@ import {
   ProcPublicWithAcl,
 } from '@/modules/procs/models/proc-model';
 import ProcPageExecuteClient from '../../../../components/puck/ui/puck-editor/components/ProcPageExecuteClient';
+import { RedlineProvider } from '@/context/RedlineContext';
+import { ExecuteStoreProvider } from '@/context/ExecuteStoreContext';
 
 export default async function Page({
   params,
@@ -20,11 +22,15 @@ export default async function Page({
   if (!proc) return notFound();
 
   return (
-    <ProcPageExecuteClient
-      executionMode={true}
-      proc={proc}
-      slug={slug}
-      path={`/procs/${slug}`}
-    />
+    <ExecuteStoreProvider initialProc={proc}>
+      <RedlineProvider>
+        <ProcPageExecuteClient
+          executionMode={true}
+          proc={proc}
+          slug={slug}
+          path={`/procs/${slug}`}
+        />
+      </RedlineProvider>
+    </ExecuteStoreProvider>
   );
 }

@@ -1,6 +1,6 @@
 import { IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useProcPermissions, useProc } from '@/context/ProcContext';
 import CompletionStatus from './constants/taskitem/CompletionStatus';
 import { ComponentConfig, Slot } from '@measured/puck';
@@ -14,11 +14,9 @@ import { RedlineInfo } from './ui/redline/RedlineInfo';
 import { DisplayRedlineText } from './ui/redline/DisplayRedlineText';
 import { toast } from 'sonner';
 import { useStore } from '@/context/LocalStoreContext';
-import TaskAltIcon from '@mui/icons-material/TaskAlt';
-import Button from '../common/buttons/Button';
-import { getSocket } from '@/lib/socket';
 import useUser from '@/hooks/use-user';
 import CompleteTimestamp from './ui/completed/CompleteTimestamp';
+import { MarkCompleteButtonComponent } from './MarkCompleteButton';
 
 export type TaskItemProps = {
   // This id is inherited by default puck's internal props
@@ -90,10 +88,6 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
     redlinesByTarget,
   }: TaskItemProps & AddRedlineProps) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const [currentSessionId, setCurrentSessionId] = useState<string | null>(
-      null,
-    );
-
     // Get local completion state for this block
     // reference the block id provided by puck
     const blockId = id || '';
@@ -106,7 +100,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
       if (viewMode === 'view') {
         localStore = useStore();
         if (localStore && blockId) {
-          completionData = localStore.localCompletions[blockId];
+          completionData = localStore.completions[blockId];
           if (completionData) isLocallyCompleted = completionData?.completed;
         }
       } else {
@@ -123,153 +117,9 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
     const { localStore, isLocallyCompleted, completionData } =
       setupLocalStorage();
 
-    // Get existing session when component mounts - DO NOT create automatically
-    useEffect(() => {
-      const initializeSession = async () => {
-        try {
-          // Check for existing active session
-          const response = await fetch(
-            `/api/proc-sessions?procId=${procId}&status=active`,
-          );
-          if (response.ok) {
-            const result = await response.json();
-            const activeSession =
-              result.sessions.length > 0 ? result.sessions[0] : null;
-
-            if (activeSession) {
-              setCurrentSessionId(activeSession._id);
-            }
-            // If no active session found, don't create one automatically
-          }
-        } catch (error) {
-          console.error('Failed to initialize session:', error);
-        }
-      };
-
-      if (procId) {
-        initializeSession();
-      }
-    }, [procId]);
-
     const handleMenuClose = () => setAnchorEl(null);
     const onIconButton = async (event: any) => {
       setAnchorEl(event.currentTarget);
-    };
-
-    const onMarkComplete = async () => {
-      if (viewMode === 'view') {
-        // Use local state for view mode
-        if (localStore) {
-          localStore.updateLocalCompletion(blockId, {
-            completed: true,
-            completedAt: new Date().toISOString(),
-          });
-        }
-        toast.success('(PREVIEW): Task marked as complete');
-        handleMenuClose();
-        return;
-      }
-
-      if (!currentSessionId) {
-        toast.error('No active session found');
-        return;
-      }
-
-      try {
-        const response = await fetch('/api/proc-sessions', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sessionId: currentSessionId,
-            recordId: blockId,
-            blockType: 'TaskItem',
-            state: 'complete',
-            data: {
-              step,
-              content,
-              completedAt: new Date().toISOString(),
-            },
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to mark task complete');
-        }
-
-        const result = await response.json();
-        toast.success('Task marked as complete');
-
-        // Emit socket event to notify other clients
-        const socket = getSocket();
-        if (socket) {
-          socket.emit('session:record-updated', {
-            room: procId,
-            sessionId: currentSessionId,
-            recordId: blockId,
-            state: 'complete',
-          });
-        }
-      } catch (error) {
-        console.error('Failed to mark task complete:', error);
-        toast.error('Failed to mark task as complete');
-      }
-    };
-
-    const onRemoveComplete = async () => {
-      if (viewMode === 'view' && localStore) {
-        // Use local state for view mode
-        localStore.updateLocalCompletion(blockId, {
-          completed: false,
-        });
-        toast.success('(PREVIEW): Removed Complete from task');
-        handleMenuClose();
-        return;
-      }
-
-      if (!currentSessionId) {
-        toast.error('No active session found');
-        return;
-      }
-
-      try {
-        const response = await fetch('/api/proc-sessions', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sessionId: currentSessionId,
-            recordId: blockId,
-            blockType: 'TaskItem',
-            state: 'pending',
-            data: {
-              step,
-              content,
-              unmarkedAt: new Date().toISOString(),
-            },
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to unmark task');
-        }
-
-        const result = await response.json();
-        toast.success('Removed Complete from task');
-        handleMenuClose();
-
-        // Emit socket event to notify other clients
-        const socket = getSocket();
-        if (socket) {
-          socket.emit('session:record-updated', {
-            room: procId,
-            sessionId: currentSessionId,
-            recordId: blockId,
-            state: 'pending',
-          });
-        }
-      } catch (error) {
-        console.error('Failed to remove complete from task:', error);
-        toast.error('Failed to remove complete from task');
-      }
     };
 
     // redline options
@@ -289,9 +139,6 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
     // Use redline content if available
     const displayContent = redlineContent?.newText || content;
     const displayStep = redlineStep?.newText || step;
-
-    const showMarkComplete =
-      !canMarkComplete || record?.state === 'complete' || isLocallyCompleted;
 
     return (
       <div className="p-2 h-auto my-2 border border-gray-300 rounded-md shadow-sm">
@@ -465,16 +312,17 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
               }
             >
               <span className="ml-auto">
-                <Button
-                  className="flex border h-2 rounded-sm text-green-700 hover:bg-green-100/50 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-300
-    disabled:opacity-100"
-                  color="success"
-                  onClick={onMarkComplete}
-                  disabled={showMarkComplete}
-                >
-                  <TaskAltIcon fontSize="small" className="mr-2" />
-                  <span className="text-xs">Mark Complete</span>
-                </Button>
+                <MarkCompleteButtonComponent
+                  id={blockId}
+                  dependencies={[]}
+                  label="Mark Complete"
+                  onComplete={() => {
+                    toast.success('Task marked as complete');
+                  }}
+                  onIncomplete={() => {
+                    toast.success('Removed Complete from task');
+                  }}
+                />
               </span>
             </Tooltip>
             <IconButton onClick={onIconButton}>
@@ -501,24 +349,6 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
             horizontal: 'right',
           }}
         >
-          <div>
-            {showMarkComplete ? (
-              <>
-                <MenuItem
-                  onClick={onRemoveComplete}
-                  disabled={!canMarkComplete}
-                >
-                  Remove Complete
-                </MenuItem>
-              </>
-            ) : (
-              <>
-                <MenuItem onClick={onMarkComplete} disabled={!canMarkComplete}>
-                  Mark Complete
-                </MenuItem>
-              </>
-            )}
-          </div>
           {/* <MenuItem
             onClick={() =>
               handleRedline(displayContent, REDLINE_TARGETS.CONTENT)

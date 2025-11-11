@@ -12,6 +12,7 @@ import {
   ProcPublic,
   ProcPublicWithAcl,
 } from '@/modules/procs/models/proc-model';
+import { RedlineProvider } from '@/context/RedlineContext';
 
 export default async function Page({
   params,
@@ -29,7 +30,9 @@ export default async function Page({
 
   return (
     <LocalStoreProvider initialProc={proc}>
-      <ProcPageClient proc={proc} slug={slug} path={`/procs/${slug}`} />
+      <RedlineProvider>
+        <ProcPageClient proc={proc} slug={slug} path={`/procs/${slug}`} />
+      </RedlineProvider>
     </LocalStoreProvider>
   );
 }

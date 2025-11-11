@@ -15,16 +15,16 @@ export const useLocalCompletion = (blockId: string): UseLocalCompletionReturn =>
   const localStore = useStore();
 
   const isCompleted = viewMode === 'view' && localStore && blockId 
-    ? localStore.localCompletions[blockId]?.completed || false
+    ? localStore.completions[blockId]?.completed || false
     : false;
 
   const completionData = viewMode === 'view' && localStore && blockId
-    ? localStore.localCompletions[blockId] || null
+    ? localStore.completions[blockId] || null
     : null;
 
   const markComplete = () => {
     if (viewMode === 'view' && localStore && blockId) {
-      localStore.updateLocalCompletion(blockId, {
+      localStore.updateCompletion(blockId, {
         completed: true,
         completedAt: new Date().toISOString(),
       });
@@ -33,7 +33,7 @@ export const useLocalCompletion = (blockId: string): UseLocalCompletionReturn =>
 
   const removeComplete = () => {
     if (viewMode === 'view' && localStore && blockId) {
-      localStore.updateLocalCompletion(blockId, {
+      localStore.updateCompletion(blockId, {
         completed: false,
       });
     }
@@ -41,7 +41,7 @@ export const useLocalCompletion = (blockId: string): UseLocalCompletionReturn =>
 
   const updateCompletion = (data: LocalCompletionState) => {
     if (viewMode === 'view' && localStore && blockId) {
-      localStore.updateLocalCompletion(blockId, data);
+      localStore.updateCompletion(blockId, data);
     }
   };
 

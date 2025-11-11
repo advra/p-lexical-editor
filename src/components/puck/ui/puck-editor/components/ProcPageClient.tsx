@@ -12,7 +12,6 @@ import { useStore } from '@/context/LocalStoreContext';
 import useUser from '@/hooks/use-user';
 import { getSocket } from '@/lib/socket';
 import { ProcProvider, ProcViewModes } from '@/context/ProcContext';
-import { RedlineProvider } from '@/context/RedlineContext';
 import { RedlineLayoutWrapper } from '../../redline/RedlineLayoutWrapper';
 
 function waitForImages(root: HTMLElement) {
@@ -259,52 +258,50 @@ export default function ProcPageClient({
   };
 
   return (
-    <RedlineProvider>
-      <ProcProvider
-        viewMode={procViewMode}
-        owner={proc.owner}
+    <ProcProvider
+      viewMode={procViewMode}
+      owner={proc.owner}
+      permissions={userPermissions}
+      currentUser={user}
+      procId={proc._id}
+    >
+      <Header
+        viewMode={viewMode}
+        executionMode={executionMode}
+        handlePreviewPrint={handlePreviewPrint}
+        path={path}
+        title={proc.title}
+        description={proc.description}
+        tags={proc.tags}
+        metadata={metadata}
+        presenceDisplay={presenceDisplay}
         permissions={userPermissions}
-        currentUser={user}
-        procId={proc._id}
-      >
-        <Header
-          viewMode={viewMode}
-          executionMode={executionMode}
-          handlePreviewPrint={handlePreviewPrint}
-          path={path}
-          title={proc.title}
-          description={proc.description}
-          tags={proc.tags}
-          metadata={metadata}
-          presenceDisplay={presenceDisplay}
-          permissions={userPermissions}
-          loading={loading}
-          user={user}
-        />
-        <div>
-          <RedlineLayoutWrapper
+        loading={loading}
+        user={user}
+      />
+      <div>
+        <RedlineLayoutWrapper
+          room={room}
+          redlines={redlines}
+          onAddComment={handleAddComment}
+          onRedlineDelete={handleRedlineDelete}
+        >
+          <PuckPreview
+            ref={rootRef}
+            puckPageData={proc.data}
+            owner={proc.owner}
+            updatedAt={(proc.updatedAt ?? proc.createdAt) as string}
+            preview={preview}
+            page="letter"
+            procId={proc._id}
             room={room}
-            redlines={redlines}
-            onAddComment={handleAddComment}
-            onRedlineDelete={handleRedlineDelete}
-          >
-            <PuckPreview
-              ref={rootRef}
-              puckPageData={proc.data}
-              owner={proc.owner}
-              updatedAt={(proc.updatedAt ?? proc.createdAt) as string}
-              preview={preview}
-              page="letter"
-              procId={proc._id}
-              room={room}
-              title={proc.title}
-              onRedlineCreated={(redline) => {
-                console.log('Redline created from preview:', redline);
-              }}
-            />
-          </RedlineLayoutWrapper>
-        </div>
-      </ProcProvider>
-    </RedlineProvider>
+            title={proc.title}
+            onRedlineCreated={(redline) => {
+              console.log('Redline created from preview:', redline);
+            }}
+          />
+        </RedlineLayoutWrapper>
+      </div>
+    </ProcProvider>
   );
 }
