@@ -47,7 +47,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
   // 2) disallow hitting /puck directly
-  if (pathname.startsWith('/procs')) {
+  if (pathname === '/procs') {
     const url = req.nextUrl.clone();
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);
