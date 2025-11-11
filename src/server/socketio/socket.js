@@ -142,12 +142,27 @@ io.on('connection', (socket) => {
   socket.on(
     'session:record-updated',
     ({ room, sessionId, recordId, state }) => {
-      if (!room || !sessionId || !recordId) return;
+      console.log('[socket] Received session:record-updated event:', {
+        room,
+        sessionId,
+        recordId,
+        state,
+      });
+
+      if (!room || !sessionId || !recordId) {
+        console.log('[socket] Missing required fields, ignoring event');
+        return;
+      }
+
+      console.log(
+        `[socket] Broadcasting session:record-updated to room ${room}`,
+      );
       socket.to(room).emit('session:record-updated', {
         sessionId,
         recordId,
         state,
       });
+      console.log(`[socket] Successfully broadcasted to room ${room}`);
     },
   );
 

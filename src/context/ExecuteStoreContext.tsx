@@ -69,13 +69,24 @@ export function ExecuteStoreProvider({
   // Listen for socket events to update shared completions
   useEffect(() => {
     const socket = getSocket();
-    if (!socket) return;
+    if (!socket) {
+      console.log('[ExecuteStoreContext] No socket available');
+      return;
+    }
+
+    console.log(
+      '[ExecuteStoreContext] Setting up session:record-updated listener',
+    );
 
     const handleRecordUpdated = (data: {
       recordId: string;
       state: 'complete' | 'pending';
       sessionId: string;
     }) => {
+      console.log(
+        '[ExecuteStoreContext] Received session:record-updated event:',
+        data,
+      );
       setSharedCompletions((prev) => ({
         ...prev,
         [data.recordId]: {
@@ -85,11 +96,18 @@ export function ExecuteStoreProvider({
           sessionId: data.sessionId,
         },
       }));
+      console.log(
+        '[ExecuteStoreContext] Updated shared completions for record:',
+        data.recordId,
+      );
     };
 
     socket.on('session:record-updated', handleRecordUpdated);
 
     return () => {
+      console.log(
+        '[ExecuteStoreContext] Cleaning up session:record-updated listener',
+      );
       socket.off('session:record-updated', handleRecordUpdated);
     };
   }, []);

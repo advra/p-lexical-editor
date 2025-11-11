@@ -149,12 +149,17 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
       // Emit socket event to notify other clients
       const socket = getSocket();
       if (socket) {
+        console.log(
+          `ProcPageClient: GOT SOCKET ${socket.id} for room ${procId} at sessionId: ${activeSession._id}`,
+        );
         socket.emit('session:record-updated', {
           room: procId,
           sessionId: activeSession._id,
           recordId: id,
           state: 'complete',
         });
+      } else {
+        ('Unable to connect to socket');
       }
     } catch (error) {
       console.error('Failed to mark task complete:', error);

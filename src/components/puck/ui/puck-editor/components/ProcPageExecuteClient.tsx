@@ -167,8 +167,6 @@ export default function ProcPageExecuteClient({
       state: string;
     }) => {
       console.log('Session record updated:', payload);
-      // Trigger a refresh of the page to show updated task status
-      window.location.reload();
     };
 
     socket.on('presence:update', onPresence);

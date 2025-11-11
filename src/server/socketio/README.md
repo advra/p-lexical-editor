@@ -13,7 +13,9 @@ docker rm socket-eproc-taro
 # rebuild
 cd src/server/socketio && docker build -t socket-eproc .
 cd /to/project/root
-# redeploy
+# redeploy to the network
+# Or optionally target it to run in a specific docker network. to determine run:
+# docker network ls
 docker run -d --name socket-eproc-taro -p 5772:5772 socket-eproc
 
 docker logs socket-eproc-taro
