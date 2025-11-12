@@ -3,6 +3,7 @@ import { Session } from '@/modules/auth/types';
 import CheckIcon from '@mui/icons-material/Check';
 import { LocalCompletionState } from '@/context/LocalStoreContext';
 import { formatTimestamp } from '@/lib/utils/dateformat';
+import { SharedCompletionState } from '@/context/ExecuteStoreContext';
 
 type Props = {
   blockData: {
@@ -10,11 +11,12 @@ type Props = {
     // for example can be the step or title
     id?: string;
   };
-  completionData: LocalCompletionState | null;
+  completionData: LocalCompletionState | SharedCompletionState | null;
   session: Session | null;
 };
 
 function CompleteTimestamp({ blockData, completionData, session }: Props) {
+  console.log('completionData: ', completionData);
   return (
     <>
       {completionData?.completed && session?.user.username && (

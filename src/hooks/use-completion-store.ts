@@ -2,6 +2,8 @@
 import { useStore } from '@/context/LocalStoreContext';
 import { useExecuteStore } from '@/context/ExecuteStoreContext';
 import { useProc } from '@/context/ProcContext';
+import { useSession } from '@/context/SessionContext';
+import { useMemo } from 'react';
 
 export type CompletionState = {
   completed: boolean;
@@ -33,10 +35,34 @@ export function useCompletionStore(): CompletionStore {
       };
     } else {
       // Use execute store for execution mode
-      // Load records from procsessions database
       const executeStore = useExecuteStore();
+      // Load records from procsessions database
+      const {activeSession} = useSession();
+      const sessionCompletions = useMemo(() => {
+        const completions: Record<string, CompletionState> = {};
+        if (activeSession?.records) {
+          activeSession.records.forEach((record) => {
+            completions[record.recordId] = {
+              completed: record.state === 'complete',
+              completedAt: record.data?.completedAt || record.updatedAt,
+              userId: record.updatedBy,
+              sessionId: activeSession._id,
+            };
+          });
+        }
+        return completions;
+      }, [activeSession]);
+
+      const mergedCompletions = useMemo(
+        () => ({
+          ...sessionCompletions, // Database records (priority)
+          ...executeStore.sharedCompletions, // Real-time updates
+        }),
+        [sessionCompletions, executeStore.sharedCompletions],
+      );
       return {
-        completions: executeStore.sharedCompletions,
+        // return completions resolved from database
+        completions: mergedCompletions,
         updateCompletion: executeStore.updateSessionCompletion,
       };
     }
