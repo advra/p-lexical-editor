@@ -12,7 +12,9 @@
  */
 
 import PuckEditorView from '@/components/puck/views/puck-editor-view';
+import { ProcProvider } from '@/context/ProcContext';
 import { RedlineProvider } from '@/context/RedlineContext';
+import { SessionProvider } from '@/context/SessionContext';
 import '@measured/puck/puck.css';
 
 export default async function Page({
@@ -25,7 +27,11 @@ export default async function Page({
   return (
     <>
       <RedlineProvider>
-        <PuckEditorView segments={puckPath} />
+        <ProcProvider viewMode={'view'} owner={''} procId={''}>
+          <SessionProvider procId={''}>
+            <PuckEditorView segments={puckPath} />
+          </SessionProvider>
+        </ProcProvider>
       </RedlineProvider>
     </>
   );

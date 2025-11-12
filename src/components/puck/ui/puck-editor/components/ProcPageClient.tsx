@@ -8,13 +8,11 @@ import {
   ProcPublic,
   ProcPublicWithAcl,
 } from '@/modules/procs/models/proc-model';
-import { LocalCompletionState, useStore } from '@/context/LocalStoreContext';
 import { useUser } from '@/context/UserContext';
 import { getSocket } from '@/lib/socket';
 import { ProcProvider, ProcViewModes } from '@/context/ProcContext';
 import { RedlineLayoutWrapper } from '../../redline/RedlineLayoutWrapper';
 import { SessionProvider } from '@/context/SessionContext';
-import { useCompletionStore } from '@/hooks/use-completion-store';
 
 function waitForImages(root: HTMLElement) {
   const imgs = Array.from(root.querySelectorAll('img'));
@@ -69,18 +67,6 @@ export default function ProcPageClient({
     description: proc.description ?? '',
     tags: proc.tags,
   };
-
-  // Determine view mode based on path and execution mode
-  let procViewMode: ProcViewModes;
-  if (executionMode) {
-    procViewMode = 'execute';
-  } else if (path.includes('/edit')) {
-    procViewMode = 'edit';
-  } else if (path.includes('/procs/')) {
-    procViewMode = 'view';
-  } else {
-    procViewMode = 'none';
-  }
 
   async function handlePreviewPrint() {
     setPreview(true);
@@ -241,13 +227,12 @@ export default function ProcPageClient({
 
   return (
     <ProcProvider
-      viewMode={procViewMode}
+      viewMode={'view'}
       owner={proc.owner}
-      permissions={userPermissions}
       currentUser={user}
       procId={proc._id}
     >
-      <SessionProvider procId={proc._id} user={user} canExecute={false}>
+      <SessionProvider procId={proc._id}>
         <Header
           viewMode={viewMode}
           executionMode={executionMode}

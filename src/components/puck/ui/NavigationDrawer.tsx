@@ -1,9 +1,17 @@
 'use client';
 
+/*
+  This component dynamically builds out the navigtion menu based on the contents of the page
+
+  It parses data and displays blocks tagged as Header and Sections
+  Each contain a completion checkmark based on whether as Task Item is completed
+*/
+
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils/cn';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
+import { useCompletionStore } from '@/hooks/use-completion-store';
 
 export interface NavigationItem {
   id: string;
@@ -27,6 +35,9 @@ export const NavigationDrawer = ({
   onItemClick,
 }: NavigationDrawerProps) => {
   const [isVisible, setIsVisible] = useState(false);
+  const { completions } = useCompletionStore();
+
+  console.log('completions ALL: ', completions);
 
   useEffect(() => {
     if (isOpen) {
