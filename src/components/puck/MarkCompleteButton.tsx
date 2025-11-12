@@ -273,9 +273,7 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
     return (
       <div className="flex gap-2 items-center">
         <Tooltip
-          title={
-            disabled ? 'Requires Execute Permissions' : 'Undo Task Execution'
-          }
+          title={disabled ? 'Requires Execute Permissions' : 'Task Completed'}
         >
           <span>
             <Button
@@ -380,9 +378,7 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
     <div className="flex gap-2 items-center">
       <Tooltip
         title={
-          disabled
-            ? 'Requires Execute Permissions'
-            : 'Complete Task as Executed'
+          disabled ? 'Requires Execute Permissions' : 'Mark Task Completed'
         }
       >
         <span>
@@ -425,7 +421,7 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
         {isCompleted ? (
           <MenuItem onClick={handleUndoComplete}>Undo Complete</MenuItem>
         ) : (
-          <MenuItem onClick={handleMarkComplete}>Mark Complete</MenuItem>
+          <MenuItem onClick={handleMarkComplete}>{label}</MenuItem>
         )}
       </Menu>
     </div>
