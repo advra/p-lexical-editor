@@ -33,7 +33,7 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
 
   // Initialize showShareLink based on session ownership
   useEffect(() => {
-    if (activeSession && isSessionOwner) {
+    if (activeSession) {
       setShowShareLink(true);
     } else {
       setShowShareLink(false);
