@@ -9,7 +9,7 @@ import {
   ProcSessionModel,
   toPublic,
 } from '../models/proc-session-model';
-import { createSessionInput, deleteSessionInput, getSessionInput, stopSessionInput, updateSessionInput } from './types';
+import { createSessionInput, deleteSessionInput, getSessionInput, stopSessionInput, updateSessionInput, updateSessionRecordInput } from './types';
 
 export const procSessionsRouter = createTRPCRouter({
   // Get sessions by ID or user's active sessions for a proc
@@ -235,6 +235,97 @@ export const procSessionsRouter = createTRPCRouter({
           code: 'NOT_FOUND',
           message: 'Session not found',
         });
+      }
+
+      return {
+        session: toPublic(updatedSession),
+      };
+    }),
+
+  // Update session record with socket emission
+  updateSessionRecord: protectedProcedure
+    .input(updateSessionRecordInput)
+    .mutation(async ({ ctx, input }) => {
+      const username = ctx.session?.user?.username;
+      if (!username) throw new TRPCError({ code: 'UNAUTHORIZED' });
+
+      const { sessionId, recordId, state, blockType, data } = input;
+
+      if (!sessionId) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'sessionId is required',
+        });
+      }
+
+      if (!recordId) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'recordId is required',
+        });
+      }
+
+      const recordUpdate = {
+        recordId,
+        blockType: blockType || 'TaskItem',
+        state,
+        updatedBy: username,
+        updatedAt: new Date(),
+        data: data || {},
+      };
+
+      // Find if record already exists in session
+      const procSession = await ProcSessionModel.findById(sessionId);
+      if (!procSession) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Session not found',
+        });
+      }
+
+      const existingRecordIndex = procSession.records.findIndex(
+        (r) => r.recordId === recordId,
+      );
+
+      let updateData: any = {};
+      if (existingRecordIndex >= 0) {
+        // Update existing record
+        updateData.$set = {
+          [`records.${existingRecordIndex}`]: recordUpdate,
+        };
+      } else {
+        // Add new record
+        updateData.$push = {
+          records: recordUpdate,
+        };
+      }
+
+      const updatedSession = await ProcSessionModel.findByIdAndUpdate(
+        sessionId,
+        updateData,
+        { new: true },
+      );
+
+      if (!updatedSession) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Session not found',
+        });
+      }
+
+      // Emit socket event to notify all users in the session room
+      try {
+        const { sessionSocketService } = await import('@/services/socket/session-socket');
+        sessionSocketService.emitRecordUpdated({
+          room: sessionId,  // Use sessionId as room for targeted notifications
+          sessionId: sessionId,
+          recordId: recordId,
+          state: state,
+          updatedBy: username,
+        });
+      } catch (error) {
+        console.error('Failed to emit record update:', error);
+        // Don't fail the mutation if socket emission fails
       }
 
       return {

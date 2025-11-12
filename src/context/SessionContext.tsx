@@ -13,6 +13,7 @@ import { useTRPC } from '@/trpc/client';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useSessionSocket } from '@/services/socket';
 import { User } from '@/modules/auth/types';
+import { getSocket } from '@/lib/socket';
 
 export interface Session {
   _id: string;
@@ -175,6 +176,71 @@ export function SessionProvider({
       }
     }
   }, [sessionStatus, activeSession?._id, isSessionOwner, updateUrlWithSession]);
+
+  // Handle real-time record updates from socket
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket || !activeSession?._id) return;
+
+    const handleRecordUpdated = (data: {
+      sessionId: string;
+      recordId: string;
+      state: 'pending' | 'complete';
+      updatedBy: string;
+    }) => {
+      // Only handle updates for our current session
+      if (data.sessionId !== activeSession._id) return;
+
+      console.log('[SessionContext] Received record update:', data);
+
+      // Update the session state with the new record state
+      setActiveSession((prevSession) => {
+        if (!prevSession) return prevSession;
+
+        const updatedRecords = prevSession.records
+          ? [...prevSession.records]
+          : [];
+        const existingRecordIndex = updatedRecords.findIndex(
+          (r) => r.recordId === data.recordId,
+        );
+
+        const updatedRecord = {
+          recordId: data.recordId,
+          blockType: 'TaskItem', // Default type, could be enhanced
+          state: data.state,
+          updatedBy: data.updatedBy,
+          updatedAt: new Date().toISOString(),
+        };
+
+        if (existingRecordIndex >= 0) {
+          // Update existing record
+          updatedRecords[existingRecordIndex] = updatedRecord;
+        } else {
+          // Add new record
+          updatedRecords.push(updatedRecord);
+        }
+
+        return {
+          ...prevSession,
+          records: updatedRecords,
+        };
+      });
+
+      // Show toast for updates from other users
+      if (data.updatedBy !== user?.username) {
+        const action = data.state === 'complete' ? 'completed' : 'uncompleted';
+        toast.info(`Task ${action} by ${data.updatedBy}`);
+      }
+    };
+
+    // Listen for record updates
+    socket.on('session:record-changed', handleRecordUpdated);
+
+    // Cleanup
+    return () => {
+      socket.off('session:record-changed', handleRecordUpdated);
+    };
+  }, [activeSession?._id, user?.username]);
 
   // Initialize session state
   useEffect(() => {

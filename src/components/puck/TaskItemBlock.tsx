@@ -15,6 +15,7 @@ import { DisplayRedlineText } from './ui/redline/DisplayRedlineText';
 import { toast } from 'sonner';
 import { useStore } from '@/context/LocalStoreContext';
 import useUser from '@/hooks/use-user';
+import { useCompletionStore } from '@/hooks/use-completion-store';
 import CompleteTimestamp from './ui/completed/CompleteTimestamp';
 import { MarkCompleteButtonComponent } from './MarkCompleteButton';
 
@@ -93,29 +94,17 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
     const blockId = id || '';
 
     const { session } = useUser();
-    const setupLocalStorage = () => {
-      let isLocallyCompleted = false;
-      let localStore;
-      let completionData = null;
-      if (viewMode === 'view') {
-        localStore = useStore();
-        if (localStore && blockId) {
-          completionData = localStore.completions[blockId];
-          if (completionData) isLocallyCompleted = completionData?.completed;
-        }
-      } else {
-        localStore = null;
-      }
-
-      return { localStore, isLocallyCompleted, completionData };
-    };
-
     const menuOpen = Boolean(anchorEl);
     const { canExecute, isOwner } = useProcPermissions();
     const { procId, viewMode } = useProc();
     const canMarkComplete = canExecute || isOwner;
-    const { localStore, isLocallyCompleted, completionData } =
-      setupLocalStorage();
+
+    // Use unified completion store for both view and execute modes
+    const completionStore = useCompletionStore();
+    const completionData = blockId
+      ? completionStore.completions[blockId]
+      : null;
+    const isLocallyCompleted = completionData?.completed === true;
 
     const handleMenuClose = () => setAnchorEl(null);
     const onIconButton = async (event: any) => {
@@ -316,6 +305,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
                   id={blockId}
                   dependencies={[]}
                   label="Mark Complete"
+                  initialCompletionData={completionData || undefined}
                   onComplete={() => {
                     toast.success('Task marked as complete');
                   }}
@@ -335,6 +325,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
           session={session}
           blockData={{ label: TASK_ITEM_LABEL, id: `${step}` }}
         />
+        {/*
         <Menu
           disableScrollLock
           anchorEl={anchorEl}
@@ -349,7 +340,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
             horizontal: 'right',
           }}
         >
-          {/* <MenuItem
+         <MenuItem
             onClick={() =>
               handleRedline(displayContent, REDLINE_TARGETS.CONTENT)
             }
@@ -361,8 +352,8 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
           >
             Redline (Step)
           </MenuItem> */}
-          {/* Table Item Redline Options */}
-          {/* {items && items.length > 0 && (
+        {/* Table Item Redline Options */}
+        {/* {items && items.length > 0 && (
             <div>
               <div className="px-4 py-2 text-xs text-gray-500 border-t border-gray-200">
                 Table Items
@@ -402,8 +393,9 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
                 </div>
               ))}
             </div>
-          )} */}
+          )} 
         </Menu>
+        */}
       </div>
     );
   },

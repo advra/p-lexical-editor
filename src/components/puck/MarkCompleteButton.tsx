@@ -2,6 +2,7 @@
 
 import { ComponentConfig } from '@measured/puck';
 import { useState, useEffect } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { useProc } from '@/context/ProcContext';
 import useUser from '@/hooks/use-user';
 import { useCompletionStore } from '@/hooks/use-completion-store';
@@ -14,6 +15,7 @@ import LockIcon from '@mui/icons-material/Lock';
 import Button from '../common/buttons/Button';
 import { Tooltip } from '@mui/material';
 import { DefaultPuckProps } from './types';
+import { useTRPC } from '@/trpc/client';
 
 export type MarkCompleteButtonProps = {
   id: string;
@@ -21,6 +23,12 @@ export type MarkCompleteButtonProps = {
   label?: string;
   onComplete?: (blockId: string) => void;
   onIncomplete?: (blockId: string) => void;
+  initialCompletionData?: {
+    completed: boolean;
+    completedAt?: string;
+    userId?: string;
+    sessionId?: string;
+  };
 };
 
 // React component that can be used within other components
@@ -30,6 +38,7 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
   label = 'Mark Complete',
   onComplete,
   onIncomplete,
+  initialCompletionData,
 }) => {
   const [isCompleted, setIsCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -39,6 +48,46 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
   const { procId, viewMode } = useProc();
   const completionStore = useCompletionStore();
   const { activeSession, getRecordCompletion } = useSession();
+  const trpc = useTRPC();
+
+  // tRPC mutations for session updates
+  const { mutate: updateSessionRecord, isPending: isUpdatingSession } =
+    useMutation(
+      trpc.procSessions.updateSessionRecord.mutationOptions({
+        onSuccess: (data, variables) => {
+          // Update completion store after successful mutation
+          if (data.session.records) {
+            const record = data.session.records.find((r) => r.recordId === id);
+            if (record) {
+              completionStore.updateCompletion(id, {
+                completed: record.state === 'complete',
+                completedAt:
+                  record.state === 'complete'
+                    ? record.data?.completedAt
+                    : undefined,
+                sessionId: activeSession?._id,
+              });
+            }
+          }
+
+          const isComplete = variables.state === 'complete';
+          setIsCompleted(isComplete);
+          setIsLoading(false);
+
+          // Show success toast and call appropriate callback
+          if (isComplete) {
+            onComplete?.(id);
+          } else {
+            onIncomplete?.(id);
+          }
+        },
+        onError: (error) => {
+          console.error('Failed to update session record:', error);
+          toast.error('Failed to update task');
+          setIsLoading(false);
+        },
+      }),
+    );
 
   // Check if all dependencies are completed
   const checkDependencies = (): boolean => {
@@ -52,20 +101,25 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
     return allDepsCompleted;
   };
 
-  // Initialize completion state and dependencies
+  // Initialize completion state from prop or store
   useEffect(() => {
     const initializeCompletionState = async () => {
       if (id) {
-        // First check local completion store
-        const completionData = completionStore.completions[id];
-        setIsCompleted(completionData?.completed === true);
+        // Use initialCompletionData prop if provided (from parent component)
+        if (initialCompletionData !== undefined) {
+          setIsCompleted(initialCompletionData.completed);
+        } else {
+          // Fall back to checking completion store if no prop provided
+          const completionData = completionStore.completions[id];
+          setIsCompleted(completionData?.completed === true);
 
-        // Use centralized session data instead of individual API calls
-        // This prevents duplicate API requests from multiple buttons
-        if (activeSession && viewMode !== 'view') {
-          const sessionCompletion = getRecordCompletion(id);
-          if (sessionCompletion !== undefined) {
-            setIsCompleted(sessionCompletion);
+          // Use centralized session data instead of individual API calls
+          // This prevents duplicate API requests from multiple buttons
+          if (activeSession && viewMode !== 'view') {
+            const sessionCompletion = getRecordCompletion(id);
+            if (sessionCompletion !== undefined) {
+              setIsCompleted(sessionCompletion);
+            }
           }
         }
       }
@@ -76,12 +130,20 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
     initializeCompletionState();
   }, [
     id,
+    initialCompletionData,
     completionStore,
-    dependencies,
     activeSession,
     viewMode,
     getRecordCompletion,
+    setIsCompleted,
   ]);
+
+  // Update state when initialCompletionData prop changes
+  useEffect(() => {
+    if (initialCompletionData !== undefined) {
+      setIsCompleted(initialCompletionData.completed);
+    }
+  }, [initialCompletionData]);
 
   // Listen for dependency completion updates
   useEffect(() => {
@@ -120,51 +182,16 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
       return;
     }
 
-    try {
-      const response = await fetch('/api/proc-sessions', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sessionId: activeSession._id,
-          recordId: id,
-          blockType: 'TaskItem',
-          state: 'complete',
-          data: {
-            completedAt: new Date().toISOString(),
-          },
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to mark task complete');
-      }
-
-      await response.json();
-      setIsCompleted(true);
-      onComplete?.(id);
-      toast.success('Task marked as complete');
-
-      // Emit socket event to notify other clients
-      const socket = getSocket();
-      if (socket) {
-        console.log(
-          `ProcPageClient: GOT SOCKET ${socket.id} for room ${procId} at sessionId: ${activeSession._id}`,
-        );
-        socket.emit('session:record-updated', {
-          room: procId,
-          sessionId: activeSession._id,
-          recordId: id,
-          state: 'complete',
-        });
-      } else {
-        ('Unable to connect to socket');
-      }
-    } catch (error) {
-      console.error('Failed to mark task complete:', error);
-      toast.error('Failed to mark task as complete');
-    } finally {
-      setIsLoading(false);
-    }
+    // Use tRPC mutation instead of fetch
+    updateSessionRecord({
+      sessionId: activeSession._id,
+      recordId: id,
+      state: 'complete',
+      blockType: 'TaskItem',
+      data: {
+        completedAt: new Date().toISOString(),
+      },
+    });
   };
 
   const handleRemoveComplete = async () => {
@@ -188,46 +215,16 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
       return;
     }
 
-    try {
-      const response = await fetch('/api/proc-sessions', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sessionId: activeSession._id,
-          recordId: id,
-          blockType: 'TaskItem',
-          state: 'pending',
-          data: {
-            unmarkedAt: new Date().toISOString(),
-          },
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to unmark task');
-      }
-
-      await response.json();
-      setIsCompleted(false);
-      onIncomplete?.(id);
-      toast.success('Removed Complete from task');
-
-      // Emit socket event to notify other clients
-      const socket = getSocket();
-      if (socket) {
-        socket.emit('session:record-updated', {
-          room: procId,
-          sessionId: activeSession._id,
-          recordId: id,
-          state: 'pending',
-        });
-      }
-    } catch (error) {
-      console.error('Failed to remove complete from task:', error);
-      toast.error('Failed to remove complete from task');
-    } finally {
-      setIsLoading(false);
-    }
+    // Use tRPC mutation instead of fetch
+    updateSessionRecord({
+      sessionId: activeSession._id,
+      recordId: id,
+      state: 'pending',
+      blockType: 'TaskItem',
+      data: {
+        unmarkedAt: new Date().toISOString(),
+      },
+    });
   };
 
   if (isCompleted) {

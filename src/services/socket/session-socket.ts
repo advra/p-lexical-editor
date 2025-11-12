@@ -1,5 +1,5 @@
 import { getSocket } from '@/lib/socket';
-import type { SessionStatusData, SessionStatusChangeData } from './types';
+import type { SessionStatusData, SessionStatusChangeData, RecordUpdateChangeData } from './types';
 
 export class SessionSocketService {
   private socket = getSocket();
@@ -54,6 +54,19 @@ export class SessionSocketService {
     
     console.log('[sessionSocketService] Emitting session:status-changed:', data);
     this.socket.emit('session:status-changed', data);
+  }
+
+  /**
+   * Emit record update (for backend procedures)
+   */
+  emitRecordUpdated(data: RecordUpdateChangeData): void {
+    if (!this.socket) {
+      console.log('[sessionSocketService] Socket not available, cannot emit event');
+      return;
+    }
+    
+    console.log('[sessionSocketService] Emitting session:record-changed:', data);
+    this.socket.emit('session:record-changed', data);
   }
 
   /**
