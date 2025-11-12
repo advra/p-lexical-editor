@@ -38,7 +38,7 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
   const { session } = useUser();
   const { procId, viewMode } = useProc();
   const completionStore = useCompletionStore();
-  const { activeSession } = useSession();
+  const { activeSession, getRecordCompletion } = useSession();
 
   // Check if all dependencies are completed
   const checkDependencies = (): boolean => {
@@ -60,28 +60,12 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
         const completionData = completionStore.completions[id];
         setIsCompleted(completionData?.completed === true);
 
-        // Only fetch session records if we have all required parameters
-        // The API requires procId, and we need an active session
-        if (activeSession?._id && procId && viewMode !== 'view') {
-          try {
-            const response = await fetch(
-              `/api/proc-sessions?procId=${procId}&sessionId=${activeSession._id}`,
-            );
-            if (response.ok) {
-              const result = await response.json();
-              if (result.sessions && result.sessions.length > 0) {
-                const session = result.sessions[0];
-                // Find the specific record for this button
-                const record = session.records?.find(
-                  (r: any) => r.recordId === id,
-                );
-                if (record) {
-                  setIsCompleted(record.state === 'complete');
-                }
-              }
-            }
-          } catch (error) {
-            console.error('Failed to fetch session record:', error);
+        // Use centralized session data instead of individual API calls
+        // This prevents duplicate API requests from multiple buttons
+        if (activeSession && viewMode !== 'view') {
+          const sessionCompletion = getRecordCompletion(id);
+          if (sessionCompletion !== undefined) {
+            setIsCompleted(sessionCompletion);
           }
         }
       }
@@ -90,7 +74,14 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
     };
 
     initializeCompletionState();
-  }, [id, completionStore, dependencies, activeSession?._id, procId, viewMode]);
+  }, [
+    id,
+    completionStore,
+    dependencies,
+    activeSession,
+    viewMode,
+    getRecordCompletion,
+  ]);
 
   // Listen for dependency completion updates
   useEffect(() => {

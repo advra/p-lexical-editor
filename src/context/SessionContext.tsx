@@ -40,6 +40,8 @@ interface SessionContextType {
   stopSession: () => void;
   isCreatingSession: boolean;
   isStoppingSession: boolean;
+  // Helper to get completion state for a specific record
+  getRecordCompletion: (recordId: string) => boolean | undefined;
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -237,6 +239,16 @@ export function SessionProvider({
     });
   }, [activeSession, isSessionOwner, stopSession]);
 
+  // Helper function to get completion state for a specific record
+  const getRecordCompletion = useCallback(
+    (recordId: string): boolean | undefined => {
+      if (!activeSession?.records) return undefined;
+      const record = activeSession.records.find((r) => r.recordId === recordId);
+      return record?.state === 'complete';
+    },
+    [activeSession?.records],
+  );
+
   const contextValue: SessionContextType = {
     activeSession,
     isSessionOwner,
@@ -245,6 +257,7 @@ export function SessionProvider({
     stopSession: handleStopSession,
     isCreatingSession,
     isStoppingSession,
+    getRecordCompletion,
   };
 
   return (
