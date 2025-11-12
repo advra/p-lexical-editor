@@ -13,6 +13,7 @@ import useUser from '@/hooks/use-user';
 import { getSocket } from '@/lib/socket';
 import { ProcProvider, ProcViewModes } from '@/context/ProcContext';
 import { RedlineLayoutWrapper } from '../../redline/RedlineLayoutWrapper';
+import { SessionProvider } from '@/context/SessionContext';
 
 function waitForImages(root: HTMLElement) {
   const imgs = Array.from(root.querySelectorAll('img'));
@@ -265,43 +266,45 @@ export default function ProcPageClient({
       currentUser={user}
       procId={proc._id}
     >
-      <Header
-        viewMode={viewMode}
-        executionMode={executionMode}
-        handlePreviewPrint={handlePreviewPrint}
-        path={path}
-        title={proc.title}
-        description={proc.description}
-        tags={proc.tags}
-        metadata={metadata}
-        presenceDisplay={presenceDisplay}
-        permissions={userPermissions}
-        loading={loading}
-        user={user}
-      />
-      <div>
-        <RedlineLayoutWrapper
-          room={room}
-          redlines={redlines}
-          onAddComment={handleAddComment}
-          onRedlineDelete={handleRedlineDelete}
-        >
-          <PuckPreview
-            ref={rootRef}
-            puckPageData={proc.data}
-            owner={proc.owner}
-            updatedAt={(proc.updatedAt ?? proc.createdAt) as string}
-            preview={preview}
-            page="letter"
-            procId={proc._id}
+      <SessionProvider procId={proc._id} user={user} canExecute={false}>
+        <Header
+          viewMode={viewMode}
+          executionMode={executionMode}
+          handlePreviewPrint={handlePreviewPrint}
+          path={path}
+          title={proc.title}
+          description={proc.description}
+          tags={proc.tags}
+          metadata={metadata}
+          presenceDisplay={presenceDisplay}
+          permissions={userPermissions}
+          loading={loading}
+          user={user}
+        />
+        <div>
+          <RedlineLayoutWrapper
             room={room}
-            title={proc.title}
-            onRedlineCreated={(redline) => {
-              console.log('Redline created from preview:', redline);
-            }}
-          />
-        </RedlineLayoutWrapper>
-      </div>
+            redlines={redlines}
+            onAddComment={handleAddComment}
+            onRedlineDelete={handleRedlineDelete}
+          >
+            <PuckPreview
+              ref={rootRef}
+              puckPageData={proc.data}
+              owner={proc.owner}
+              updatedAt={(proc.updatedAt ?? proc.createdAt) as string}
+              preview={preview}
+              page="letter"
+              procId={proc._id}
+              room={room}
+              title={proc.title}
+              onRedlineCreated={(redline) => {
+                console.log('Redline created from preview:', redline);
+              }}
+            />
+          </RedlineLayoutWrapper>
+        </div>
+      </SessionProvider>
     </ProcProvider>
   );
 }

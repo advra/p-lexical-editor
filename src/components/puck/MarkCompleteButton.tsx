@@ -60,17 +60,24 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
         const completionData = completionStore.completions[id];
         setIsCompleted(completionData?.completed === true);
 
-        // If we have an active session, also check session records
-        if (activeSession?._id && viewMode !== 'view') {
+        // Only fetch session records if we have all required parameters
+        // The API requires procId, and we need an active session
+        if (activeSession?._id && procId && viewMode !== 'view') {
           try {
             const response = await fetch(
-              `/api/proc-sessions?sessionId=${activeSession._id}&recordId=${id}`,
+              `/api/proc-sessions?procId=${procId}&sessionId=${activeSession._id}`,
             );
             if (response.ok) {
               const result = await response.json();
-              if (result.records && result.records.length > 0) {
-                const record = result.records[0];
-                setIsCompleted(record.state === 'complete');
+              if (result.sessions && result.sessions.length > 0) {
+                const session = result.sessions[0];
+                // Find the specific record for this button
+                const record = session.records?.find(
+                  (r: any) => r.recordId === id,
+                );
+                if (record) {
+                  setIsCompleted(record.state === 'complete');
+                }
               }
             }
           } catch (error) {
@@ -83,7 +90,7 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
     };
 
     initializeCompletionState();
-  }, [id, completionStore, dependencies, activeSession?._id, viewMode]);
+  }, [id, completionStore, dependencies, activeSession?._id, procId, viewMode]);
 
   // Listen for dependency completion updates
   useEffect(() => {
