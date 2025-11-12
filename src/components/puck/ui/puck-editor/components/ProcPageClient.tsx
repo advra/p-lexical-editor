@@ -9,7 +9,7 @@ import {
   ProcPublicWithAcl,
 } from '@/modules/procs/models/proc-model';
 import { useStore } from '@/context/LocalStoreContext';
-import useUser from '@/hooks/use-user';
+import { useUser } from '@/context/UserContext';
 import { getSocket } from '@/lib/socket';
 import { ProcProvider, ProcViewModes } from '@/context/ProcContext';
 import { RedlineLayoutWrapper } from '../../redline/RedlineLayoutWrapper';

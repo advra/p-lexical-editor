@@ -4,7 +4,7 @@ import { ComponentConfig } from '@measured/puck';
 import { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useProc } from '@/context/ProcContext';
-import useUser from '@/hooks/use-user';
+import { useUser } from '@/context/UserContext';
 import { useCompletionStore } from '@/hooks/use-completion-store';
 import { useSession } from '@/context/SessionContext';
 import { getSocket } from '@/lib/socket';
@@ -19,6 +19,7 @@ import { useTRPC } from '@/trpc/client';
 
 export type MarkCompleteButtonProps = {
   id: string;
+  disabled: boolean;
   dependencies?: string[];
   label?: string;
   onComplete?: (blockId: string) => void;
@@ -34,6 +35,7 @@ export type MarkCompleteButtonProps = {
 // React component that can be used within other components
 export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
   id,
+  disabled,
   dependencies = [],
   label = 'Mark Complete',
   onComplete,
@@ -229,13 +231,17 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
 
   if (isCompleted) {
     return (
-      <Tooltip title="Remove completion">
+      <Tooltip
+        title={
+          disabled ? 'Requires Execute Permissions' : 'Undo Task Execution'
+        }
+      >
         <span>
           <Button
             className="flex border h-2 rounded-sm text-green-700 hover:bg-green-100/50 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-300 disabled:opacity-100"
             color="success"
             onClick={handleRemoveComplete}
-            disabled={isLoading}
+            disabled={isLoading || disabled}
           >
             <TaskAltIcon fontSize="small" className="mr-2" />
             <span className="text-xs">Remove Complete</span>
@@ -248,7 +254,11 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
   if (!dependenciesCompleted) {
     return (
       <Tooltip
-        title={`Waiting for ${dependencies.length} dependencies to complete`}
+        title={
+          disabled
+            ? 'Requires Execute Permissions'
+            : `Waiting for ${dependencies.length} dependencies to complete`
+        }
       >
         <span>
           <Button
@@ -265,13 +275,17 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
   }
 
   return (
-    <Tooltip title="Mark as complete">
+    <Tooltip
+      title={
+        disabled ? 'Requires Execute Permissions' : 'Complete Task as Executed'
+      }
+    >
       <span>
         <Button
           className="flex border h-2 rounded-sm text-green-700 hover:bg-green-100/50 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-300 disabled:opacity-100"
           color="success"
           onClick={handleMarkComplete}
-          disabled={isLoading}
+          disabled={isLoading || disabled}
         >
           <PanoramaFishEyeIcon fontSize="small" className="mr-2" />
           <span className="text-xs">{label}</span>

@@ -14,7 +14,7 @@ import { RedlineInfo } from './ui/redline/RedlineInfo';
 import { DisplayRedlineText } from './ui/redline/DisplayRedlineText';
 import { toast } from 'sonner';
 import { useStore } from '@/context/LocalStoreContext';
-import useUser from '@/hooks/use-user';
+import { useUser } from '@/context/UserContext';
 import { useCompletionStore } from '@/hooks/use-completion-store';
 import CompleteTimestamp from './ui/completed/CompleteTimestamp';
 import { MarkCompleteButtonComponent } from './MarkCompleteButton';
@@ -93,11 +93,12 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
     // reference the block id provided by puck
     const blockId = id || '';
 
-    const { session } = useUser();
+    const { session, isAdmin } = useUser();
     const menuOpen = Boolean(anchorEl);
     const { canExecute, isOwner } = useProcPermissions();
     const { procId, viewMode } = useProc();
-    const canMarkComplete = canExecute || isOwner;
+    const canMarkComplete = canExecute || isOwner || isAdmin;
+    console.log('canMarkComplete', canMarkComplete);
 
     // Use unified completion store for both view and execute modes
     const completionStore = useCompletionStore();
@@ -293,31 +294,26 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
         </div>
         <div className="flex-1">
           <div className="flex gap-2 ">
-            <Tooltip
-              title={
-                !canMarkComplete
-                  ? 'You do not have permission to execute this task'
-                  : ''
-              }
-            >
-              <span className="ml-auto">
-                <MarkCompleteButtonComponent
-                  id={blockId}
-                  dependencies={[]}
-                  label="Mark Complete"
-                  initialCompletionData={completionData || undefined}
-                  onComplete={() => {
-                    toast.success('Task marked as complete');
-                  }}
-                  onIncomplete={() => {
-                    toast.success('Removed Complete from task');
-                  }}
-                />
-              </span>
-            </Tooltip>
-            <IconButton onClick={onIconButton}>
-              <MoreVertIcon />
-            </IconButton>
+            <span className="ml-auto">
+              <MarkCompleteButtonComponent
+                disabled={!canMarkComplete}
+                id={blockId}
+                dependencies={[]}
+                label="Mark Complete"
+                initialCompletionData={completionData || undefined}
+                onComplete={() => {
+                  console.log('Task marked as complete');
+                }}
+                onIncomplete={() => {
+                  console.log('Removed Complete from task');
+                }}
+              />
+            </span>
+            {canMarkComplete && (
+              <IconButton onClick={onIconButton}>
+                <MoreVertIcon />
+              </IconButton>
+            )}
           </div>
         </div>
         <CompleteTimestamp

@@ -11,7 +11,7 @@ import { PuckPageData } from '@/app/puck/types';
 import { RedLineModal } from '@/components/redline/RedLineModal';
 import { useState, useEffect } from 'react';
 import { getSocket } from '@/lib/socket';
-import useUser from '@/hooks/use-user';
+import { useUser } from '@/context/UserContext';
 import { useRedline } from '@/context/RedlineContext';
 import { Redline } from '@/modules/redlines/models/redline-model';
 

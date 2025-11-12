@@ -8,7 +8,7 @@ import {
   ProcPublic,
   ProcPublicWithAcl,
 } from '@/modules/procs/models/proc-model';
-import useUser from '@/hooks/use-user';
+import { useUser } from '@/context/UserContext';
 import { getSocket } from '@/lib/socket';
 import { ProcProvider, ProcViewModes, useProc } from '@/context/ProcContext';
 import { SessionProvider } from '@/context/SessionContext';

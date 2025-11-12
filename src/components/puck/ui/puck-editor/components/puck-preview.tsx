@@ -7,7 +7,7 @@ import type { PuckPageData } from '@/app/puck/types';
 import clsx from 'clsx';
 import { forwardRef, useEffect, useState, useMemo } from 'react';
 import { RedlineRender } from '@/components/puck/ui/redline/RedlineRender';
-import useUser from '@/hooks/use-user';
+import { useUser } from '@/context/UserContext';
 import {
   NavigationDrawer,
   NavigationItem,

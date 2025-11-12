@@ -13,7 +13,7 @@ import { useRedline } from '@/context/RedlineContext';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Redline } from '@/modules/redlines/models/redline-model';
 import RedlineThreadCard from './Cards/ThreadCard';
-import useUser from '@/hooks/use-user';
+import { useUser } from '@/context/UserContext';
 import { formatTimestamp } from '@/lib/utils/dateformat';
 
 type RedlineCommentsSidebarProps = {

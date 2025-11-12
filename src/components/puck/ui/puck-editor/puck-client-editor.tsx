@@ -17,7 +17,7 @@ import {
   ProcPublic,
   ProcPublicWithAcl,
 } from '@/modules/procs/models/proc-model';
-import useUser from '@/hooks/use-user';
+import { useUser } from '@/context/UserContext';
 
 function HeaderBar({ onPublish, slug }) {
   const puck = usePuck();
