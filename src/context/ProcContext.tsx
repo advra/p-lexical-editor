@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
 import { User } from '@/modules/auth/types';
+import { useUser } from './UserContext';
 
 export type ProcPermissions = {
   read: boolean;
@@ -35,13 +36,11 @@ type ProcProviderProps = {
 export function ProcProvider({
   children,
   owner,
-  currentUser,
   procId,
   viewMode,
 }: ProcProviderProps) {
   const value = {
     owner,
-    currentUser,
     procId,
     viewMode,
   };
@@ -59,10 +58,12 @@ export function useProc() {
 
 // Helper hook for checking permissions
 export function useProcPermissions() {
-  const { owner, currentUser, viewMode } = useProc();
+  const { owner, viewMode } = useProc();
+  const { user } = useUser();
 
-  const isOwner = currentUser?.username === owner;
-  const isAdmin = currentUser?.roles?.includes('admin');
+  const isOwner = user?.username === owner;
+  const isAdmin = user?.roles?.includes('admin');
+  console.log('ISADMIN ', user);
 
   const permissions = {
     read: isOwner || isAdmin || true, // Default to true for now
@@ -70,9 +71,11 @@ export function useProcPermissions() {
     execute: !!(isOwner || isAdmin),
   };
 
-  const canRead = permissions.read || currentUser?.username === owner;
-  const canEdit = permissions.edit || currentUser?.username === owner;
-  const canExecute = permissions.execute || currentUser?.username === owner;
+  console.log('PERMISSIONS', permissions);
+
+  const canRead = permissions.read || user?.username === owner;
+  const canEdit = permissions.edit || user?.username === owner;
+  const canExecute = permissions.execute || user?.username === owner;
 
   return {
     viewMode,
