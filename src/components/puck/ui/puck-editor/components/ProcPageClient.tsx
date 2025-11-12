@@ -14,6 +14,7 @@ import { getSocket } from '@/lib/socket';
 import { ProcProvider, ProcViewModes } from '@/context/ProcContext';
 import { RedlineLayoutWrapper } from '../../redline/RedlineLayoutWrapper';
 import { SessionProvider } from '@/context/SessionContext';
+import { useCompletionStore } from '@/hooks/use-completion-store';
 
 function waitForImages(root: HTMLElement) {
   const imgs = Array.from(root.querySelectorAll('img'));
@@ -46,6 +47,7 @@ export default function ProcPageClient({
   executionMode = false,
 }: Props) {
   const { updateStore } = useStore();
+  const completionStore = useCompletionStore();
   const room = useMemo(() => `proc:${proc._id}`, [proc._id]);
   const [presence, setPresence] = useState<Array<{ id: string; name: string }>>(
     [],
@@ -184,10 +186,18 @@ export default function ProcPageClient({
       sessionId: string;
       recordId: string;
       state: string;
+      blockType: string;
+      data?: any;
     }) => {
       console.log('Session record updated:', payload);
-      // Trigger a refresh of the page to show updated task status
-      window.location.reload();
+
+      // Update completion store with the new state
+      const isComplete = payload.state === 'complete';
+      completionStore.updateCompletion(payload.recordId, {
+        completed: isComplete,
+        completedAt: isComplete ? payload.data?.completedAt : undefined,
+        sessionId: payload.sessionId,
+      });
     };
 
     socket.on('presence:update', onPresence);

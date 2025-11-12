@@ -42,6 +42,7 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
   onIncomplete,
   initialCompletionData,
 }) => {
+  const trpc = useTRPC();
   const [isCompleted, setIsCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [dependenciesCompleted, setDependenciesCompleted] = useState(false);
@@ -50,7 +51,6 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
   const { procId, viewMode } = useProc();
   const completionStore = useCompletionStore();
   const { activeSession, getRecordCompletion } = useSession();
-  const trpc = useTRPC();
 
   // tRPC mutations for session updates
   const { mutate: updateSessionRecord, isPending: isUpdatingSession } =
@@ -75,6 +75,20 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
           const isComplete = variables.state === 'complete';
           setIsCompleted(isComplete);
           setIsLoading(false);
+
+          // Broadcast completion status to other users in the room
+          const socket = getSocket();
+          if (socket && activeSession?._id) {
+            const room = `proc:${procId}`;
+            socket.emit('session:record-updated', {
+              room,
+              sessionId: activeSession._id,
+              recordId: id,
+              state: variables.state,
+              blockType: variables.blockType,
+              data: variables.data,
+            });
+          }
 
           // Show success toast and call appropriate callback
           if (isComplete) {
@@ -317,6 +331,7 @@ const MarkCompleteButton: ComponentConfig<
     id: '',
     dependencies: [],
     label: 'Mark Complete',
+    disabled: false,
   },
   render: (props: MarkCompleteButtonProps) => {
     return <MarkCompleteButtonComponent {...props} />;

@@ -18,6 +18,8 @@ import { useUser } from '@/context/UserContext';
 import { useCompletionStore } from '@/hooks/use-completion-store';
 import CompleteTimestamp from './ui/completed/CompleteTimestamp';
 import { MarkCompleteButtonComponent } from './MarkCompleteButton';
+import { useMutation } from '@tanstack/react-query';
+import { useTRPC } from '@/trpc/client';
 
 export type TaskItemProps = {
   // This id is inherited by default puck's internal props
@@ -88,6 +90,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
     onRedlineClick,
     redlinesByTarget,
   }: TaskItemProps & AddRedlineProps) => {
+    const trpc = useTRPC();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     // Get local completion state for this block
     // reference the block id provided by puck
@@ -96,9 +99,7 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
     const { session, isAdmin } = useUser();
     const menuOpen = Boolean(anchorEl);
     const { canExecute, isOwner } = useProcPermissions();
-    const { procId, viewMode } = useProc();
     const canMarkComplete = canExecute || isOwner || isAdmin;
-    console.log('canMarkComplete', canMarkComplete);
 
     // Use unified completion store for both view and execute modes
     const completionStore = useCompletionStore();
@@ -321,8 +322,8 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
           session={session}
           blockData={{ label: TASK_ITEM_LABEL, id: `${step}` }}
         />
-        {/*
-        <Menu
+
+        {/* <Menu
           disableScrollLock
           anchorEl={anchorEl}
           open={menuOpen}
@@ -336,7 +337,12 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
             horizontal: 'right',
           }}
         >
-         <MenuItem
+          <MenuItem
+            onClick={() => handleRedline(displayStep, REDLINE_TARGETS.STEP)}
+          >
+            Undo Complete
+          </MenuItem> */}
+        {/* <MenuItem
             onClick={() =>
               handleRedline(displayContent, REDLINE_TARGETS.CONTENT)
             }
@@ -389,9 +395,8 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
                 </div>
               ))}
             </div>
-          )} 
-        </Menu>
-        */}
+          )}  */}
+        {/* </Menu> */}
       </div>
     );
   },
