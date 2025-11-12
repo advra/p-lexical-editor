@@ -1,5 +1,4 @@
-import { IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { Tooltip } from '@mui/material';
 import { useState } from 'react';
 import { useProcPermissions, useProc } from '@/context/ProcContext';
 import CompletionStatus from './constants/taskitem/CompletionStatus';
@@ -91,13 +90,11 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
     redlinesByTarget,
   }: TaskItemProps & AddRedlineProps) => {
     const trpc = useTRPC();
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     // Get local completion state for this block
     // reference the block id provided by puck
     const blockId = id || '';
 
     const { session, isAdmin } = useUser();
-    const menuOpen = Boolean(anchorEl);
     const { canExecute, isOwner } = useProcPermissions();
     const canMarkComplete = canExecute || isOwner || isAdmin;
 
@@ -108,13 +105,8 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
       : null;
     const isLocallyCompleted = completionData?.completed === true;
 
-    const handleMenuClose = () => setAnchorEl(null);
-    const onIconButton = async (event: any) => {
-      setAnchorEl(event.currentTarget);
-    };
-
     // redline options
-    const handleRedline = redlineOptions(onRedlineClick, handleMenuClose);
+    const handleRedline = redlineOptions(onRedlineClick, () => {});
 
     // Extract redlines by target
     const redlineContent = redlinesByTarget?.['content'] as RedlineProps;
@@ -293,28 +285,22 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
             )}
           </div>
         </div>
-        <div className="flex-1">
-          <div className="flex gap-2 ">
-            <span className="ml-auto">
-              <MarkCompleteButtonComponent
-                disabled={!canMarkComplete}
-                id={blockId}
-                dependencies={[]}
-                label="Mark Complete"
-                initialCompletionData={completionData || undefined}
-                onComplete={() => {
-                  console.log('Task marked as complete');
-                }}
-                onIncomplete={() => {
-                  console.log('Removed Complete from task');
-                }}
-              />
-            </span>
-            {canMarkComplete && (
-              <IconButton onClick={onIconButton}>
-                <MoreVertIcon />
-              </IconButton>
-            )}
+        <div className="flex-1 py-2">
+          <div className="flex gap-2 justify-end">
+            <MarkCompleteButtonComponent
+              disabled={!canMarkComplete}
+              id={blockId}
+              dependencies={[]}
+              label="Mark Complete"
+              showMenu={canMarkComplete}
+              initialCompletionData={completionData || undefined}
+              onComplete={() => {
+                console.log('Task marked as complete');
+              }}
+              onIncomplete={() => {
+                console.log('Removed Complete from task');
+              }}
+            />
           </div>
         </div>
         <CompleteTimestamp
@@ -322,81 +308,6 @@ export const TaskItemBlock: ComponentConfig<TaskItemProps & AddRedlineProps> = {
           session={session}
           blockData={{ label: TASK_ITEM_LABEL, id: `${step}` }}
         />
-
-        {/* <Menu
-          disableScrollLock
-          anchorEl={anchorEl}
-          open={menuOpen}
-          onClose={handleMenuClose}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-        >
-          <MenuItem
-            onClick={() => handleRedline(displayStep, REDLINE_TARGETS.STEP)}
-          >
-            Undo Complete
-          </MenuItem> */}
-        {/* <MenuItem
-            onClick={() =>
-              handleRedline(displayContent, REDLINE_TARGETS.CONTENT)
-            }
-          >
-            Redline (Content)
-          </MenuItem>
-          <MenuItem
-            onClick={() => handleRedline(displayStep, REDLINE_TARGETS.STEP)}
-          >
-            Redline (Step)
-          </MenuItem> */}
-        {/* Table Item Redline Options */}
-        {/* {items && items.length > 0 && (
-            <div>
-              <div className="px-4 py-2 text-xs text-gray-500 border-t border-gray-200">
-                Table Items
-              </div>
-              {items.map((item: any, index: number) => (
-                <div key={index}>
-                  <MenuItem
-                    onClick={() =>
-                      handleRedline(
-                        item.network || 'Countdown',
-                        `items.${index}.network`,
-                      )
-                    }
-                  >
-                    Redline Network {index + 1}
-                  </MenuItem>
-                  <MenuItem
-                    onClick={() =>
-                      handleRedline(
-                        item.message || '',
-                        `items.${index}.message`,
-                      )
-                    }
-                  >
-                    Redline Message {index + 1}
-                  </MenuItem>
-                  <MenuItem
-                    onClick={() =>
-                      handleRedline(
-                        item.response || '',
-                        `items.${index}.response`,
-                      )
-                    }
-                  >
-                    Redline Response {index + 1}
-                  </MenuItem>
-                </div>
-              ))}
-            </div>
-          )}  */}
-        {/* </Menu> */}
       </div>
     );
   },

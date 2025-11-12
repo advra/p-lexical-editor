@@ -12,8 +12,9 @@ import { toast } from 'sonner';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
 import LockIcon from '@mui/icons-material/Lock';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import Button from '../common/buttons/Button';
-import { Tooltip } from '@mui/material';
+import { Tooltip, IconButton, Menu, MenuItem } from '@mui/material';
 import { DefaultPuckProps } from './types';
 import { useTRPC } from '@/trpc/client';
 
@@ -30,6 +31,9 @@ export type MarkCompleteButtonProps = {
     userId?: string;
     sessionId?: string;
   };
+  showMenu?: boolean;
+  onMenuClick?: (event: React.MouseEvent<HTMLElement>) => void;
+  onUndoComplete?: () => void;
 };
 
 // React component that can be used within other components
@@ -41,16 +45,37 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
   onComplete,
   onIncomplete,
   initialCompletionData,
+  showMenu = false,
+  onMenuClick,
+  onUndoComplete,
 }) => {
   const trpc = useTRPC();
   const [isCompleted, setIsCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [dependenciesCompleted, setDependenciesCompleted] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const { session } = useUser();
   const { procId, viewMode } = useProc();
   const completionStore = useCompletionStore();
   const { activeSession, getRecordCompletion } = useSession();
+
+  const menuOpen = Boolean(anchorEl);
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+    onMenuClick?.(event);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleUndoComplete = () => {
+    handleMenuClose();
+    handleRemoveComplete();
+    onUndoComplete?.();
+  };
 
   // tRPC mutations for session updates
   const { mutate: updateSessionRecord, isPending: isUpdatingSession } =
@@ -172,6 +197,7 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
   }, [completionStore, dependencies]);
 
   const handleMarkComplete = async () => {
+    handleMenuClose();
     if (!dependenciesCompleted) {
       toast.error('Cannot complete: dependencies not met');
       return;
@@ -245,67 +271,164 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
 
   if (isCompleted) {
     return (
+      <div className="flex gap-2 items-center">
+        <Tooltip
+          title={
+            disabled ? 'Requires Execute Permissions' : 'Undo Task Execution'
+          }
+        >
+          <span>
+            <Button
+              className="flex border h-2 rounded-sm text-green-700 hover:bg-green-100/50 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-300 disabled:opacity-100"
+              color="success"
+              onClick={handleRemoveComplete}
+              disabled={true}
+            >
+              <TaskAltIcon fontSize="small" className="mr-2" />
+              <span className="text-xs">Remove Complete</span>
+            </Button>
+          </span>
+        </Tooltip>
+        {showMenu && (
+          <Tooltip title="More options">
+            <IconButton
+              size="small"
+              onClick={handleMenuClick}
+              disabled={disabled}
+            >
+              <MoreVertIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
+        <Menu
+          disableScrollLock
+          anchorEl={anchorEl}
+          open={menuOpen}
+          onClose={handleMenuClose}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+        >
+          {isCompleted ? (
+            <MenuItem onClick={handleUndoComplete}>Undo Complete</MenuItem>
+          ) : (
+            <MenuItem onClick={handleMarkComplete}>{label}</MenuItem>
+          )}
+        </Menu>
+      </div>
+    );
+  }
+
+  if (!dependenciesCompleted) {
+    return (
+      <div className="flex gap-2 items-center">
+        <Tooltip
+          title={
+            disabled
+              ? 'Requires Execute Permissions'
+              : `Waiting for ${dependencies.length} dependencies to complete`
+          }
+        >
+          <span>
+            <Button
+              className="flex border h-2 rounded-sm text-gray-400 bg-gray-100 border-gray-300 opacity-100 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-300 disabled:opacity-100"
+              color="success"
+              disabled={true}
+            >
+              <LockIcon fontSize="small" className="mr-2" />
+              <span className="text-xs">Complete</span>
+            </Button>
+          </span>
+        </Tooltip>
+        {showMenu && (
+          <Tooltip title="More options">
+            <IconButton
+              size="small"
+              onClick={handleMenuClick}
+              disabled={disabled}
+            >
+              <MoreVertIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
+        <Menu
+          disableScrollLock
+          anchorEl={anchorEl}
+          open={menuOpen}
+          onClose={handleMenuClose}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+        >
+          <MenuItem onClick={handleUndoComplete}>Undo Complete</MenuItem>
+        </Menu>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex gap-2 items-center">
       <Tooltip
         title={
-          disabled ? 'Requires Execute Permissions' : 'Undo Task Execution'
+          disabled
+            ? 'Requires Execute Permissions'
+            : 'Complete Task as Executed'
         }
       >
         <span>
           <Button
             className="flex border h-2 rounded-sm text-green-700 hover:bg-green-100/50 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-300 disabled:opacity-100"
             color="success"
-            onClick={handleRemoveComplete}
+            onClick={handleMarkComplete}
             disabled={isLoading || disabled}
           >
-            <TaskAltIcon fontSize="small" className="mr-2" />
-            <span className="text-xs">Remove Complete</span>
+            <PanoramaFishEyeIcon fontSize="small" className="mr-2" />
+            <span className="text-xs">{label}</span>
           </Button>
         </span>
       </Tooltip>
-    );
-  }
-
-  if (!dependenciesCompleted) {
-    return (
-      <Tooltip
-        title={
-          disabled
-            ? 'Requires Execute Permissions'
-            : `Waiting for ${dependencies.length} dependencies to complete`
-        }
-      >
-        <span>
-          <Button
-            className="flex border h-2 rounded-sm text-gray-400 bg-gray-100 border-gray-300 opacity-100 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-300 disabled:opacity-100"
-            color="success"
-            disabled={true}
+      {showMenu && (
+        <Tooltip title="More options">
+          <IconButton
+            size="small"
+            onClick={handleMenuClick}
+            disabled={disabled}
           >
-            <LockIcon fontSize="small" className="mr-2" />
-            <span className="text-xs">Complete</span>
-          </Button>
-        </span>
-      </Tooltip>
-    );
-  }
-
-  return (
-    <Tooltip
-      title={
-        disabled ? 'Requires Execute Permissions' : 'Complete Task as Executed'
-      }
-    >
-      <span>
-        <Button
-          className="flex border h-2 rounded-sm text-green-700 hover:bg-green-100/50 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-300 disabled:opacity-100"
-          color="success"
-          onClick={handleMarkComplete}
-          disabled={isLoading || disabled}
-        >
-          <PanoramaFishEyeIcon fontSize="small" className="mr-2" />
-          <span className="text-xs">{label}</span>
-        </Button>
-      </span>
-    </Tooltip>
+            <MoreVertIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      )}
+      <Menu
+        disableScrollLock
+        anchorEl={anchorEl}
+        open={menuOpen}
+        onClose={handleMenuClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      >
+        {isCompleted ? (
+          <MenuItem onClick={handleUndoComplete}>Undo Complete</MenuItem>
+        ) : (
+          <MenuItem onClick={handleMarkComplete}>Mark Complete</MenuItem>
+        )}
+      </Menu>
+    </div>
   );
 };
 
@@ -326,6 +449,14 @@ const MarkCompleteButton: ComponentConfig<
         item?.blockId ? `Depends on: ${item.blockId}` : '—',
     },
     label: { type: 'text', label: 'Button Label' },
+    disabled: {
+      type: 'radio',
+      label: 'Disabled',
+      options: [
+        { label: 'Enabled', value: false },
+        { label: 'Disabled', value: true },
+      ],
+    },
   },
   defaultProps: {
     id: '',
