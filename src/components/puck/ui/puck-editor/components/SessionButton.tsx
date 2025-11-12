@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import PlayCircleFilledIcon from '@mui/icons-material/PlayCircleFilled';
 import StopCircleIcon from '@mui/icons-material/StopCircle';
@@ -10,6 +10,7 @@ import { useProc } from '@/context/ProcContext';
 import { CircularProgress, Tooltip } from '@mui/material';
 import { User } from '@/modules/auth/types';
 import { useSession } from '@/context/SessionContext';
+import { CustomCursorTooltip } from '@/components/common/CopyTooltip';
 
 type Props = {
   user: User | undefined;
@@ -30,6 +31,21 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
   } = useSession();
 
   const [showShareLink, setShowShareLink] = useState(false);
+  const [copyTooltip, setCopyTooltip] = useState({
+    show: false,
+    position: { x: 0, y: 0 },
+  });
+
+  // Reset tooltip state after duration
+  useEffect(() => {
+    if (copyTooltip.show) {
+      const timer = setTimeout(() => {
+        setCopyTooltip((prev) => ({ ...prev, show: false }));
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [copyTooltip.show]);
 
   // Initialize showShareLink based on session ownership
   useEffect(() => {
@@ -64,18 +80,23 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
     stopSession();
   };
 
-  const copyShareLink = () => {
+  const copyShareLink = async (event: React.MouseEvent) => {
     if (!activeSession?._id || !procId) return;
 
+    const { clientX, clientY } = event;
     const shareLink = `${window.location.origin}/procs/${procSlug}/execute/?sessionId=${activeSession._id}`;
-    navigator.clipboard
-      .writeText(shareLink)
-      .then(() => {
-        toast.success('Share link copied to clipboard!');
-      })
-      .catch(() => {
-        toast.error('Failed to copy share link');
+
+    try {
+      await navigator.clipboard.writeText(shareLink);
+      // Show custom tooltip at cursor position
+      setCopyTooltip({
+        show: true,
+        position: { x: clientX, y: clientY },
       });
+      console.log('YES');
+    } catch {
+      toast.error('Failed to copy share link');
+    }
   };
 
   const getShareLink = () => {
@@ -109,14 +130,13 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
               className="hidden lg:block text-xs bg-white border border-blue-300 rounded px-2 py-1 w-64"
               onClick={(e) => {
                 e.currentTarget.select();
-                copyShareLink();
+                copyShareLink(e);
               }}
             />
             <Tooltip title="Copy share link">
               <button
                 onClick={copyShareLink}
                 className="text-blue-600 hover:text-blue-800"
-                disabled={!isSessionOwner}
               >
                 <ShareIcon fontSize="small" />
               </button>
@@ -151,5 +171,14 @@ export const SessionButtons = ({ user, canExecute }: Props) => {
     );
   }
 
-  return renderedButton;
+  return (
+    <>
+      {renderedButton}
+      <CustomCursorTooltip
+        show={copyTooltip.show}
+        position={copyTooltip.position}
+        message="URL Copied!"
+      />
+    </>
+  );
 };
