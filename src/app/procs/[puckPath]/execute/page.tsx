@@ -8,6 +8,8 @@ import {
 import ProcPageExecuteClient from '../../../../components/puck/ui/puck-editor/components/ProcPageExecuteClient';
 import { RedlineProvider } from '@/context/RedlineContext';
 import { ExecuteStoreProvider } from '@/context/ExecuteStoreContext';
+import { ProcProvider, ProcViewModes } from '@/context/ProcContext';
+import { SessionProvider } from '@/context/SessionContext';
 
 export default async function Page({
   params,
@@ -22,15 +24,27 @@ export default async function Page({
   if (!proc) return notFound();
 
   return (
-    <ExecuteStoreProvider initialProc={proc}>
-      <RedlineProvider>
-        <ProcPageExecuteClient
-          executionMode={true}
-          proc={proc}
-          slug={slug}
-          path={`/procs/${slug}`}
-        />
-      </RedlineProvider>
-    </ExecuteStoreProvider>
+    <RedlineProvider>
+      <ProcProvider
+        viewMode={'execute'}
+        owner={proc.owner}
+        // permissions={userPermissions}
+        // currentUser={user}
+        procId={proc._id}
+      >
+        <SessionProvider
+          procId={proc._id}
+          // user={user}
+          // canExecute={userPermissions.execute}
+        >
+          <ProcPageExecuteClient
+            executionMode={true}
+            proc={proc}
+            slug={slug}
+            path={`/procs/${slug}`}
+          />
+        </SessionProvider>
+      </ProcProvider>
+    </RedlineProvider>
   );
 }

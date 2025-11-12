@@ -14,6 +14,8 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { useSessionSocket } from '@/services/socket';
 import { User } from '@/modules/auth/types';
 import { getSocket } from '@/lib/socket';
+import { useUser } from './UserContext';
+import { useProcPermissions } from './ProcContext';
 
 export interface Session {
   _id: string;
@@ -50,21 +52,15 @@ const SessionContext = createContext<SessionContextType | undefined>(undefined);
 interface SessionProviderProps {
   children: React.ReactNode;
   procId: string;
-  user: User | undefined;
-  canExecute: boolean;
 }
 
-export function SessionProvider({
-  children,
-  procId,
-  user,
-  canExecute,
-}: SessionProviderProps) {
+export function SessionProvider({ children, procId }: SessionProviderProps) {
   const pathname = usePathname();
   const trpc = useTRPC();
   const searchParams = useSearchParams();
   const router = useRouter();
-
+  const { user } = useUser();
+  const { canExecute } = useProcPermissions();
   const [activeSession, setActiveSession] = useState<Session | null>(null);
   const [isSessionOwner, setIsSessionOwner] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -73,8 +69,8 @@ export function SessionProvider({
 
   // Socket hook for real-time session status updates
   const { sessionStatus, stopSession: socketStopSession } = useSessionSocket(
+    user?.username ?? null,
     sessionId || activeSession?._id,
-    user?.username,
   );
 
   const SLUG_PREFIX = '/procs/' as const;
@@ -133,7 +129,7 @@ export function SessionProvider({
 
         // notify other users
         if (activeSession?._id) {
-          socketStopSession(activeSession._id, procId, user);
+          socketStopSession(activeSession._id, user);
         } else {
           console.error(
             '[SessionProvider] Cannot notify other users - activeSession is null',

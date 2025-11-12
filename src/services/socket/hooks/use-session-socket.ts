@@ -9,21 +9,32 @@ interface UseSessionSocketReturn {
   lastUpdate: SessionStatusData | null;
   joinRoom: (sessionId: string, username?: string) => void;
   leaveRoom: (sessionId: string) => void;
-  stopSession: (roomSessionId: string, procId: string, user?: User) => void;
+  stopSession: (
+    roomSessionId: string,
+    user?: User | null,
+  ) => void;
 }
 
 /**
  * Hook for managing session socket connections and status updates
  */
-export function useSessionSocket(sessionId?: string, username?: string): UseSessionSocketReturn {
+export function useSessionSocket(
+  username: string | null,
+  sessionId?: string,
+): UseSessionSocketReturn {
   const [isConnected, setIsConnected] = useState(false);
-  const [sessionStatus, setSessionStatus] = useState<SessionStatusData | null>(null);
+  const [sessionStatus, setSessionStatus] = useState<SessionStatusData | null>(
+    null,
+  );
   const [lastUpdate, setLastUpdate] = useState<SessionStatusData | null>(null);
 
   // Join room when sessionId changes
-  const joinRoom = useCallback((roomSessionId: string, roomUsername?: string) => {
-    sessionSocketService.joinSessionRoom(roomSessionId, roomUsername);
-  }, []);
+  const joinRoom = useCallback(
+    (roomSessionId: string, roomUsername?: string) => {
+      sessionSocketService.joinSessionRoom(roomSessionId, roomUsername);
+    },
+    [],
+  );
 
   // Leave room
   const leaveRoom = useCallback((roomSessionId: string) => {
@@ -31,25 +42,28 @@ export function useSessionSocket(sessionId?: string, username?: string): UseSess
   }, []);
 
   // when stopped
-  const stopSession = useCallback((roomSessionId: string, procId: string, user?: User) => {
-    // TODO: get user and their permissions
-    const canExecute = true;
-    if (user && canExecute) {
-      console.log('[useSessionSocket] Emitting session:status-changed:', {
-        room: roomSessionId,
-        sessionId: roomSessionId,
-        status: 'completed',
-        changedBy: user.username,
-      });
-      
-      sessionSocketService.emitSessionStatusChanged({
-        sessionId: roomSessionId,
-        status: 'completed',
-        room: roomSessionId, // Use sessionId as room for targeted notifications
-        changedBy: user.username,
-      });
-    }
-  }, []);
+  const stopSession = useCallback(
+    (roomSessionId: string, user?: User | null) => {
+      // TODO: get user and their permissions
+      const canExecute = true;
+      if (user && canExecute) {
+        console.log('[useSessionSocket] Emitting session:status-changed:', {
+          room: roomSessionId,
+          sessionId: roomSessionId,
+          status: 'completed',
+          changedBy: user.username,
+        });
+
+        sessionSocketService.emitSessionStatusChanged({
+          sessionId: roomSessionId,
+          status: 'completed',
+          room: roomSessionId, // Use sessionId as room for targeted notifications
+          changedBy: user.username,
+        });
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     // Update connection status
@@ -58,11 +72,16 @@ export function useSessionSocket(sessionId?: string, username?: string): UseSess
     setIsConnected(connected);
 
     // Listen for session status updates
-    const cleanupListener = sessionSocketService.onSessionStatusUpdate((data) => {
-      console.log('[useSessionSocket] Received session:status-updated:', data);
-      setSessionStatus(data);
-      setLastUpdate(data);
-    });
+    const cleanupListener = sessionSocketService.onSessionStatusUpdate(
+      (data) => {
+        console.log(
+          '[useSessionSocket] Received session:status-updated:',
+          data,
+        );
+        setSessionStatus(data);
+        setLastUpdate(data);
+      },
+    );
 
     // Cleanup on unmount
     return () => {
@@ -77,7 +96,12 @@ export function useSessionSocket(sessionId?: string, username?: string): UseSess
   // Auto-join room when sessionId is provided
   useEffect(() => {
     if (sessionId) {
-      console.log('[useSessionSocket] Auto-joining room:', sessionId, 'for user:', username);
+      console.log(
+        '[useSessionSocket] Auto-joining room:',
+        sessionId,
+        'for user:',
+        username,
+      );
       joinRoom(sessionId, username);
     }
 

@@ -27,7 +27,6 @@ const ProcContext = createContext<ProcContextType | null>(null);
 type ProcProviderProps = {
   children: ReactNode;
   owner: string;
-  permissions: ProcPermissions;
   currentUser?: User;
   procId: string;
   viewMode: ProcViewModes;
@@ -36,14 +35,12 @@ type ProcProviderProps = {
 export function ProcProvider({
   children,
   owner,
-  permissions,
   currentUser,
   procId,
   viewMode,
 }: ProcProviderProps) {
   const value = {
     owner,
-    permissions,
     currentUser,
     procId,
     viewMode,
@@ -62,14 +59,20 @@ export function useProc() {
 
 // Helper hook for checking permissions
 export function useProcPermissions() {
-  const { permissions, owner, currentUser, viewMode } = useProc();
+  const { owner, currentUser, viewMode } = useProc();
+
+  const isOwner = currentUser?.username === owner;
+  const isAdmin = currentUser?.roles?.includes('admin');
+
+  const permissions = {
+    read: isOwner || isAdmin || true, // Default to true for now
+    edit: !!(isOwner || isAdmin),
+    execute: !!(isOwner || isAdmin),
+  };
 
   const canRead = permissions.read || currentUser?.username === owner;
   const canEdit = permissions.edit || currentUser?.username === owner;
   const canExecute = permissions.execute || currentUser?.username === owner;
-
-  const isOwner = currentUser?.username === owner;
-  const isAdmin = currentUser?.roles?.includes('admin');
 
   return {
     viewMode,

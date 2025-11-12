@@ -64,8 +64,6 @@ export function ExecuteStoreProvider({
     {},
   );
 
-  //   const { procId } = useProc();
-
   // Listen for socket events to update shared completions
   useEffect(() => {
     const socket = getSocket();

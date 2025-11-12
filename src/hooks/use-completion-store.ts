@@ -33,6 +33,7 @@ export function useCompletionStore(): CompletionStore {
       };
     } else {
       // Use execute store for execution mode
+      // Load records from procsessions database
       const executeStore = useExecuteStore();
       return {
         completions: executeStore.sharedCompletions,

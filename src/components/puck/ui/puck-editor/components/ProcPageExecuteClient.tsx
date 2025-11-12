@@ -10,8 +10,9 @@ import {
 } from '@/modules/procs/models/proc-model';
 import { useUser } from '@/context/UserContext';
 import { getSocket } from '@/lib/socket';
-import { ProcProvider, ProcViewModes, useProc } from '@/context/ProcContext';
-import { SessionProvider } from '@/context/SessionContext';
+import { ProcProvider, ProcViewModes } from '@/context/ProcContext';
+import { SessionProvider, useSession } from '@/context/SessionContext';
+import { ExecuteStoreProvider } from '@/context/ExecuteStoreContext';
 
 function waitForImages(root: HTMLElement) {
   const imgs = Array.from(root.querySelectorAll('img'));
@@ -43,6 +44,7 @@ export default function ProcPageExecuteClient({
   path,
   executionMode = false,
 }: Props) {
+  const { activeSession, getRecordCompletion } = useSession();
   const room = useMemo(() => `proc:${proc._id}`, [proc._id]);
   const [presence, setPresence] = useState<Array<{ id: string; name: string }>>(
     [],
@@ -60,7 +62,7 @@ export default function ProcPageExecuteClient({
   const isAdmin = user?.roles?.includes('admin');
   // TODO: eproc-2 Add permissions canEdit and canExecute
   // const hasPermissions = proc.
-  const canEdit = !!(isOwner || isAdmin);
+  // const canEdit = !!(isOwner || isAdmin);
   const metadata = {
     title: proc.title,
     description: proc.description ?? '',
@@ -68,16 +70,16 @@ export default function ProcPageExecuteClient({
   };
 
   // Determine view mode based on path and execution mode
-  let procViewMode: ProcViewModes;
-  if (executionMode) {
-    procViewMode = 'execute';
-  } else if (path.includes('/edit')) {
-    procViewMode = 'edit';
-  } else if (path.includes('/procs/')) {
-    procViewMode = 'view';
-  } else {
-    procViewMode = 'none';
-  }
+  // let procViewMode: ProcViewModes;
+  // if (executionMode) {
+  //   procViewMode = 'execute';
+  // } else if (path.includes('/edit')) {
+  //   procViewMode = 'edit';
+  // } else if (path.includes('/procs/')) {
+  //   procViewMode = 'view';
+  // } else {
+  //   procViewMode = 'none';
+  // }
 
   async function handlePreviewPrint() {
     setPreview(true);
@@ -195,49 +197,37 @@ export default function ProcPageExecuteClient({
   };
 
   return (
-    <ProcProvider
-      viewMode={procViewMode}
-      owner={proc.owner}
-      permissions={userPermissions}
-      currentUser={user}
-      procId={proc._id}
-    >
-      <SessionProvider
-        procId={proc._id}
+    <ExecuteStoreProvider initialProc={proc}>
+      <Header
+        viewMode={viewMode}
+        executionMode={executionMode}
+        handlePreviewPrint={handlePreviewPrint}
+        path={path}
+        title={proc.title}
+        description={proc.description}
+        tags={proc.tags}
+        metadata={metadata}
+        presenceDisplay={presenceDisplay}
+        permissions={userPermissions}
+        loading={loading}
         user={user}
-        canExecute={userPermissions.execute}
-      >
-        <Header
-          viewMode={viewMode}
-          executionMode={executionMode}
-          handlePreviewPrint={handlePreviewPrint}
-          path={path}
+      />
+      <div>
+        <PuckPreview
+          ref={rootRef}
+          puckPageData={proc.data}
+          owner={proc.owner}
+          updatedAt={(proc.updatedAt ?? proc.createdAt) as string}
+          preview={preview}
+          page="letter"
+          procId={proc._id}
+          room={room}
           title={proc.title}
-          description={proc.description}
-          tags={proc.tags}
-          metadata={metadata}
-          presenceDisplay={presenceDisplay}
-          permissions={userPermissions}
-          loading={loading}
-          user={user}
+          onRedlineCreated={(redline) => {
+            console.log('Redline created from preview:', redline);
+          }}
         />
-        <div>
-          <PuckPreview
-            ref={rootRef}
-            puckPageData={proc.data}
-            owner={proc.owner}
-            updatedAt={(proc.updatedAt ?? proc.createdAt) as string}
-            preview={preview}
-            page="letter"
-            procId={proc._id}
-            room={room}
-            title={proc.title}
-            onRedlineCreated={(redline) => {
-              console.log('Redline created from preview:', redline);
-            }}
-          />
-        </div>
-      </SessionProvider>
-    </ProcProvider>
+      </div>
+    </ExecuteStoreProvider>
   );
 }

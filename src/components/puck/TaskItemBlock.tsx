@@ -1,5 +1,3 @@
-import { Tooltip } from '@mui/material';
-import { useState } from 'react';
 import { useProcPermissions, useProc } from '@/context/ProcContext';
 import CompletionStatus from './constants/taskitem/CompletionStatus';
 import { ComponentConfig, Slot } from '@measured/puck';
@@ -9,10 +7,7 @@ import {
   AddRedlineProps,
   RedlineProps,
 } from './ui/redline/RedlineComponent';
-import { RedlineInfo } from './ui/redline/RedlineInfo';
 import { DisplayRedlineText } from './ui/redline/DisplayRedlineText';
-import { toast } from 'sonner';
-import { useStore } from '@/context/LocalStoreContext';
 import { useUser } from '@/context/UserContext';
 import { useCompletionStore } from '@/hooks/use-completion-store';
 import CompleteTimestamp from './ui/completed/CompleteTimestamp';
