@@ -8,7 +8,7 @@ import {
   ProcPublic,
   ProcPublicWithAcl,
 } from '@/modules/procs/models/proc-model';
-import { useStore } from '@/context/LocalStoreContext';
+import { LocalCompletionState, useStore } from '@/context/LocalStoreContext';
 import { useUser } from '@/context/UserContext';
 import { getSocket } from '@/lib/socket';
 import { ProcProvider, ProcViewModes } from '@/context/ProcContext';
@@ -46,8 +46,6 @@ export default function ProcPageClient({
   path,
   executionMode = false,
 }: Props) {
-  const { updateStore } = useStore();
-  const completionStore = useCompletionStore();
   const room = useMemo(() => `proc:${proc._id}`, [proc._id]);
   const [presence, setPresence] = useState<Array<{ id: string; name: string }>>(
     [],
@@ -144,9 +142,6 @@ export default function ProcPageClient({
 
     const onPresence = (list: Array<{ id: string; name: string }>) =>
       setPresence(list);
-    const onPatch = (payload: { blockId: string; patch: any }) => {
-      updateStore({ blockId: payload.blockId, ...payload.patch });
-    };
 
     // Handle redline events
     const onRedlineCreated = (payload: { redline: any }) => {
@@ -181,44 +176,20 @@ export default function ProcPageClient({
       });
     };
 
-    // Handle session record updates
-    const onSessionRecordUpdated = (payload: {
-      sessionId: string;
-      recordId: string;
-      state: string;
-      blockType: string;
-      data?: any;
-    }) => {
-      console.log('Session record updated:', payload);
-
-      // Update completion store with the new state
-      const isComplete = payload.state === 'complete';
-      completionStore.updateCompletion(payload.recordId, {
-        completed: isComplete,
-        completedAt: isComplete ? payload.data?.completedAt : undefined,
-        sessionId: payload.sessionId,
-      });
-    };
-
     socket.on('presence:update', onPresence);
-    socket.on('record:patch', onPatch);
     socket.on('redline:created', onRedlineCreated);
     socket.on('redline:updated', onRedlineUpdated);
     socket.on('redline:deleted', onRedlineDeleted);
-    socket.on('session:record-updated', onSessionRecordUpdated);
-
     socket.emit('presence:request', { room });
 
     return () => {
       socket.off('presence:update', onPresence);
-      socket.off('record:patch', onPatch);
       socket.off('redline:created', onRedlineCreated);
       socket.off('redline:updated', onRedlineUpdated);
       socket.off('redline:deleted', onRedlineDeleted);
-      socket.off('session:record-updated', onSessionRecordUpdated);
       socket.emit('room:leave', { room });
     };
-  }, [room, updateStore, user]);
+  }, [room, user]);
 
   // Calculate user permissions based on proc sharedWith data
   const userPermissions = {

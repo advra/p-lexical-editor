@@ -170,7 +170,6 @@ export default function ProcPageExecuteClient({
     };
 
     socket.on('presence:update', onPresence);
-    socket.on('record:patch', onPatch);
     socket.on('redline:created', onRedlineCreated);
     socket.on('redline:updated', onRedlineUpdated);
     socket.on('redline:deleted', onRedlineDeleted);
@@ -180,7 +179,6 @@ export default function ProcPageExecuteClient({
 
     return () => {
       socket.off('presence:update', onPresence);
-      socket.off('record:patch', onPatch);
       socket.off('redline:created', onRedlineCreated);
       socket.off('redline:updated', onRedlineUpdated);
       socket.off('redline:deleted', onRedlineDeleted);

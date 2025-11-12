@@ -106,13 +106,6 @@ io.on('connection', (socket) => {
     socket.emit('presence:update', getRoomPresence(room));
   });
 
-  // Relay record patches to peers in the same room
-  // client emits: socket.emit('record:patch', { room, record_id, patch })
-  socket.on('record:patch', ({ room, record_id, patch }) => {
-    if (!room || !record_id) return;
-    socket.to(room).emit('record:patch', { record_id, patch });
-  });
-
   /*
     Redline Events to properly display users any redlines in the current proc (aka room)
   */
