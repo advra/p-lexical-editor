@@ -16,9 +16,10 @@ import { useCompletionStore } from '@/hooks/use-completion-store';
 export interface NavigationItem {
   id: string;
   label: string;
-  type: 'title' | 'section' | 'heading';
+  type: 'title' | 'section' | 'heading' | 'completion';
   completed?: boolean;
   requiresPreviousComplete?: boolean;
+  dependencies?: string[];
 }
 
 interface NavigationDrawerProps {
@@ -126,11 +127,14 @@ export const NavigationDrawer = ({
                       )}
                     >
                       <div className="flex items-center gap-2">
-                        <div className="w-1 h-1 bg-gray-400 rounded-full" />
+                        {item.type !== 'completion' && (
+                          <div className="w-1 h-1 bg-gray-400 rounded-full" />
+                        )}
                         <div
                           className={cn(
                             item.type === 'heading' && 'font-semibold ml-2',
                             item.type === 'section' && 'font-normal ml-4',
+                            item.type === 'completion' && 'ml-6 text-sm',
                           )}
                         >
                           {item.label}

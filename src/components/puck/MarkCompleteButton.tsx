@@ -58,7 +58,20 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
   const { session } = useUser();
   const { procId, viewMode } = useProc();
   const completionStore = useCompletionStore();
-  const { activeSession, getRecordCompletion } = useSession();
+
+  // Handle useSession gracefully when SessionProvider is not available (e.g., in edit mode)
+  let activeSession = null;
+  let getRecordCompletion = (recordId: string) =>
+    undefined as boolean | undefined;
+
+  try {
+    const sessionContext = useSession();
+    activeSession = sessionContext.activeSession;
+    getRecordCompletion = sessionContext.getRecordCompletion;
+  } catch (error) {
+    // SessionProvider not available - this is expected in edit mode
+    console.log('SessionProvider not available, using fallback behavior');
+  }
 
   const menuOpen = Boolean(anchorEl);
 

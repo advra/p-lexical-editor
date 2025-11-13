@@ -18,6 +18,7 @@ import RedlineComment from '@/components/puck/ui/comments/comment';
 import { useRedline } from '@/context/RedlineContext';
 import { RedlineMarginLabels } from '../../redline/labels/RedlineMarginLabels';
 import { Redline } from '@/modules/redlines/models/redline-model';
+import { useCompletionStore } from '@/hooks/use-completion-store';
 
 export const PuckPreview = forwardRef<
   HTMLDivElement,
@@ -53,7 +54,9 @@ export const PuckPreview = forwardRef<
       ? 'w-[210mm] min-h-[297mm] p-[12mm]'
       : 'w-[8.5in] min-h-[11in] p-[0.5in]';
 
-  // Extract SectionBlocks from the proc data - memoized to prevent unnecessary recalculations
+  const completionStore = useCompletionStore();
+
+  // Extract navigation items from the proc data - memoized to prevent unnecessary recalculations
   const navigationItems = useMemo(() => {
     const items: NavigationItem[] = [];
 
@@ -64,29 +67,49 @@ export const PuckPreview = forwardRef<
       type: 'title' as const,
     });
 
-    // Extract SectionBlocks and HeadingBlocks from content
+    // Extract SectionBlocks, HeadingBlocks, and Completion Blocks from content
     if (puckPageData.content) {
       puckPageData.content.forEach((block, index) => {
-        console.log(block);
+        console.log('block: ', block);
         if (block.type === 'SectionBlock' && block.props?.text) {
           items.push({
             id: block.props.id || `section-${index}`,
             label: block.props.text,
             type: 'section',
-            completed: false as const,
+            completed:
+              completionStore.completions[block.props.id]?.completed || false,
           });
         } else if (block.type === 'HeadingBlock' && block.props?.title) {
           items.push({
             id: block.props.id || `heading-${index}`,
             label: block.props.title,
             type: 'heading',
-            completed: false as const,
+            completed:
+              completionStore.completions[block.props.id]?.completed || false,
+          });
+        } else if (block.type === 'MarkCompleteButton' && block.props?.id) {
+          items.push({
+            id: block.props.id,
+            label: block.props.label || 'Mark Complete',
+            type: 'completion',
+            completed:
+              completionStore.completions[block.props.id]?.completed || false,
+            dependencies: block.props.dependencies || [],
+          });
+        } else if (block.type === 'TaskItemBlock' && block.props?.id) {
+          items.push({
+            id: block.props.id,
+            label: `Task: ${block.props.step || 'Untitled'}`,
+            type: 'completion',
+            completed:
+              completionStore.completions[block.props.id]?.completed || false,
+            dependencies: block.props.dependencies || [],
           });
         }
       });
     }
     return items;
-  }, []);
+  }, [puckPageData.content, completionStore.completions, title]);
 
   const handleNavigationItemClick = (item: any) => {
     if (item.id === 'title') {
