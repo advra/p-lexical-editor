@@ -131,8 +131,10 @@ export const MarkCompleteButtonComponent: React.FC<MarkCompleteButtonProps> = ({
           // Show success toast and call appropriate callback
           if (isComplete) {
             onComplete?.(id);
+            toast.success('Task Marked Complete');
           } else {
             onIncomplete?.(id);
+            toast.success('Removed Complete from Task');
           }
         },
         onError: (error) => {
