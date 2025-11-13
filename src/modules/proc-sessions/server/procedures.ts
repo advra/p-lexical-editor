@@ -11,7 +11,37 @@ import {
 } from '../models/proc-session-model';
 import { createSessionInput, deleteSessionInput, getSessionInput, stopSessionInput, updateSessionInput, updateSessionRecordInput } from './types';
 
+export const getActiveSessionsInput = z.object({
+  procId: z.string(),
+});
+
 export const procSessionsRouter = createTRPCRouter({
+  // Get all active sessions for a proc (regardless of user)
+  getActiveSessions: protectedProcedure
+    .input(getActiveSessionsInput)
+    .query(async ({ ctx, input }) => {
+      const { procId } = input;
+
+      if (!procId) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'procId is required',
+        });
+      }
+
+      // Get all active sessions for this proc
+      const sessions = await ProcSessionModel.find({
+        procId,
+        status: 'active',
+      }).sort({
+        createdAt: -1,
+      });
+
+      return {
+        sessions: sessions.map((session) => toPublic(session)),
+      };
+    }),
+
   // Get sessions by ID or user's active sessions for a proc
   getSessions: protectedProcedure
     .input(getSessionInput)

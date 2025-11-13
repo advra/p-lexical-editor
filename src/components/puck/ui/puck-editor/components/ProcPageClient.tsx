@@ -13,6 +13,7 @@ import { getSocket } from '@/lib/socket';
 import { ProcProvider, ProcViewModes } from '@/context/ProcContext';
 import { RedlineLayoutWrapper } from '../../redline/RedlineLayoutWrapper';
 import { SessionProvider } from '@/context/SessionContext';
+import { JoinLiveSessionBanner } from '@/components/puck/ui/JoinLiveSessionBanner';
 
 function waitForImages(root: HTMLElement) {
   const imgs = Array.from(root.querySelectorAll('img'));
@@ -247,6 +248,12 @@ export default function ProcPageClient({
           loading={loading}
           user={user}
         />
+
+        {/* Join Live Session Banner - Only shows when there are active sessions */}
+        <div className="mt-25 px-16">
+          <JoinLiveSessionBanner procId={proc._id} />
+        </div>
+
         <div>
           <RedlineLayoutWrapper
             room={room}

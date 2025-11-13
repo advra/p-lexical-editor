@@ -6,8 +6,8 @@ type ColCount = 2 | 3 | 4;
 export type ColumnsBlockProps = {
   gap?: number; // px
   numberOfColumns: ColCount; // 2 | 3 | 4
-  col1: Slot;
-  col2: Slot;
+  col1?: Slot;
+  col2?: Slot;
   col3?: Slot;
   col4?: Slot;
 };
@@ -32,17 +32,17 @@ export const ColumnsBlock: ComponentConfig<ColumnsBlockProps> = {
     col3: {
       type: 'slot',
       label: 'Column 3',
-      visible: ({ values }: any) => (values?.numberOfColumns ?? 2) >= 3,
     },
     col4: {
       type: 'slot',
       label: 'Column 4',
-      visible: ({ values }: any) => (values?.numberOfColumns ?? 2) >= 4,
     },
   },
   defaultProps: {
     numberOfColumns: 2,
     gap: 16,
+    col1: undefined,
+    col2: undefined,
   },
   render: ({ numberOfColumns, gap = 16, col1, col2, col3, col4 }) => {
     const cols = [col1, col2, col3, col4].slice(0, numberOfColumns);
