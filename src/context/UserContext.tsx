@@ -3,6 +3,7 @@
 import { createContext, useContext, ReactNode } from 'react';
 import useSWR from 'swr';
 import { Session } from '@/modules/auth/types';
+import { isUserAdmin } from '@/modules/user/utils/userUtils';
 
 type MeResponse = { session: Session | null };
 
@@ -28,8 +29,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const session = data?.session ?? null;
   const user = session?.user ?? null;
-  const isAdmin =
-    user?.roles?.some((role) => role.toLowerCase() === 'admin') ?? false;
+  const isAdmin = isUserAdmin(user);
   const loading = !error && !data;
 
   const value = {

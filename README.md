@@ -98,8 +98,8 @@ User and seeded data can be found in the /seeder/seed-users.js. Below is a table
 ```
 const rawUsers = [
   { username: 'admin', password: 'Admin123!', roles: ['admin'] },
-  { username: 'user', password: 'User123!', roles: ['operator'] },
-  { username: 'viewer', password: 'Viewer123!', roles: ['viewer'] },
+  { username: 'user', password: 'User123!', roles: ['user'] },
+  { username: 'viewer', password: 'Viewer123!', roles: ['user'] },
 ];
 ```
 

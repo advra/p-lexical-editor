@@ -25,6 +25,7 @@ import ManagePermissionsDialog, {
   UserPermission,
 } from './dialogs/ManagePermissionsDialog';
 import HistoryDialog from './dialogs/HistoryDialog';
+import { isUserAdmin } from '@/modules/user/utils/userUtils';
 
 export type Proc = {
   _id: string;
@@ -363,16 +364,19 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
                           <EditButton slug={p.slug} />
                         </button>
                         {/* TODO: Add Delete, Edit Metadata, Manage Permissions */}
-                        {currentUser?.username === p.owner && (
-                          <Tooltip title="More Options">
-                            <button
-                              className="text-sm text-blue-600 hover:underline hover:cursor-pointer"
-                              onClick={(e) => handleMenuOpen(e, p)}
-                            >
-                              <MoreHorizIcon className="m-0.5 text-gray-400 hover:text-gray-500" />
-                            </button>
-                          </Tooltip>
-                        )}
+                        {(currentUser?.username === p.owner ||
+                          isUserAdmin(currentUser)) && (
+                            currentUser?.roles && (
+                              <Tooltip title="More Options">
+                                <button
+                                  className="text-sm text-blue-600 hover:underline hover:cursor-pointer"
+                                  onClick={(e) => handleMenuOpen(e, p)}
+                                >
+                                  <MoreHorizIcon className="m-0.5 text-gray-400 hover:text-gray-500" />
+                                </button>
+                              </Tooltip>
+                            ),
+                          )}
                         <MoreMenu
                           anchorEl={anchorEl}
                           handleManagePermissions={handleManagePermissions}
