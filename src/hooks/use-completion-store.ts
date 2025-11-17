@@ -1,0 +1,77 @@
+'use client';
+import { useStore } from '@/context/LocalStoreContext';
+import { useExecuteStore } from '@/context/ExecuteStoreContext';
+import { useProc } from '@/context/ProcContext';
+import { useSession } from '@/context/SessionContext';
+import { useMemo } from 'react';
+
+export type CompletionState = {
+  completed: boolean;
+  completedAt?: string;
+  userId?: string;
+  sessionId?: string;
+};
+
+export type CompletionStore = {
+  completions: Record<string, CompletionState>;
+  updateCompletion: (blockId: string, state: CompletionState) => void;
+};
+
+/**
+ * Unified hook that automatically selects the appropriate store based on view mode
+ * - In 'view' mode: uses LocalStoreProvider (local user state)
+ * - In 'execute' mode: uses ExecuteStoreProvider (shared session state)
+ */
+export function useCompletionStore(): CompletionStore {
+  const { viewMode } = useProc();
+
+  try {
+    if (viewMode === 'view') {
+      // Use local store for view mode
+      const localStore = useStore();
+      return {
+        completions: localStore.completions,
+        updateCompletion: localStore.updateCompletion,
+      };
+    } else {
+      // Use execute store for execution mode
+      const executeStore = useExecuteStore();
+      // Load records from procsessions database
+      const {activeSession} = useSession();
+      const sessionCompletions = useMemo(() => {
+        const completions: Record<string, CompletionState> = {};
+        if (activeSession?.records) {
+          activeSession.records.forEach((record) => {
+            completions[record.recordId] = {
+              completed: record.state === 'complete',
+              completedAt: record.data?.completedAt || record.updatedAt,
+              userId: record.updatedBy,
+              sessionId: activeSession._id,
+            };
+          });
+        }
+        return completions;
+      }, [activeSession]);
+
+      const mergedCompletions = useMemo(
+        () => ({
+          ...sessionCompletions, // Database records (priority)
+          ...executeStore.sharedCompletions, // Real-time updates
+        }),
+        [sessionCompletions, executeStore.sharedCompletions],
+      );
+      return {
+        // return completions resolved from database
+        completions: mergedCompletions,
+        updateCompletion: executeStore.updateSessionCompletion,
+      };
+    }
+  } catch (error) {
+    // Fallback if no store provider is available
+    console.warn('No store provider available, using fallback store');
+    return {
+      completions: {},
+      updateCompletion: () => {},
+    };
+  }
+}

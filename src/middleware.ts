@@ -40,13 +40,18 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // 2) disallow hitting /puck directly
+  // 2) disallow hitting /puck directly and other redirects
   if (pathname.startsWith('/puck')) {
     const url = req.nextUrl.clone();
     url.pathname = '/';
     return NextResponse.redirect(url);
   }
-
+  // 2) disallow hitting /puck directly
+  if (pathname === '/procs') {
+    const url = req.nextUrl.clone();
+    url.pathname = '/dashboard';
+    return NextResponse.redirect(url);
+  }
   // 3) if already on /login and logged in, send home (optional nicety)
   if (pathname === '/login') {
     const token = req.cookies.get('user-session')?.value;

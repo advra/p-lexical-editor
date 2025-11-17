@@ -4,6 +4,24 @@
 
 import { RedlineWrapper } from './RedlineWrapper';
 
+export type Comment = {
+  id: string;
+  type: string;
+  user: string;
+  createdAt: string;
+  updatedAt: string;
+  comment: string;
+};
+
+export type RedlineComment = {
+  redlineId: string;
+  DCN: string;
+  User: string;
+  createdAt: string;
+  updatedAt: string;
+  comments: Comment[];
+};
+
 export type RedlineProps = {
   isRedlined?: boolean;
   dcn: string;
@@ -11,6 +29,7 @@ export type RedlineProps = {
   originalText: string;
   newText: string;
   createdAt: string;
+  comments?: Comment[];
 };
 
 export type AddRedlineProps = {
@@ -87,13 +106,10 @@ export const RedlineComponent = ({ children }: Props) => {
   Function that can be used directly in components
 */
 export const redlineOptions = (
-  onRedlineClick?: (originalText: string, target?: string) => void,
+  onRedlineClick?: (originalText: string, target: string) => void,
   handleMenuClose?: () => void,
 ) => {
-  const handleOpenRedlineModal = (
-    originalText: string,
-    target: string = 'content',
-  ) => {
+  const handleOpenRedlineModal = (originalText: string, target: string) => {
     if (onRedlineClick) {
       onRedlineClick(originalText, target);
     }

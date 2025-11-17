@@ -1,7 +1,8 @@
 // src/modules/user/models/user-model.ts
 import mongoose, { Schema } from 'mongoose';
 
-export type Role = 'user' | 'operator' | 'admin';
+// role for overall app user, admin or super-admin
+export type Role = 'user' | 'admin' | 'super-admin';
 
 export interface User {
   username: string;

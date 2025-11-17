@@ -2,17 +2,13 @@
 
 import ProfileAvatarMenu from '@/components/common/profile/profile-avatar';
 import ProcsTabbedTable, { Proc } from './ProcsTabbedTable';
-import useUser from '@/hooks/use-user';
+import { useUser } from '@/context/UserContext';
 import { Suspense, useState } from 'react';
 import { ProcsTabbedTableSkeleton } from './ClientDashboardSkeleton';
 
 export const ClientDashboard = ({ procs }: { procs: Proc[] }) => {
   const { session, loading: userLoading, error: userError } = useUser();
-  const user = session?.user;
   const [procsLoading, setProcsLoading] = useState(false);
-
-  const username = user?.username ?? 'Guest';
-
   return (
     <>
       <div className="h-full flex flex-col min-h-0">
@@ -32,7 +28,7 @@ export const ClientDashboard = ({ procs }: { procs: Proc[] }) => {
                 </div>
               ) : (
                 <ProfileAvatarMenu
-                  username={user ? user.username : null}
+                  username={session?.user.username ?? 'Guest'}
                   avatarUrl={null}
                 />
               )}
@@ -41,7 +37,10 @@ export const ClientDashboard = ({ procs }: { procs: Proc[] }) => {
           <div className="container mx-auto flex-1 min-h-0">
             <Suspense fallback={<ProcsTabbedTableSkeleton />}>
               <div className="h-full">
-                <ProcsTabbedTable procs={procs} currentUsername={username} />
+                <ProcsTabbedTable
+                  procs={procs}
+                  currentUser={session?.user ?? null}
+                />
               </div>
             </Suspense>
           </div>

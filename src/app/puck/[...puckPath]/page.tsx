@@ -11,10 +11,11 @@
  * NB this route is public, and you will need to add authentication
  */
 
+import PuckEditorView from '@/components/puck/views/puck-editor-view';
+import { ProcProvider } from '@/context/ProcContext';
+import { RedlineProvider } from '@/context/RedlineContext';
+import { SessionProvider } from '@/context/SessionContext';
 import '@measured/puck/puck.css';
-import { PuckClientEditor } from './puck-client-editor';
-import { getPage } from '../../../lib/get-page';
-import { Data } from '@measured/puck';
 
 export default async function Page({
   params,
@@ -22,13 +23,16 @@ export default async function Page({
   params: Promise<{ puckPath: string[] }>;
 }) {
   const { puckPath = [] } = await params;
-  const path = `/${puckPath.join('/')}`;
-  const slug = puckPath[puckPath.length - 1];
-  const proc = await getPage(slug);
-  const data = proc.data as Data;
+
   return (
     <>
-      <PuckClientEditor path={path} data={data || {}} />
+      <RedlineProvider>
+        <ProcProvider viewMode={'view'} owner={''} procId={''}>
+          <SessionProvider procId={''}>
+            <PuckEditorView segments={puckPath} />
+          </SessionProvider>
+        </ProcProvider>
+      </RedlineProvider>
     </>
   );
 }

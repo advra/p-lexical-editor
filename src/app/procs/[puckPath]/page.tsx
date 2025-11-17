@@ -1,12 +1,18 @@
 // app/procs/[[...puckPath]]/page.tsx  (SERVER)
+
+/*
+  The preview version enables a LocalStoreProvider to allow users to make 
+  local changes on their end
+*/
 import { notFound } from 'next/navigation';
 import { getPage } from '@/lib/get-page';
-import ProcPageClient from '../ui/components/ProcPageClient';
-import { StoreProvider } from '@/context/StoreContext';
+import ProcPageClient from '../../../components/puck/ui/puck-editor/components/ProcPageClient';
+import { LocalStoreProvider } from '@/context/LocalStoreContext';
 import {
   ProcPublic,
   ProcPublicWithAcl,
 } from '@/modules/procs/models/proc-model';
+import { RedlineProvider } from '@/context/RedlineContext';
 
 export default async function Page({
   params,
@@ -20,11 +26,13 @@ export default async function Page({
   const proc: ProcPublic | ProcPublicWithAcl = await getPage(slug);
   if (!proc) return notFound();
 
+  // todo: eproc-2 determine if logged in user can see ProcPublicWithAcl
+
   return (
-    <>
-      <StoreProvider initialProc={proc}>
-        <ProcPageClient proc={proc} slug={slug} path={`/procs/${slug}`} />;
-      </StoreProvider>
-    </>
+    <LocalStoreProvider initialProc={proc}>
+      <RedlineProvider>
+        <ProcPageClient proc={proc} slug={slug} path={`/procs/${slug}`} />
+      </RedlineProvider>
+    </LocalStoreProvider>
   );
 }

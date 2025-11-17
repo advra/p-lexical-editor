@@ -1,12 +1,12 @@
 // src/modules/user/server/schemas.ts
 import z from 'zod';
 
-export const roleSchema = z.enum(['admin', 'viewer', 'operator']);
+export const roleSchema = z.enum(['admin', 'user', 'super-admin']);
 
 export const userBaseSchema = z.object({
   username: z.string().min(3).max(50),
   avatar: z.string().url().optional(),
-  roles: z.array(roleSchema).default(['viewer']),
+  roles: z.array(roleSchema).default(['user']),
 });
 
 export const userPublicSchema = userBaseSchema.extend({

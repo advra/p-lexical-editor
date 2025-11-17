@@ -1,12 +1,24 @@
+'use client';
 /*
   Basic Title component
 */
 
 import type { ComponentConfig } from '@measured/puck';
 import { RedlineWrapper } from './ui/redline/RedlineWrapper';
-import { redlineOptions, AddRedlineProps } from './ui/redline/RedlineComponent';
+import {
+  redlineOptions,
+  AddRedlineProps,
+  RedlineProps,
+} from './ui/redline/RedlineComponent';
+import { DisplayRedlineText } from './ui/redline/DisplayRedlineText';
+import { useState } from 'react';
 
-export type TextBlockProps = { text: string };
+export type TextBlockProps = {
+  // This id is inherited by default puck's internal props
+  id?: string;
+  // block specific
+  text: string;
+};
 
 export const TextBlock: ComponentConfig<TextBlockProps & AddRedlineProps> = {
   label: 'Paragraph',
@@ -14,50 +26,33 @@ export const TextBlock: ComponentConfig<TextBlockProps & AddRedlineProps> = {
     text: { type: 'textarea', contentEditable: true },
   },
   defaultProps: {
-    text: 'Sample pragraph text',
+    text: 'Sample paragraph text',
   },
   render: ({
+    id,
     text,
+    redlinesByTarget,
     onRedlineClick,
-    isRedlined,
-    redlineContent,
-    redlineDcn,
-    redlineDescription,
-    originalContent,
-  }: TextBlockProps &
-    AddRedlineProps & {
-      isRedlined?: boolean;
-      redlineContent?: string;
-      redlineDcn?: string;
-      redlineDescription?: string;
-      originalContent?: string;
-    }) => {
-    const handleMenuClose = () => {};
+  }: TextBlockProps & AddRedlineProps) => {
+    const redlineData = redlinesByTarget?.['text'] as RedlineProps;
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const handleMenuClose = () => setAnchorEl(null);
     const handleRedline = redlineOptions(onRedlineClick, handleMenuClose);
 
-    const displayText = isRedlined && redlineContent ? redlineContent : text;
+    const displayText = redlineData?.newText || text;
+    const isRedlined = !!redlineData;
 
     return (
-      <>
-        <RedlineWrapper onClick={() => handleRedline(displayText)}>
-          <div
-            className={
-              isRedlined ? 'line-through decoration-red-500 decoration-1' : ''
-            }
-          >
-            {isRedlined ? originalContent : displayText}
-          </div>
-        </RedlineWrapper>
-        {isRedlined && (
-          <div className="mt-1 p-2 bg-red-50 border border-red-200 rounded text-sm">
-            <div className="text-red-800 font-semibold">
-              Redline: {redlineDcn}
-            </div>
-            <div className="text-red-700">{redlineDescription}</div>
-            <div className="text-red-900 font-medium mt-1">{displayText}</div>
-          </div>
-        )}
-      </>
+      <RedlineWrapper onClick={() => handleRedline(displayText, 'text')}>
+        <div className="whitespace-pre-wrap break-words">
+          <DisplayRedlineText
+            blockId={id}
+            isRedlined={isRedlined}
+            redline={redlineData}
+            originalText={text}
+          />
+        </div>
+      </RedlineWrapper>
     );
   },
 };

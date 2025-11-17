@@ -3,7 +3,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { IconButton } from '@mui/material';
 import { useState } from 'react';
-import useUser from '@/hooks/use-user';
+import { useUser } from '@/context/UserContext';
 import { cn } from '@/lib/utils/cn';
 
 type Props = {

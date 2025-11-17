@@ -21,11 +21,11 @@ app.get('/status', (_req, res) => res.send('ONLINE'));
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: '*',
     credentials: false,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'POST', 'DELETE'],
-  }
-})
+  },
+});
 
 // roomsPresence: Map<room, Map<socketId, { id, name }>>
 const roomsPresence = new Map();
@@ -45,7 +45,18 @@ io.on('connection', (socket) => {
 
   // JOIN
   socket.on('room:join', ({ room, name }) => {
-    if (!room) return;
+    console.log(
+      '[socket] User joining room:',
+      room,
+      'name:',
+      name,
+      'socketId:',
+      socket.id,
+    );
+    if (!room) {
+      console.log('[socket] No room specified, ignoring join request');
+      return;
+    }
     socket.join(room);
     socket.data.rooms.add(room);
 
@@ -54,6 +65,17 @@ io.on('connection', (socket) => {
       id: socket.id,
       name: name || `User ${socket.id.slice(0, 4)}`,
     });
+
+    console.log(
+      '[socket] User successfully joined room:',
+      room,
+      'total users in room:',
+      roomsPresence.get(room).size,
+    );
+    console.log(
+      '[socket] Current users in room:',
+      Array.from(roomsPresence.get(room).values()),
+    );
 
     // presence:update to everyone in room
     emitPresence(room);
@@ -84,13 +106,6 @@ io.on('connection', (socket) => {
     socket.emit('presence:update', getRoomPresence(room));
   });
 
-  // Relay record patches to peers in the same room
-  // client emits: socket.emit('record:patch', { room, record_id, patch })
-  socket.on('record:patch', ({ room, record_id, patch }) => {
-    if (!room || !record_id) return;
-    socket.to(room).emit('record:patch', { record_id, patch });
-  });
-
   /*
     Redline Events to properly display users any redlines in the current proc (aka room)
   */
@@ -110,8 +125,72 @@ io.on('connection', (socket) => {
   // Handle redline deletion events
   socket.on('redline:delete', ({ room, redlineId }) => {
     if (!room || !redlineId) return;
-    socket.to(room).emit('redline:deleted', { redlineId });
+    console.log('[socket] Received redline:delete event:', { room, redlineId });
+    console.log('[socket] Broadcasting redline:deleted to room:', room);
+    io.to(room).emit('redline:deleted', { redlineId });
+    console.log('[socket] Broadcast complete');
   });
+
+  // Handle session record updates
+  socket.on(
+    'session:record-updated',
+    ({ room, sessionId, recordId, state }) => {
+      console.log('[socket] Received session:record-updated event:', {
+        room,
+        sessionId,
+        recordId,
+        state,
+      });
+
+      if (!room || !sessionId || !recordId) {
+        console.log('[socket] Missing required fields, ignoring event');
+        return;
+      }
+
+      console.log(
+        `[socket] Broadcasting session:record-updated to room ${room}`,
+      );
+      socket.to(room).emit('session:record-updated', {
+        sessionId,
+        recordId,
+        state,
+      });
+      console.log(`[socket] Successfully broadcasted to room ${room}`);
+    },
+  );
+
+  // Handle session status changes
+  socket.on(
+    'session:status-changed',
+    ({ room, sessionId, status, changedBy }) => {
+      console.log('[socket] Received session:status-changed:', {
+        room,
+        sessionId,
+        status,
+        changedBy,
+      });
+
+      if (!room || !sessionId) {
+        console.log('[socket] Missing room or sessionId, ignoring event');
+        return;
+      }
+
+      const statusUpdate = {
+        sessionId,
+        status,
+        changedBy,
+        timestamp: new Date().toISOString(),
+      };
+
+      // Broadcast to all users in the room (including sender)
+      console.log(`[socket] Broadcasting to room ${room}:`, statusUpdate);
+      io.to(room).emit('session:status-updated', statusUpdate);
+
+      console.log(
+        `[socket] Session ${sessionId} status changed to ${status} by ${changedBy} in room ${room}`,
+      );
+    },
+  );
 
   // (Optional) Your previous custom action event—kept for compatibility:
   socket.on('send-recordId-actionPerformed', ({ room, ...action }) => {

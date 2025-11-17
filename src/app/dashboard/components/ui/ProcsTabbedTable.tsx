@@ -1,40 +1,66 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { Menu, MenuItem, Tooltip } from '@mui/material';
+import { User } from '@/modules/auth/types';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+
 import Button from '@/components/common/buttons/Button';
 import CreateNewProcDialog from './CreateNewProcDialog';
 import type { ProcPayload } from './CreateNewProcDialog';
 import { initialProcsData } from '@/app/procs/utils/initialData';
 import { PuckPageData } from '@/app/puck/types';
-import Link from 'next/link';
+import RedirectingDialog from './RedirectingDialog';
+import PreviewButton from './navigation/preview-button';
+import EditButton from './navigation/edit-button';
+import MoreMenu from './navigation/more-menu';
+import ManagePermissionsDialog, {
+  UserPermission,
+} from './dialogs/ManagePermissionsDialog';
+import HistoryDialog from './dialogs/HistoryDialog';
+import { isUserAdmin } from '@/modules/user/utils/userUtils';
 
 export type Proc = {
   _id: string;
   slug: string;
   tags?: string[];
-  name: string;
+  name: string; //title to match the model?
   owner: string;
   sharedWith?: string[]; // usernames/emails
-  updatedAt?: string | Date;
+  version: number;
+  updatedAt: string | Date;
+  createdAt: string | Date;
   data: PuckPageData;
 };
 
 type Props = {
   procs: Proc[];
-  currentUsername: string;
+  currentUser: User | null;
 };
 
 const formatWhen = (v?: string | Date) =>
   v ? new Date(v).toLocaleString() : '—';
 
-export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
+export default function ProcsTabbedTable({ procs, currentUser }: Props) {
   const [showCreateNewProc, setShowCreateNewProc] = useState(false);
+  const [showRedirectDialog, setShowRedirectDialog] = useState(false);
+  const [showManagePermissionsDialog, setShowManagePermissionsDialog] =
+    useState(false);
+  const [showVersionHistoryDialog, setShowVersionHistoryDialog] =
+    useState(false);
+  const [selectedProc, setSelectedProc] = useState<Proc | null>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedProcForMenu, setSelectedProcForMenu] = useState<Proc | null>(
+    null,
+  );
+  const openReference = Boolean(anchorEl);
   const tabs = ['All', 'My Procs', 'Shared With Me'] as const;
   type Tab = (typeof tabs)[number];
 
@@ -50,13 +76,17 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
     console.log('ALL PROCS: ', procs);
 
     if (active === 'My Procs') {
-      items = procs.filter((p) => p.owner === currentUsername);
+      items = procs.filter((p) => p.owner === currentUser?.username);
     } else if (active === 'Shared With Me') {
-      items = procs.filter(
-        (p) =>
-          p.owner !== currentUsername &&
-          (p.sharedWith?.includes(currentUsername) ?? false),
-      );
+      if (currentUser) {
+        items = procs.filter(
+          (p) =>
+            p.owner !== currentUser?.username &&
+            (p.sharedWith?.includes(currentUser.username) ?? false),
+        );
+      } else {
+        items = [];
+      }
     }
 
     if (!q) return items;
@@ -72,7 +102,7 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
         shared.some((s) => s.includes(q))
       );
     });
-  }, [procs, query, active, currentUsername]);
+  }, [procs, query, active, currentUser]);
 
   // Pagination logic
   const totalItems = filtered.length;
@@ -86,48 +116,111 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
     setCurrentPage(1);
   }, [query, active, filtered.length]);
 
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, proc: Proc) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedProcForMenu(proc);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedProcForMenu(null);
+  };
+
+  const handleManagePermissions = () => {
+    if (selectedProcForMenu) {
+      setSelectedProc(selectedProcForMenu);
+      setShowManagePermissionsDialog(true);
+    }
+    handleMenuClose();
+  };
+
+  const handleOpenHistoryDialog = () => {
+    if (selectedProcForMenu) {
+      setSelectedProc(selectedProcForMenu);
+      setShowVersionHistoryDialog(true);
+    }
+    handleMenuClose();
+  };
+
+  const handlePermissionsUpdate = async (
+    procId: string,
+    permissions: UserPermission[],
+  ) => {
+    // TODO: Implement API call to update permissions
+    console.log('Updating permissions for proc:', procId, permissions);
+
+    // Mock implementation - replace with actual API call
+    try {
+      const response = await fetch(`/api/puck/proc/${procId}/permissions`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ permissions }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update permissions');
+      }
+
+      // Refresh the procs list or update local state
+      // For now, we'll just log success
+      console.log('Permissions updated successfully');
+    } catch (error) {
+      console.error('Failed to update permissions', error);
+      throw error;
+    }
+  };
+
   const tryCreateNewProc = async ({ name, description, tags }: ProcPayload) => {
     console.log(`Creating: name: ${name} desc: ${description} tag: ${tags}`);
     // 1) generate id
     // const id = crypto.randomUUID();
     // const path = `/procs/${id}`;
 
-    // 2) build the data object in the same shape your DB expects
-    const initialData = initialProcsData({
-      owner: currentUsername,
-      title: name,
-      description: description || undefined,
-      tags: tags ? [] : undefined,
-    });
-
-    console.log('initialData: ', initialData);
-
-    try {
-      const res = await fetch('/api/puck/proc', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: initialData }),
+    // check if valid user
+    if (!currentUser) {
+      console.error(
+        'Creating Eproc failed. No user is logged in to create eproc',
+      );
+    } else {
+      // 2) build the data object in the same shape your DB expects
+      const initialData = initialProcsData({
+        owner: currentUser.username,
+        title: name,
+        description: description || undefined,
+        tags: tags ? [] : undefined,
       });
 
-      if (!res.ok) {
-        const err = await res.text();
-        throw new Error(err || `Request failed: ${res.status}`);
+      console.log('initialData: ', initialData);
+
+      try {
+        const res = await fetch('/api/puck/proc', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: initialData }),
+        });
+
+        if (!res.ok) {
+          const err = await res.text();
+          throw new Error(err || `Request failed: ${res.status}`);
+        }
+
+        // Optionally parse server response
+        const { id, path } = await res.json();
+
+        setShowCreateNewProc(false);
+        // render loading new page message
+        setShowRedirectDialog(true);
+        // The dialog expects this return value to navigate to the new proc
+        return { id, path, initialData } as any;
+      } catch (error) {
+        console.error('Failed to create proc', error);
+        throw error;
       }
-
-      // Optionally parse server response
-      const { id, path } = await res.json();
-
-      setShowCreateNewProc(false);
-      // The dialog expects this return value to navigate to the new proc
-      return { id, path, initialData } as any;
-    } catch (error) {
-      console.error('Failed to create proc', error);
-      throw error;
     }
   };
 
   return (
-    <div className="bg-white rounded-md shadow-xs border border-gray-300 flex flex-col h-full min-h-[800px]">
+    <div className="bg-white rounded-md shadow-xs border border-gray-300 flex flex-col h-[80dvh]">
       {/* Tabs */}
       <div className="pt-2">
         <nav
@@ -208,6 +301,7 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
                 <th className="px-3 py-2">Owner</th>
                 <th className="px-3 py-2">Shared With</th>
                 <th className="px-3 py-2">Last updated</th>
+                <th className=" py-2">Version</th>
                 <th className="px-3 py-2">Actions</th>
               </tr>
             </thead>
@@ -216,10 +310,10 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
               {paginatedItems.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={5}
-                    className="px-3 py-6 text-center text-sm text-gray-500 "
+                    colSpan={6}
+                    className="h-auto px-3 py-6 text-center text-sm text-gray-500"
                   >
-                    No procs found
+                    No Procedures Found
                   </td>
                 </tr>
               ) : (
@@ -260,18 +354,36 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
                     <td className="px-3 py-3 text-gray-600">
                       {formatWhen(p.updatedAt)}
                     </td>
+                    <td className="px-3 py-3 text-gray-600">{p.version}</td>
                     <td className="px-3 py-3">
                       <div className="flex gap-2">
                         <button className="text-sm text-blue-600 hover:underline hover:cursor-pointer">
-                          <Link href={`procs/${p.slug}`}> View</Link>
+                          <PreviewButton slug={p.slug} />
                         </button>
                         <button className="text-sm text-blue-600 hover:underline hover:cursor-pointer">
-                          <Link href={`procs/${p.slug}/edit`}> Edit</Link>
+                          <EditButton slug={p.slug} />
                         </button>
                         {/* TODO: Add Delete, Edit Metadata, Manage Permissions */}
-                        {/* <button className="text-sm text-gray-600 hover:underline hover:cursor-pointer">
-                          More
-                        </button> */}
+                        {(currentUser?.username === p.owner ||
+                          isUserAdmin(currentUser)) && (
+                            currentUser?.roles && (
+                              <Tooltip title="More Options">
+                                <button
+                                  className="text-sm text-blue-600 hover:underline hover:cursor-pointer"
+                                  onClick={(e) => handleMenuOpen(e, p)}
+                                >
+                                  <MoreHorizIcon className="m-0.5 text-gray-400 hover:text-gray-500" />
+                                </button>
+                              </Tooltip>
+                            ),
+                          )}
+                        <MoreMenu
+                          anchorEl={anchorEl}
+                          handleManagePermissions={handleManagePermissions}
+                          openHistoryDialog={handleOpenHistoryDialog}
+                          handleMenuClose={handleMenuClose}
+                          open={openReference}
+                        />
                       </div>
                     </td>
                   </tr>
@@ -355,13 +467,29 @@ export default function ProcsTabbedTable({ procs, currentUsername }: Props) {
         </div>
       )}
 
-      {/* Render NewProcDialog */}
+      {/* Render dialogs */}
       {showCreateNewProc && (
         <CreateNewProcDialog
           open={showCreateNewProc}
           onClose={() => setShowCreateNewProc(false)}
           onCreate={tryCreateNewProc}
           tags={['Viasat', 'Northrop', 'Qualcomm']}
+        />
+      )}
+      {showRedirectDialog && <RedirectingDialog open={showRedirectDialog} />}
+      {showManagePermissionsDialog && selectedProc && (
+        <ManagePermissionsDialog
+          open={showManagePermissionsDialog}
+          onClose={() => setShowManagePermissionsDialog(false)}
+          proc={selectedProc}
+          onPermissionsUpdate={handlePermissionsUpdate}
+        />
+      )}
+      {showVersionHistoryDialog && selectedProc && (
+        <HistoryDialog
+          open={showVersionHistoryDialog}
+          onClose={() => setShowVersionHistoryDialog(false)}
+          proc={selectedProc}
         />
       )}
     </div>

@@ -1,32 +1,27 @@
 'use client';
 
+/*
+  This is a custom extension to support redlines. 
+  Client processes the current proc component "blocks" by rading them, injecting the redline components in 
+  the "applyRedlinesToBlock" method, and passing the modified blocks to the PuckRender component 
+*/
+
 import { Render as PuckRender } from '@measured/puck';
 import { PuckPageData } from '@/app/puck/types';
 import { RedLineModal } from '@/components/redline/RedLineModal';
 import { useState, useEffect } from 'react';
 import { getSocket } from '@/lib/socket';
-import useUser from '@/hooks/use-user';
+import { useUser } from '@/context/UserContext';
+import { useRedline } from '@/context/RedlineContext';
+import { Redline } from '@/modules/redlines/models/redline-model';
 
-type RedlineState = {
-  isOpen: boolean;
-  originalText: string;
-  dcn: string;
-  newText: string;
-  onSave: (dcn: string, description: string) => void;
-};
-
-type RedlineRenderProps = {
+type Props = {
   config: any;
   data: PuckPageData;
   procId: string;
   room: string;
-  onRedlineSave?: (
-    dcn: string,
-    newText: string,
-    originalText: string,
-    blockId: string,
-  ) => void;
   onRedlineDeleted?: (redlineId: string) => void;
+  redlineHoverEnabled?: boolean;
 };
 
 export const RedlineRender = ({
@@ -34,20 +29,19 @@ export const RedlineRender = ({
   data,
   procId,
   room,
-  onRedlineSave,
   onRedlineDeleted,
-}: RedlineRenderProps) => {
+  redlineHoverEnabled = false,
+}: Props) => {
   const { session } = useUser();
-  const [redlineState, setRedlineState] = useState<RedlineState>({
-    isOpen: false,
-    originalText: '',
-    dcn: '',
-    newText: '',
-    onSave: () => {},
-  });
-  const [currentBlockId, setCurrentBlockId] = useState<string>('');
-  const [redlines, setRedlines] = useState<any[]>([]);
-
+  const user = session?.user;
+  const {
+    redlines,
+    setRedlines,
+    setSelectedBlockId,
+    redlineModalState,
+    setRedlineModalState,
+    openRedlineModal,
+  } = useRedline();
   // Fetch redlines when component mounts, when data changes, and handle socket events
   useEffect(() => {
     const fetchRedlines = async () => {
@@ -109,12 +103,12 @@ export const RedlineRender = ({
     }
   }, [procId, data]); // Add data as dependency to re-fetch when Puck data changes
 
-  const handleCloseRedlineModal = () => {
-    setRedlineState((prev) => ({ ...prev, isOpen: false }));
+  const handleRedlineModalClose = () => {
+    setRedlineModalState((prev) => ({ ...prev, isOpen: false }));
   };
 
-  const handleSaveRedlineModal = () => {
-    redlineState.onSave(redlineState.dcn, redlineState.newText);
+  const handleRedlineModalSave = () => {
+    redlineModalState?.onSave(redlineModalState.dcn, redlineModalState.newText);
   };
 
   const handleRedlineDelete = async (redlineId: string) => {
@@ -150,6 +144,7 @@ export const RedlineRender = ({
       // Broadcast via socket to other users - use procId as the room
       const socket = getSocket();
       if (socket) {
+        console.log('room deleted redline is', room, redlineId);
         socket.emit('redline:delete', { room, redlineId });
       }
     } catch (error) {
@@ -157,12 +152,13 @@ export const RedlineRender = ({
     }
   };
 
-  const handleRedlineClick = (
-    originalText: string,
+  // when reline text is clicked, set the value and open redline
+  const handleRedlineClicked = (
     blockId: string,
-    target: string = 'content',
+    originalText: string,
+    target: string,
   ) => {
-    setCurrentBlockId(blockId);
+    setSelectedBlockId(blockId);
 
     // Check if there's an existing redline for this block and target
     const existingRedline = redlines.find(
@@ -172,96 +168,18 @@ export const RedlineRender = ({
         r.userId === session?.user?.username,
     );
 
-    setRedlineState({
-      isOpen: true,
-      originalText,
-      dcn: existingRedline?.dcn || '',
-      newText: existingRedline?.newText || '',
-      onSave: async (dcn: string, newText: string) => {
-        try {
-          let redline: any;
+    if (existingRedline && redlineHoverEnabled) return;
 
-          if (existingRedline) {
-            // Update existing redline
-            const response = await fetch('/api/redlines', {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                procId,
-                redlineId: existingRedline.redlineId,
-                dcn,
-                newText,
-              }),
-            });
+    // new redline modal state data
+    const redlineModalState = {
+      existingRedline: { ...existingRedline },
+      originalText: originalText,
+      target: target,
+    };
 
-            if (!response.ok) {
-              throw new Error('Failed to update redline');
-            }
+    console.log('newRedline', redlineModalState);
 
-            const result = await response.json();
-            redline = result.redline;
-
-            // Update current user's UI immediately
-            setRedlines((prev) =>
-              prev.map((r) =>
-                r.redlineId === existingRedline.redlineId ? redline : r,
-              ),
-            );
-
-            // Broadcast via socket to other users
-            const socket = getSocket();
-            if (socket) {
-              socket.emit('redline:update', {
-                room,
-                redlineId: existingRedline.redlineId,
-                patch: { dcn, newText },
-              });
-            }
-          } else {
-            // Create new redline
-            const response = await fetch('/api/redlines', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                procId,
-                blockId,
-                target,
-                dcn,
-                originalText,
-                newText,
-              }),
-            });
-
-            if (!response.ok) {
-              throw new Error('Failed to create redline');
-            }
-
-            const result = await response.json();
-            redline = result.redline;
-
-            // Update current user's UI immediately
-            setRedlines((prev) => [...prev, redline]);
-
-            // Broadcast via socket to other users
-            const socket = getSocket();
-            if (socket) {
-              socket.emit('redline:create', { room, redline });
-            }
-          }
-
-          // Call the original callback if provided
-          onRedlineSave?.(dcn, newText, originalText, blockId);
-        } catch (error) {
-          console.error('Failed to save redline:', error);
-        } finally {
-          setRedlineState((prev) => ({ ...prev, isOpen: false }));
-        }
-      },
-    });
+    openRedlineModal(room, procId, blockId, redlineModalState);
   };
 
   // Function to apply redlines to block content
@@ -271,21 +189,22 @@ export const RedlineRender = ({
     // Always provide the click handler so the modal can be opened
     const baseProps = {
       ...block.props,
-      onRedlineClick: (originalText: string, target: string = 'content') =>
-        handleRedlineClick(originalText, blockId, target),
+      onRedlineClick: (originalText: string, target: string) =>
+        handleRedlineClicked(blockId, originalText, target),
+      redlineHoverEnabled, // Pass the toggle state to blocks
     };
 
     // Get all redlines for this block
-    const blockRedlines = redlines.filter((r) => r.blockId === blockId);
+    const blockRedlines = redlines?.filter((r) => r.blockId === blockId);
 
     // If no redlines, just return with the handler attached
-    if (blockRedlines.length === 0) {
+    if (blockRedlines?.length === 0) {
       return { ...block, props: baseProps };
     }
 
     // Group redlines by target
     const redlinesByTarget: { [target: string]: any[] } = {};
-    blockRedlines.forEach((redline) => {
+    blockRedlines?.forEach((redline: Redline) => {
       if (!redlinesByTarget[redline.target]) {
         redlinesByTarget[redline.target] = [];
       }
@@ -302,8 +221,6 @@ export const RedlineRender = ({
       );
       latestRedlinesByTarget[target] = latestRedline;
     });
-
-    console.log('latestRedlinesByTarget', latestRedlinesByTarget);
 
     // inject redline attributes per block
     return {
@@ -324,24 +241,29 @@ export const RedlineRender = ({
   };
 
   // Create a modified data object that applies redlines and injects onRedlineClick
+  console.log('modifieddata', modifiedData);
 
   return (
     <>
       <PuckRender config={config} data={modifiedData} />
 
-      <RedLineModal
-        loading={false}
-        originalText={redlineState.originalText}
-        dcn={redlineState.dcn}
-        newText={redlineState.newText}
-        handleCloseRedlineModal={handleCloseRedlineModal}
-        handleSaveRedlineModal={handleSaveRedlineModal}
-        setDcn={(dcn: string) => setRedlineState((prev) => ({ ...prev, dcn }))}
-        setNewText={(newText: string) =>
-          setRedlineState((prev) => ({ ...prev, newText }))
-        }
-        showRedlineModal={redlineState.isOpen}
-      />
+      {redlineModalState && (
+        <RedLineModal
+          loading={false}
+          originalText={redlineModalState.originalText}
+          dcn={redlineModalState.dcn}
+          newText={redlineModalState.newText}
+          handleCloseRedlineModal={handleRedlineModalClose}
+          handleSaveRedlineModal={handleRedlineModalSave}
+          setDcn={(dcn: string) =>
+            setRedlineModalState((prev) => ({ ...prev, dcn }))
+          }
+          setNewText={(newText: string) =>
+            setRedlineModalState((prev) => ({ ...prev, newText }))
+          }
+          showRedlineModal={redlineModalState.isOpen}
+        />
+      )}
     </>
   );
 };

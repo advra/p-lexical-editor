@@ -1,6 +1,9 @@
 // puck-empty.ts
 import type { PuckPageData } from '@/app/puck/types';
 
+/*
+  Inital empty data with minimal information
+*/
 export const EMPTY_PUCK_DATA: PuckPageData = {
   content: [],
   root: {

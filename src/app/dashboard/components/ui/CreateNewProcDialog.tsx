@@ -77,10 +77,12 @@ export default function CreateNewProcDialog({
         tags,
       });
       toast.success(`Successfully Created new Proc: ${name.trim()}`);
+      // redirect
       router.push(path);
     } catch (err) {
       console.error('Create proc failed', err);
       toast.error('Error creating Proc');
+      throw err;
     } finally {
       setSubmitting(false);
     }

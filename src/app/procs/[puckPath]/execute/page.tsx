@@ -1,12 +1,14 @@
 // app/procs/[[...puckPath]]/execute/page.tsx  (SERVER)
 import { notFound } from 'next/navigation';
 import { getPage } from '@/lib/get-page';
-import ProcPageClient from '../../ui/components/ProcPageClient';
-import { StoreProvider } from '@/context/StoreContext';
 import {
   ProcPublic,
   ProcPublicWithAcl,
 } from '@/modules/procs/models/proc-model';
+import ProcPageExecuteClient from '../../../../components/puck/ui/puck-editor/components/ProcPageExecuteClient';
+import { RedlineProvider } from '@/context/RedlineContext';
+import { ProcProvider } from '@/context/ProcContext';
+import { SessionProvider } from '@/context/SessionContext';
 
 export default async function Page({
   params,
@@ -21,13 +23,17 @@ export default async function Page({
   if (!proc) return notFound();
 
   return (
-    <StoreProvider initialProc={proc}>
-      <ProcPageClient
-        executionMode={true}
-        proc={proc}
-        slug={slug}
-        path={`/procs/${slug}`}
-      />
-    </StoreProvider>
+    <RedlineProvider>
+      <ProcProvider viewMode={'execute'} owner={proc.owner} procId={proc._id}>
+        <SessionProvider procId={proc._id}>
+          <ProcPageExecuteClient
+            executionMode={true}
+            proc={proc}
+            slug={slug}
+            path={`/procs/${slug}`}
+          />
+        </SessionProvider>
+      </ProcProvider>
+    </RedlineProvider>
   );
 }
