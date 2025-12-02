@@ -17,7 +17,7 @@ export interface ProcDoc {
   slug: string;
   owner: string;
   status: 'draft' | 'published' | 'archived';
-  tags?: string[];
+  tags: string[];
   sharedWith?: Array<{
     userId: string;
     permissions: { read?: boolean; edit?: boolean; execute?: boolean };

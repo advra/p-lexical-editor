@@ -1,15 +1,29 @@
 import { revalidatePath } from 'next/cache';
 import { NextResponse } from 'next/server';
-import { PuckPageData } from '@/app/puck/types';
-import { appRouter } from '@/trpc/routers/_app';
-import { createTRPCContext } from '@/trpc/init';
-import { TRPCError } from '@trpc/server';
+import fs from 'fs';
+import path from 'path';
 
 type PutBody = {
   data: any;
   description?: string;
   tags?: string[];
   published?: boolean;
+};
+
+const DB_PATH = path.join(process.cwd(), 'data', 'database.json');
+
+// Helper to read database
+const readDatabase = (): Record<string, any> => {
+  if (!fs.existsSync(DB_PATH)) {
+    return {};
+  }
+  const fileContent = fs.readFileSync(DB_PATH, 'utf-8');
+  return JSON.parse(fileContent);
+};
+
+// Helper to write database
+const writeDatabase = (data: Record<string, any>) => {
+  fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
 };
 
 /*
@@ -19,10 +33,48 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
-  const { slug } = await params;
-  const caller = appRouter.createCaller(await createTRPCContext());
-  const proc = await caller.procs.getOne({ by: 'slug', slug });
-  return NextResponse.json(proc);
+  try {
+    const { slug } = await params;
+    const db = readDatabase();
+    const key = `/procs/${slug}`;
+    const value = db[key];
+    
+    if (!value) {
+      return NextResponse.json(
+        { error: 'Proc not found' },
+        { status: 404 }
+      );
+    }
+    
+    const title = value?.root?.props?.title || 'Untitled';
+    const owner = value?.metadata?.createdBy || 'admin';
+    const createdAt = value?.metadata?.createdAt || new Date().toISOString();
+    const updatedAt = value?.metadata?.updatedAt || createdAt;
+    const version = value?.metadata?.version || 1;
+    
+    const proc = {
+      _id: slug,
+      title,
+      slug,
+      owner,
+      status: 'published' as const,
+      tags: value?.root?.props?.tags || [],
+      sharedWith: [],
+      updatedAt,
+      data: value,
+      version,
+      createdAt,
+      publishedAt: value?.metadata?.publishedAt || createdAt,
+    };
+    
+    return NextResponse.json(proc);
+  } catch (error) {
+    console.error('Error getting proc:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
 }
 
 /*
@@ -33,52 +85,31 @@ export async function PUT(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   try {
-    const caller = appRouter.createCaller(await createTRPCContext());
     const { slug } = await params;
-
     const { data, description, tags, published }: PutBody = await req.json();
 
     // Build metadata
-    const titleFromRoot = (data as any)?.root?.props?.title as
-      | string
-      | undefined;
+    const titleFromRoot = data?.root?.props?.title as string | undefined;
+    const db = readDatabase();
+    const key = `/procs/${slug}`;
+    const existing = db[key];
+    
+    const now = new Date().toISOString();
     const metadata = {
       title: titleFromRoot ?? 'Untitled',
-      version: (data.metadata?.version ?? 0) + 1,
-      updatedAt: new Date().toISOString(),
+      version: (existing?.metadata?.version ?? 0) + 1,
+      updatedAt: now,
+      createdBy: existing?.metadata?.createdBy || 'admin',
+      createdAt: existing?.metadata?.createdAt || now,
+      ...(published ? { publishedAt: now } : {}),
     };
+    
     const finalData = { ...data, metadata };
-
-    // Upsert by slug
-    let existingId: string | null = null;
-    try {
-      const existing = await caller.procs.getOne({ by: 'slug', slug });
-      existingId = existing._id;
-    } catch (e) {
-      if (!(e instanceof TRPCError && e.code === 'NOT_FOUND')) throw e;
-    }
-
-    if (existingId) {
-      await caller.procs.update({
-        id: existingId,
-        patch: {
-          slug, // keep consistent
-          description: description ?? '',
-          tags: tags ?? [],
-          data: finalData,
-        },
-      });
-    } else {
-      await caller.procs.create({
-        title: titleFromRoot ?? 'Untitled',
-        description: description ?? '',
-        tags: tags ?? [],
-        sharedWith: [],
-        data: finalData,
-        publishNow: !!published,
-      });
-    }
-
+    
+    // Update database
+    db[key] = finalData;
+    writeDatabase(db);
+    
     revalidatePath(`/procs/${slug}`);
     return NextResponse.json({ ok: true });
   } catch (err: any) {
@@ -94,12 +125,27 @@ export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
-  const { slug } = await params;
-  const caller = appRouter.createCaller(await createTRPCContext());
-
-  // First get the proc to get its ID
-  const proc = await caller.procs.getOne({ by: 'slug', slug });
-  await caller.procs.delete({ id: proc._id });
-
-  return NextResponse.json({ ok: true });
+  try {
+    const { slug } = await params;
+    const db = readDatabase();
+    const key = `/procs/${slug}`;
+    
+    if (!db[key]) {
+      return NextResponse.json(
+        { error: 'Proc not found' },
+        { status: 404 }
+      );
+    }
+    
+    delete db[key];
+    writeDatabase(db);
+    
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error('Error deleting proc:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
 }
