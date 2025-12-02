@@ -1,7 +1,7 @@
 'use client';
 
 import ProfileAvatarMenu from '@/components/common/profile/profile-avatar';
-import DocsTabbedTable, { Doc } from './ProcsTabbedTable';
+import DocsTabbedTable, { Doc } from './DocsTabbedTable';
 import { useUser } from '@/context/UserContext';
 import { Suspense, useState } from 'react';
 import { ProcsTabbedTableSkeleton } from './ClientDashboardSkeleton';

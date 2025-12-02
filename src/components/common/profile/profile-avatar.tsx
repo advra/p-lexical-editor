@@ -1,11 +1,6 @@
 'use client';
 import * as React from 'react';
-import { Avatar, IconButton, Menu, MenuItem } from '@mui/material';
-import { useRouter } from 'next/navigation';
-
-import LogoutButton from '../buttons/LogoutButton';
-import LoginButton from '../buttons/LoginButton';
-import SettingsButton from '../buttons/SettingButton';
+import { Avatar, IconButton } from '@mui/material';
 
 type Props = {
   username: string | null;

@@ -11,8 +11,8 @@ import SkipNextIcon from '@mui/icons-material/SkipNext';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 
 import Button from '@/components/common/buttons/Button';
-import CreateNewDocDialog from './CreateNewProcDialog';
-import type { ProcPayload } from './CreateNewProcDialog';
+import CreateNewDocDialog from './CreateNewDocDialog';
+import type { ProcPayload } from './CreateNewDocDialog';
 import { initialProcsData } from '@/app/procs/utils/initialData';
 import { PuckPageData } from '@/app/puck/types';
 import RedirectingDialog from './RedirectingDialog';
@@ -289,7 +289,7 @@ export default function DocsTabbedTable({ docs: procs, currentUser }: Props) {
       {totalItems > 0 && (
         <div className="px-4 py-3 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
           <div className="text-sm text-gray-600">
-            Showing {startIndex + 1}-{endIndex} of {totalItems} Procs
+            Showing {startIndex + 1}-{endIndex} of {totalItems} Documents
           </div>
 
           <div className="flex items-center gap-1">

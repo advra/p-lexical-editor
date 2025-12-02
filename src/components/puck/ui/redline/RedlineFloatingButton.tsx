@@ -12,7 +12,7 @@ type Props = {
 export const RedlineFloatingButton = ({ onClick, redlineEnabled }: Props) => {
   return (
     <Tooltip
-      title={redlineEnabled ? 'Disable redline' : 'Enable redline'}
+      title={redlineEnabled ? 'Disable suggestions' : 'Disable suggestions'}
       placement="right"
     >
       <button
@@ -23,7 +23,9 @@ export const RedlineFloatingButton = ({ onClick, redlineEnabled }: Props) => {
             ? 'bg-white text-white hover:bg-gray-700 hover:cursor-pointer hover:shadow-xl hover:scale-105 focus:outline-none focus:ring-0 '
             : 'bg-gray-200 text-white hover:cursor-pointer hover:scale-100 hover:shadow-none',
         )}
-        aria-label={redlineEnabled ? 'Enable redline' : 'Disable redline'}
+        aria-label={
+          redlineEnabled ? 'Enable suggestions' : 'Disable suggestions'
+        }
       >
         <span
           className={cn('w-6 h-6', redlineEnabled ? 'bg-red-500' : 'bg-black')}
