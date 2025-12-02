@@ -15,7 +15,7 @@ export const ClientDashboard = ({ procs }: { procs: Proc[] }) => {
         {/* Header */}
         <div className="container mx-auto mt-8 px-4">
           <div className="flex items-center">
-            <div className="font-semibold my-4 text-2xl">Procedures</div>
+            <div className="font-semibold my-4 text-2xl">Documents</div>
 
             <div className="ml-auto">
               {userLoading ? (

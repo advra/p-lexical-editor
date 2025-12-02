@@ -9,7 +9,7 @@ type Props = {
 
 function PreviewButton({ slug }: Props) {
   return (
-    <Tooltip title="View Procedure">
+    <Tooltip title="View document">
       <Link href={`procs/${slug}`}>
         <div
           className="rounded-sm aspect-square h-[30px]

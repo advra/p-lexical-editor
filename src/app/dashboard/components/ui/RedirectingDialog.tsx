@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Dialog, Box, CircularProgress } from '@mui/material';
 
 type Props = {
@@ -26,7 +26,7 @@ export default function RedirectingDialog({ open }: Props) {
           autoComplete="off"
           sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
         >
-          Procedure successfully created. Redirecting you to the eproc page...
+          Document successfully created. Redirecting you to the document page...
         </Box>
       </div>
     </Dialog>

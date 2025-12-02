@@ -108,37 +108,34 @@ export default function CreateNewProcDialog({
           sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
         >
           <TextField
-            label="Name"
-            placeholder="Eg. Viasat-2 Boeing Launch"
+            label="Name*"
+            placeholder="Eg. New Document"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
             error={!!errors.name}
-            // helperText={errors.name ?? ""}
             autoFocus
           />
 
           <TextField
             className="w-full"
-            label="Description"
-            placeholder="Describe your operational procedure"
+            label="Description*"
+            placeholder="Describe your document"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             required
             error={!!errors.description}
-            // helperText={errors.description ?? ""}
           />
 
           {/* Project tag: if you pass a list, show select otherwise show text input */}
           {tags && tags.length > 0 ? (
             <TextField
               className="w-full"
-              label="Project Tag (Optional)"
-              placeholder="Assign a project tag"
+              label="Tag (Optional)"
+              placeholder="Assign a tag"
               // select
               value={projectTag}
               onChange={(e) => setProjectTag(e.target.value)}
-              // helperText="Assign a project tag"
             >
               <MenuItem value="">
                 <em>None</em>

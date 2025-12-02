@@ -313,7 +313,7 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
                     colSpan={6}
                     className="h-auto px-3 py-6 text-center text-sm text-gray-500"
                   >
-                    No Procedures Found
+                    No Documents Found
                   </td>
                 </tr>
               ) : (
@@ -324,9 +324,6 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
                         <span className="font-medium">
                           {p.data?.root?.props?.title ?? p.name}
                         </span>
-                        {/* {!p.published && (
-                          <span className="text-gray-500"> (DRAFT)</span>
-                        )} */}
                       </Link>
                     </td>
                     <td className="px-3 py-3 text-gray-600">{p.owner}</td>

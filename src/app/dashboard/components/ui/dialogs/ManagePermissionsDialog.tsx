@@ -259,10 +259,10 @@ export default function ManagePermissionsDialog({
         <div className="py-2 text-xs">
           <div>
             <div>
-              • <strong>Read:</strong> View the procedure
+              • <strong>Read:</strong> View the document
             </div>
             <div>
-              • <strong>Edit:</strong> Modify the procedure content
+              • <strong>Edit:</strong> Modify the document content
             </div>
             <div>
               • <strong>Execute:</strong> Mark tasks as complete during

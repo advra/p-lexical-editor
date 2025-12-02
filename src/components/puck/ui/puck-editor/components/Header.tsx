@@ -1,16 +1,12 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { BackToDashboardButton } from './BackToDashboardButton';
-import { ExportPDFButton } from './ExportPDFButton';
 import { EditButton } from './EditButton';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
-import ProcMetadataDialog, { MetadataInfo } from './ProcMetadataDialog';
-import { ProcMetadataDetailsButton } from './ProcMetadataDetailsButton';
+import { MetadataInfo } from './ProcMetadataDialog';
 import { BackToViewMode } from './BackToViewModeButton';
-import { ExecuteModeButton } from './ExecuteModeButton';
-import { SessionButtons } from './SessionButton';
 import { User } from '@/modules/auth/types';
 import { CircularProgress } from '@mui/material';
 import { ProcPermissions } from '@/context/ProcContext';
@@ -32,22 +28,10 @@ type Props = {
 export const Header = ({
   path,
   executionMode = false,
-  title,
-  description,
-  tags,
   presenceDisplay,
   permissions,
-  user,
   loading,
 }: Props) => {
-  const [showProcMetadataDetails, setShowProcMetadataDetails] = useState(false);
-
-  const tryUpdateProcMetadata = () => {};
-
-  const handleMetadataDetails = () => {
-    setShowProcMetadataDetails(true);
-  };
-
   const ViewModeLabel = () => {
     return (
       <div
@@ -57,7 +41,7 @@ export const Header = ({
         <div>
           <VisibilityIcon className="mb-0.5" />
         </div>
-        <div>Preview Mode</div>
+        <div>Review Mode</div>
       </div>
     );
   };
@@ -73,23 +57,8 @@ export const Header = ({
     );
   };
 
-  const metadata: MetadataInfo = {
-    title: title,
-    description: description ?? '',
-    tags: tags,
-  };
-
   return (
     <>
-      {showProcMetadataDetails && (
-        <ProcMetadataDialog
-          metadata={metadata}
-          open={showProcMetadataDetails}
-          onClose={() => setShowProcMetadataDetails(false)}
-          onUpdate={tryUpdateProcMetadata}
-          //   projectTags={['Viasat', 'Northrop', 'Qualcomm']}
-        />
-      )}
       <div className="no-print">
         <div
           className="fixed w-full top-0 z-40 py-1 bg-white/80 backdrop-blur 

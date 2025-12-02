@@ -49,25 +49,18 @@ export default function HistoryDialog({ open, onClose, proc }: Props) {
     user: string;
     offsetMin: number;
   }> = [
-    { type: HistoryType.EXECUTED, user: 'Adrian', offsetMin: 0 }, // now
-    // { type: HistoryType.EDITED, user: 'Steve', offsetMin: 5 },
-    { type: HistoryType.PUBLISHED, user: 'Adrian', offsetMin: 12 },
-    // { type: HistoryType.EDITED, user: 'Steve', offsetMin: 25 },
-    { type: HistoryType.EXECUTED, user: 'Adrian', offsetMin: 40 },
-    // { type: HistoryType.EDITED, user: 'Steve', offsetMin: 60 }, // 1h
-    { type: HistoryType.PUBLISHED, user: 'Adrian', offsetMin: 75 },
-    // { type: HistoryType.EDITED, user: 'Steve', offsetMin: 90 },
-    { type: HistoryType.EXECUTED, user: 'Adrian', offsetMin: 120 }, // 2h
-    // { type: HistoryType.EDITED, user: 'Adrian', offsetMin: 150 },
-    { type: HistoryType.PUBLISHED, user: 'Steve', offsetMin: 180 }, // 3h
-    // { type: HistoryType.EDITED, user: 'Adrian', offsetMin: 240 }, // 4h
-    { type: HistoryType.EXECUTED, user: 'Steve', offsetMin: 300 }, // 5h
-    // { type: HistoryType.EDITED, user: 'Adrian', offsetMin: 360 }, // 6h
-    { type: HistoryType.PUBLISHED, user: 'Steve', offsetMin: 480 }, // 8h
-    { type: HistoryType.PUBLISHED, user: 'Adrian', offsetMin: 720 }, // 12h
-    { type: HistoryType.EXECUTED, user: 'Steve', offsetMin: 1440 }, // 1 day
-    { type: HistoryType.PUBLISHED, user: 'Adrian', offsetMin: 2880 }, // 2 days
-    { type: HistoryType.PUBLISHED, user: 'Steve', offsetMin: 4320 }, // 3 days
+    { type: HistoryType.EXECUTED, user: 'user1', offsetMin: 0 }, // now
+    { type: HistoryType.PUBLISHED, user: 'user1', offsetMin: 12 },
+    { type: HistoryType.EXECUTED, user: 'user1', offsetMin: 40 },
+    { type: HistoryType.PUBLISHED, user: 'user1', offsetMin: 75 },
+    { type: HistoryType.EXECUTED, user: 'user1', offsetMin: 120 }, // 2h
+    { type: HistoryType.PUBLISHED, user: 'user2', offsetMin: 180 }, // 3h
+    { type: HistoryType.EXECUTED, user: 'user2', offsetMin: 300 }, // 5h
+    { type: HistoryType.PUBLISHED, user: 'user2', offsetMin: 480 }, // 8h
+    { type: HistoryType.PUBLISHED, user: 'user1', offsetMin: 720 }, // 12h
+    { type: HistoryType.EXECUTED, user: 'user2', offsetMin: 1440 }, // 1 day
+    { type: HistoryType.PUBLISHED, user: 'user1', offsetMin: 2880 }, // 2 days
+    { type: HistoryType.PUBLISHED, user: 'user2', offsetMin: 4320 }, // 3 days
   ];
   const oneHourAgo = new Date(now.getTime() - 1 * 60 * 60 * 1000);
   const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
@@ -79,7 +72,7 @@ export default function HistoryDialog({ open, onClose, proc }: Props) {
         historyType: HistoryType.CREATED,
         timestampAt: formatTimestamp(proc.createdAt.toString()),
         timestampMs: new Date(proc.createdAt).getTime(),
-        user: 'Steve',
+        user: 'user2',
       },
     ];
 
@@ -171,7 +164,7 @@ export default function HistoryDialog({ open, onClose, proc }: Props) {
               color="text.secondary"
               sx={{ textAlign: 'center', py: 3 }}
             >
-              There is no other history for this Procedure
+              There is no other history for this document
             </Typography>
           </div>
         ) : (

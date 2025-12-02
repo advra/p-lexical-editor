@@ -1,24 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField as MuiTextfield,
-  Box,
-  MenuItem,
-  IconButton,
-} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { Dialog, Box } from '@mui/material';
 import TextField from '@/components/common/TextField';
-import InfoIcon from '@mui/icons-material/Info';
 
 import { default as CustomButton } from '@/components/common/buttons/Button';
-import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { Metadata } from '@measured/puck';
 
 export type MetadataInfo = {
   title: string;
@@ -53,41 +40,10 @@ export default function ProcMetadataDialog({
 
   useEffect(() => {
     if (!open) {
-      // reset fields when dialog closes
-      // setName('');
-      // setDescription('');
-      // setTags('');
       setErrors({});
       setSubmitting(false);
     }
   }, [open]);
-
-  // const validate = () => {
-  //   const next: typeof errors = {};
-  //   if (!name.trim()) next.name = 'Name is required';
-  //   if (!description.trim()) next.description = 'Description is required';
-  //   setErrors(next);
-  //   return Object.keys(next).length === 0;
-  // };
-
-  const handleCreate = async () => {
-    // if (!validate()) return;
-    // setSubmitting(true);
-    // try {
-    //   const { id, path, data } = await onCreate({
-    //     name: name.trim(),
-    //     description: description.trim(),
-    //     projectTag,
-    //   });
-    //   toast.success(`Successfully Created new Proc: ${name.trim()}`);
-    //   router.push(`/procs/${id}`);
-    // } catch (err) {
-    //   console.error('Create proc failed', err);
-    //   toast.error('Error creating Proc');
-    // } finally {
-    //   setSubmitting(false);
-    // }
-  };
 
   const toCsv = (vals: (string | null | undefined)[]) =>
     vals
@@ -104,7 +60,7 @@ export default function ProcMetadataDialog({
       aria-labelledby="create-proc-title"
     >
       <div className="p-4 flex items-center gap-2 my-2">
-        <h3>Procedure Details</h3>
+        <h3>Document Details</h3>
       </div>
 
       <div className="px-4 mb-8">
@@ -122,7 +78,6 @@ export default function ProcMetadataDialog({
             onChange={(e) => setName(e.target.value)}
             required
             error={!!errors.name}
-            // helperText={errors.name ?? ""}
             autoFocus
           />
 
@@ -134,10 +89,7 @@ export default function ProcMetadataDialog({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             required
-            // multiline
-            // minRows={3}
             error={!!errors.description}
-            // helperText={errors.description ?? ""}
           />
 
           <TextField
@@ -148,41 +100,8 @@ export default function ProcMetadataDialog({
             value={tags}
             onChange={(e) => setDescription(e.target.value)}
             required
-            // multiline
-            // minRows={3}
             error={!!errors.description}
-            // helperText={errors.description ?? ""}
           />
-
-          {/* Project tag: if you pass a list, show select otherwise show text input */}
-          {/* {projectTags && projectTags.length > 0 ? (
-            <TextField
-              className="w-full"
-              label="Project Tag"
-              // select
-              value={projectTag}
-              onChange={(e) => setProjectTag(e.target.value)}
-              // helperText="Assign a project tag"
-            >
-              <MenuItem value="">
-                <em>None</em>
-              </MenuItem>
-              {projectTags.map((tag) => (
-                <MenuItem key={tag} value={tag}>
-                  {tag}
-                </MenuItem>
-              ))}
-            </TextField>
-          ) : (
-            <TextField
-              className="w-full"
-              label="Project Tag"
-              placeholder="Assign a project tag"
-              value={projectTag}
-              onChange={(e) => setProjectTag(e.target.value)}
-              // helperText="Assign a project tag"
-            />
-          )} */}
         </Box>
       </div>
 
@@ -194,15 +113,6 @@ export default function ProcMetadataDialog({
         >
           Close
         </CustomButton>
-
-        {/* <CustomButton
-          className="bg-black text-white rounded-sm flex hover:bg-black/85"
-          onClick={handleCreate}
-          // disabled={submitting}
-          disabled
-        >
-          Save
-        </CustomButton> */}
       </div>
     </Dialog>
   );
