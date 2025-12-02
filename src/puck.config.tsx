@@ -5,10 +5,11 @@ import HeadingBlock, {
 import SectionBlock, {
   SectionBlockProps,
 } from './components/puck/SectionBlock';
+import SlotBlock, { SlotBlockProps } from './components/puck/SlotBlock';
 import ColumnsBlock, { ColumnsBlockProps } from './components/puck/Columns';
 import TextBlock, { TextBlockProps } from './components/puck/TextBlock';
 import ToggleBlock, { ToggleBlockProps } from './components/puck/ToggleBlock';
-import { Avatar, Card, CardHeader } from '@mui/material';
+import { CardHeader } from '@mui/material';
 import classNames from 'classnames';
 import { PADDING_OPTIONS } from './components/puck/constants/padding';
 import {
@@ -23,6 +24,7 @@ type Props = {
   SectionBlock: SectionBlockProps;
   ColumnsBlock: ColumnsBlockProps;
   TextBlock: TextBlockProps;
+  SlotBlock: SlotBlockProps;
   Grid: {};
   Card: {
     title: string;
@@ -67,6 +69,7 @@ export const config: Config<Props> = {
     },
   },
   components: {
+    SlotBlock,
     ChecklistBlock,
     ToggleBlock,
     HeadingBlock,

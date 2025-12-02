@@ -30,10 +30,10 @@
   "/procs/123": {
     "root": {
       "props": {
+        "padding": "p-16",
         "title": "123",
         "description": "123",
-        "tags": [],
-        "padding": "p-16"
+        "tags": []
       }
     },
     "content": [
@@ -43,16 +43,37 @@
           "text": "Hi admin! This is your new page. Click the Edit Button at the top right to modify this page's contents.",
           "id": "TextBlock-admin-e5ed7726-96d7-4951-a5bf-78b6d80e45d9"
         }
+      },
+      {
+        "type": "TextBlock",
+        "props": {
+          "text": "Some text here by user ksfd klsdf  kjdfslksdf ls sdf ffsa",
+          "id": "TextBlock-a2a321a4-7bc6-4a32-8007-a8238961149a"
+        }
+      },
+      {
+        "type": "SlotBlock",
+        "props": {
+          "slot": [
+            {
+              "type": "TextBlock",
+              "props": {
+                "text": "Slot Component with TextBlock component here",
+                "id": "TextBlock-82cf2133-0ac5-405d-8dd0-8d846db94952"
+              }
+            }
+          ],
+          "id": "SlotBlock-6e2bbd64-6202-4ea6-8f9d-0835db081f3e"
+        }
       }
     ],
     "zones": {},
     "metadata": {
       "title": "123",
-      "description": "123",
+      "version": 2,
+      "updatedAt": "2025-12-02T23:40:52.776Z",
       "createdBy": "admin",
-      "createdAt": "2025-12-02T23:19:58.280Z",
-      "updatedAt": "2025-12-02T23:19:58.280Z",
-      "version": 1
+      "createdAt": "2025-12-02T23:19:58.280Z"
     }
   }
 }
