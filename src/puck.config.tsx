@@ -15,10 +15,6 @@ import {
   ChecklistBlock,
   ChecklistBlockProps,
 } from './components/puck/ChecklistBlock';
-import { TaskItemBlock, TaskItemProps } from './components/puck/TaskItemBlock';
-import MarkCompleteButton, {
-  MarkCompleteButtonProps,
-} from './components/puck/MarkCompleteButton';
 
 type Props = {
   ChecklistBlock: ChecklistBlockProps;
@@ -27,8 +23,6 @@ type Props = {
   SectionBlock: SectionBlockProps;
   ColumnsBlock: ColumnsBlockProps;
   TextBlock: TextBlockProps;
-  TaskItemBlock: TaskItemProps;
-  MarkCompleteButton: MarkCompleteButtonProps;
   Grid: {};
   Card: {
     title: string;
@@ -79,8 +73,6 @@ export const config: Config<Props> = {
     SectionBlock,
     ColumnsBlock,
     TextBlock,
-    TaskItemBlock,
-    MarkCompleteButton,
     Grid: {
       label: 'Grid',
       fields: {
@@ -166,15 +158,6 @@ export const config: Config<Props> = {
         'ToggleBlock',
         'Card',
       ],
-    },
-    tasking: {
-      title: 'Tasking',
-      components: ['TaskItemBlock'],
-      defaultExpanded: true,
-    },
-    hidden: {
-      components: ['MarkCompleteButton'],
-      visible: true,
     },
   },
 };

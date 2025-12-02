@@ -2,12 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { RedlineComment } from '../RedlineComponent';
-import { CommentItem } from './Cards/CommentItem';
 
 import CloseIcon from '@mui/icons-material/Close';
-import SendIcon from '@mui/icons-material/Send';
 import { findRedlineComment } from '../mockRedlineData';
-import { useTRPC } from '@/trpc/client';
 import { useProc } from '@/context/ProcContext';
 import { useRedline } from '@/context/RedlineContext';
 import { useMutation, useQuery } from '@tanstack/react-query';

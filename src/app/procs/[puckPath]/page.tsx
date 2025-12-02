@@ -26,19 +26,16 @@ export async function generateMetadata({
 export default async function Page({
   params,
 }: {
-  params: Promise<{ puckPath: string[] }>;
+  params: { puckPath?: string };
 }) {
-  const { puckPath = [] } = await params;
-  const path = `/${puckPath.join('/')}`;
-  const data = getPage(path);
-
-  if (!data) {
-    return notFound();
-  }
+  const { puckPath } = await params;
+  const slug = puckPath;
+  if (!slug) return notFound();
+  const data = getPage(puckPath);
 
   return (
     <RedlineProvider>
-      <ProcPageClient proc={proc} slug={slug} path={`/procs/${slug}`} />
+      <ProcPageClient proc={data} slug={slug} path={`/procs/${slug}`} />
     </RedlineProvider>
   );
 }

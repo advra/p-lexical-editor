@@ -183,35 +183,26 @@ export default function ProcPageClient({
     roles: ['super-admin', 'admin'],
   };
   return (
-    <ProcProvider
-      viewMode={'view'}
-      owner={stubbedUser.username}
-      currentUser={stubbedUser}
-      procId={proc._id}
+    <RedlineLayoutWrapper
+      room={room}
+      redlines={redlines}
+      onAddComment={undefined}
+      onRedlineDelete={handleRedlineDelete}
     >
-      <div>
-        <RedlineLayoutWrapper
-          room={room}
-          redlines={redlines}
-          onAddComment={undefined}
-          onRedlineDelete={handleRedlineDelete}
-        >
-          <PuckPreview
-            ref={rootRef}
-            puckPageData={proc.data}
-            owner={proc.owner}
-            updatedAt={(proc.updatedAt ?? proc.createdAt) as string}
-            preview={preview}
-            page="letter"
-            procId={proc._id}
-            room={room}
-            title={proc.title}
-            onRedlineCreated={(redline) => {
-              console.log('Redline created from preview:', redline);
-            }}
-          />
-        </RedlineLayoutWrapper>
-      </div>
-    </ProcProvider>
+      <PuckPreview
+        ref={rootRef}
+        puckPageData={proc.data}
+        owner={proc.owner}
+        updatedAt={(proc.updatedAt ?? proc.createdAt) as string}
+        preview={preview}
+        page="letter"
+        procId={proc._id}
+        room={room}
+        title={proc.title}
+        onRedlineCreated={(redline) => {
+          console.log('Redline created from preview:', redline);
+        }}
+      />
+    </RedlineLayoutWrapper>
   );
 }

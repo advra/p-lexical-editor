@@ -2,7 +2,6 @@
 export { useLocalCompletion } from '../hooks/use-local-completion';
 export { useSessionCompletion } from '../hooks/use-session-completion';
 export { useCompletion } from '../hooks/use-completion';
-export { MarkCompleteButton } from '../task-item/components/MarkCompleteButton';
 
 // Example of how other blocks can use these utilities:
 
