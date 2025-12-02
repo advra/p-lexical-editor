@@ -71,3 +71,43 @@ export const getAllProcs = (): { procs: ProcDoc[]; total: number } => {
     return { procs: [], total: 0 };
   }
 };
+
+export const getProcBySlug = (slug: string): ProcDoc | null => {
+  try {
+    const dbPath = path.join(process.cwd(), 'data', 'database.json');
+    if (!fs.existsSync(dbPath)) {
+      return null;
+    }
+
+    const fileContent = fs.readFileSync(dbPath, 'utf-8');
+    const allData: Record<string, any> = JSON.parse(fileContent);
+    
+    const key = `/procs/${slug}`;
+    const value = allData[key];
+    
+    if (!value) {
+      return null;
+    }
+    
+    const title = value?.root?.props?.title || 'Untitled';
+    const owner = value?.metadata?.createdBy || 'admin';
+    const createdAt = value?.metadata?.createdAt || new Date().toISOString();
+    const updatedAt = value?.metadata?.updatedAt || createdAt;
+    const version = value?.metadata?.version || 1;
+    
+    return {
+      _id: slug,
+      title,
+      slug,
+      owner,
+      sharedWith: [],
+      updatedAt,
+      data: value,
+      version,
+      createdAt,
+    };
+  } catch (error) {
+    console.error('Error getting proc by slug from database.json:', error);
+    return null;
+  }
+};

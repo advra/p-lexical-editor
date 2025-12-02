@@ -8,7 +8,6 @@ import {
 import ProcPageExecuteClient from '../../../../components/puck/ui/puck-editor/components/ProcPageExecuteClient';
 import { RedlineProvider } from '@/context/RedlineContext';
 import { ProcProvider } from '@/context/ProcContext';
-import { SessionProvider } from '@/context/SessionContext';
 
 export default async function Page({
   params,
@@ -25,14 +24,12 @@ export default async function Page({
   return (
     <RedlineProvider>
       <ProcProvider viewMode={'execute'} owner={proc.owner} procId={proc._id}>
-        <SessionProvider procId={proc._id}>
-          <ProcPageExecuteClient
-            executionMode={true}
-            proc={proc}
-            slug={slug}
-            path={`/procs/${slug}`}
-          />
-        </SessionProvider>
+        <ProcPageExecuteClient
+          executionMode={true}
+          proc={proc}
+          slug={slug}
+          path={`/procs/${slug}`}
+        />
       </ProcProvider>
     </RedlineProvider>
   );

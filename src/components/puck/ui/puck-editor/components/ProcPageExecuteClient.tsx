@@ -11,7 +11,6 @@ import {
 import { useUser } from '@/context/UserContext';
 import { getSocket } from '@/lib/socket';
 import { ProcProvider, ProcViewModes } from '@/context/ProcContext';
-import { SessionProvider, useSession } from '@/context/SessionContext';
 import { ExecuteStoreProvider } from '@/context/ExecuteStoreContext';
 
 function waitForImages(root: HTMLElement) {

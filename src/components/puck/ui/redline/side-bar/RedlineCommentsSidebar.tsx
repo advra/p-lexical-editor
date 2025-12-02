@@ -7,11 +7,11 @@ import CloseIcon from '@mui/icons-material/Close';
 import { findRedlineComment } from '../mockRedlineData';
 import { useProc } from '@/context/ProcContext';
 import { useRedline } from '@/context/RedlineContext';
-import { useMutation, useQuery } from '@tanstack/react-query';
 import { Redline } from '@/modules/redlines/models/redline-model';
 import RedlineThreadCard from './Cards/ThreadCard';
 import { useUser } from '@/context/UserContext';
 import { formatTimestamp } from '@/lib/utils/dateformat';
+import { getRedlineById } from '@/lib/redlines-json';
 
 type RedlineCommentsSidebarProps = {
   room: string;
@@ -78,7 +78,6 @@ export const RedlineCommentsSidebar = ({
   onAddComment,
   onRedlineDelete,
 }: RedlineCommentsSidebarProps) => {
-  const trpc = useTRPC();
   const { user } = useUser();
   const { procId, owner } = useProc();
   const { openRedlineModal } = useRedline();
@@ -92,25 +91,10 @@ export const RedlineCommentsSidebar = ({
   // TODO get user permissions
   const isAuthor = user?.username === owner;
 
-  // Use TRPC query to fetch the redline data
-  const { data: redlineData, isLoading: redlineDataIsLoading } = useQuery(
-    trpc.redlines.getByRedlineId.queryOptions({
-      procId: procId,
-      blockId: selectedBlockId,
-      redlineId: selectedRedlineId,
-    }),
-  );
-
   const autoResizeTextarea = (textarea: EventTarget & HTMLTextAreaElement) => {
     textarea.style.height = 'auto';
     textarea.style.height = Math.min(textarea.scrollHeight, 240) + 'px'; // 120px max height
   };
-
-  const {
-    mutate: deleteMutate,
-    isPending: deletePending,
-    isError: deleteHasError,
-  } = useMutation(trpc.redlines.delete.mutationOptions());
 
   const handleDeleteRedline = useCallback(() => {
     if (redline && onRedlineDelete) {
@@ -131,33 +115,35 @@ export const RedlineCommentsSidebar = ({
     onClose();
   }, [selectedBlockId, redline, procId, openRedlineModal, onClose]);
 
-  // Fetch redline comments when sidebar opens
+  // Fetch redline data when sidebar opens
   useEffect(() => {
-    const fetchRedlineComments = async () => {
+    const fetchRedlineData = async () => {
       setLoading(true);
       try {
-        // TODO: Replace with actual API call
-        console.log('Fetching comments for redline:', redlineId);
-        const commentData = findRedlineComment(redlineId);
-        setRedlineComment(commentData);
+        if (procId && selectedBlockId && selectedRedlineId) {
+          const redlineData = getRedlineById(
+            procId,
+            selectedBlockId,
+            selectedRedlineId,
+          );
+          setRedline(redlineData);
+
+          // Also fetch mock comments for now
+          console.log('Fetching comments for redline:', selectedRedlineId);
+          const commentData = findRedlineComment(selectedRedlineId);
+          setRedlineComment(commentData);
+        }
       } catch (error) {
-        console.error('Error fetching redline comments:', error);
+        console.error('Error fetching redline data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    if (redlineId) {
-      fetchRedlineComments();
+    if (procId && selectedBlockId && selectedRedlineId) {
+      fetchRedlineData();
     }
-  }, [redlineId]);
-
-  // Update redline state when redlineData changes
-  useEffect(() => {
-    if (redlineData) {
-      setRedline(redlineData);
-    }
-  }, [redlineData]);
+  }, [procId, selectedBlockId, selectedRedlineId]);
 
   const handleAddComment = () => {
     if (newComment.trim()) {
@@ -175,7 +161,7 @@ export const RedlineCommentsSidebar = ({
     }
   };
 
-  if (redlineDataIsLoading || loading) {
+  if (loading) {
     return (
       <div className="fixed right-0 top-0 h-screen w-[32rem] bg-white border-l border-gray-200 shadow-lg z-50 flex flex-col">
         <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
@@ -198,7 +184,7 @@ export const RedlineCommentsSidebar = ({
     );
   }
 
-  if (!redlineData) {
+  if (!redline) {
     return (
       <div className="fixed right-0 top-0 h-screen w-[32rem] bg-white border-l border-gray-200 shadow-lg z-50 flex flex-col">
         <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
@@ -224,8 +210,8 @@ export const RedlineCommentsSidebar = ({
     <div className="fixed right-0 top-0 h-screen w-[32rem] bg-white border-l border-gray-200 shadow-lg z-50 flex flex-col">
       {/* Display Redline Thread */}
       <RedlineThreadCard
-        redlineData={redlineData}
-        isLoading={redlineDataIsLoading}
+        redlineData={redline}
+        isLoading={loading}
         isAuthor={isAuthor}
         onClose={onClose}
         onDeleteRedline={handleDeleteRedline}
@@ -237,11 +223,11 @@ export const RedlineCommentsSidebar = ({
           <span className="font-semibold">Redline Details:</span>
           <div className="flex gap-2 items-start mb-1">
             <span className="font-semibold text-gray-800">Created:</span>{' '}
-            {formatTimestamp(redlineData.createdAt.toString())}
+            {formatTimestamp(redline.createdAt.toString())}
           </div>
           <div className="flex gap-2 items-start mb-1">
             <span className="font-semibold text-gray-800">Updated:</span>{' '}
-            {formatTimestamp(redlineData.createdAt.toString())}
+            {formatTimestamp(redline.updatedAt.toString())}
           </div>
           <div className="flex gap-2 items-start mb-1">
             <span className="font-semibold text-gray-800">Amends?:</span> No
