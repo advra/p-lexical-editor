@@ -1,8 +1,6 @@
-import type { Metadata } from 'next';
 import { Toaster } from 'sonner';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './global.css';
-import { NextThemeProvider } from './theme-provider';
 import { UserProvider } from '@/context/UserContext';
 
 const geistSans = Geist({
@@ -14,11 +12,6 @@ const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
 });
-
-export const metadata: Metadata = {
-  title: 'Eproc',
-  description: 'EProc by Bixby Dev Team',
-};
 
 export default function RootLayout({
   children,

@@ -20,7 +20,6 @@ export default function ProfileAvatarMenu({
 }: Props) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  const router = useRouter();
 
   const initials = (name?: string | null) => {
     if (!name) return '';
@@ -51,37 +50,6 @@ export default function ProfileAvatarMenu({
           {initials(username)}
         </Avatar>
       </IconButton>
-
-      <Menu
-        id="profile-menu"
-        anchorEl={anchorEl}
-        open={open}
-        onClose={() => setAnchorEl(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        slotProps={{ paper: { sx: { minWidth: 200 } } }}
-      >
-        {username
-          ? [
-              <MenuItem
-                key="settings"
-                onClick={() => {
-                  setAnchorEl(null);
-                  router.push('/settings'); // no need to await
-                }}
-              >
-                <SettingsButton handleClose={() => setAnchorEl(null)} />
-              </MenuItem>,
-              <MenuItem key="logout">
-                <LogoutButton handleClose={() => setAnchorEl(null)} />
-              </MenuItem>,
-            ]
-          : [
-              <MenuItem key="login">
-                <LoginButton handleClose={() => setAnchorEl(null)} />
-              </MenuItem>,
-            ]}
-      </Menu>
     </div>
   );
 }

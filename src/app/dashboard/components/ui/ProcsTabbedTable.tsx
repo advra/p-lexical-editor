@@ -11,7 +11,7 @@ import SkipNextIcon from '@mui/icons-material/SkipNext';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 
 import Button from '@/components/common/buttons/Button';
-import CreateNewProcDialog from './CreateNewProcDialog';
+import CreateNewDocDialog from './CreateNewProcDialog';
 import type { ProcPayload } from './CreateNewProcDialog';
 import { initialProcsData } from '@/app/procs/utils/initialData';
 import { PuckPageData } from '@/app/puck/types';
@@ -19,7 +19,7 @@ import RedirectingDialog from './RedirectingDialog';
 import PreviewButton from './navigation/preview-button';
 import EditButton from './navigation/edit-button';
 
-export type Proc = {
+export type Doc = {
   _id: string;
   slug: string;
   tags?: string[];
@@ -33,25 +33,17 @@ export type Proc = {
 };
 
 type Props = {
-  procs: Proc[];
+  docs: Doc[];
   currentUser: User | null;
 };
 
 const formatWhen = (v?: string | Date) =>
   v ? new Date(v).toLocaleString() : '—';
 
-export default function ProcsTabbedTable({ procs, currentUser }: Props) {
-  const [showCreateNewProc, setShowCreateNewProc] = useState(false);
+export default function DocsTabbedTable({ docs: procs, currentUser }: Props) {
+  const [showCreateNew, setShowCreateNew] = useState(false);
   const [showRedirectDialog, setShowRedirectDialog] = useState(false);
-  const [showManagePermissionsDialog, setShowManagePermissionsDialog] =
-    useState(false);
-  const [selectedProc, setSelectedProc] = useState<Proc | null>(null);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedProcForMenu, setSelectedProcForMenu] = useState<Proc | null>(
-    null,
-  );
-  const openReference = Boolean(anchorEl);
-  const tabs = ['All', 'My Procs', 'Shared With Me'] as const;
+  const tabs = ['All', 'My Documents', 'Shared With Me'] as const;
   type Tab = (typeof tabs)[number];
 
   const [active, setActive] = useState<Tab>('All');
@@ -65,7 +57,7 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
 
     console.log('ALL PROCS: ', procs);
 
-    if (active === 'My Procs') {
+    if (active === 'My Documents') {
       items = procs.filter((p) => p.owner === currentUser?.username);
     } else if (active === 'Shared With Me') {
       if (currentUser) {
@@ -106,65 +98,18 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
     setCurrentPage(1);
   }, [query, active, filtered.length]);
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, proc: Proc) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedProcForMenu(proc);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setSelectedProcForMenu(null);
-  };
-
-  const handlePermissionsUpdate = async (
-    procId: string,
-    permissions: UserPermission[],
-  ) => {
-    // TODO: Implement API call to update permissions
-    console.log('Updating permissions for proc:', procId, permissions);
-
-    // Mock implementation - replace with actual API call
-    try {
-      const response = await fetch(`/api/puck/proc/${procId}/permissions`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ permissions }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update permissions');
-      }
-
-      // Refresh the procs list or update local state
-      // For now, we'll just log success
-      console.log('Permissions updated successfully');
-    } catch (error) {
-      console.error('Failed to update permissions', error);
-      throw error;
-    }
-  };
-
   const tryCreateNewProc = async ({ name, description, tags }: ProcPayload) => {
-    console.log(`Creating: name: ${name} desc: ${description} tag: ${tags}`);
-    // 1) generate id
-    // const id = crypto.randomUUID();
-    // const path = `/procs/${id}`;
-
-    // check if valid user
     if (!currentUser) {
       console.error(
         'Creating Eproc failed. No user is logged in to create eproc',
       );
     } else {
-      // 2) build the data object in the same shape your DB expects
       const initialData = initialProcsData({
         owner: currentUser.username,
         title: name,
         description: description || undefined,
         tags: tags ? [] : undefined,
       });
-
-      console.log('initialData: ', initialData);
 
       try {
         const res = await fetch('/api/puck/proc', {
@@ -178,13 +123,10 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
           throw new Error(err || `Request failed: ${res.status}`);
         }
 
-        // Optionally parse server response
         const { id, path } = await res.json();
 
-        setShowCreateNewProc(false);
-        // render loading new page message
+        setShowCreateNew(false);
         setShowRedirectDialog(true);
-        // The dialog expects this return value to navigate to the new proc
         return { id, path, initialData } as any;
       } catch (error) {
         console.error('Failed to create proc', error);
@@ -223,7 +165,7 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
             <Button
               size="none"
               className="px-4 py-1 my-4 bg-green-700 text-white rounded-sm flex hover:bg-green-700/85"
-              onClick={() => setShowCreateNewProc(true)}
+              onClick={() => setShowCreateNew(true)}
             >
               <div className="flex items-center">
                 <AddIcon sx={{ fontSize: 24 }} />{' '}
@@ -242,7 +184,6 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
 
         <div className="flex items-center gap-2 max-w-md">
           <div className="flex items-center gap-2 w-full bg-gray-50 rounded-md border border-gray-500 px-2 py-1">
-            {/* If you don't have Heroicons, replace SearchIcon with an SVG or text */}
             <SearchIcon className="w-4 h-4 text-gray-400" />
             <input
               id="procs-search"
@@ -418,12 +359,12 @@ export default function ProcsTabbedTable({ procs, currentUser }: Props) {
       )}
 
       {/* Render dialogs */}
-      {showCreateNewProc && (
-        <CreateNewProcDialog
-          open={showCreateNewProc}
-          onClose={() => setShowCreateNewProc(false)}
+      {showCreateNew && (
+        <CreateNewDocDialog
+          open={showCreateNew}
+          onClose={() => setShowCreateNew(false)}
           onCreate={tryCreateNewProc}
-          tags={['Viasat', 'Northrop', 'Qualcomm']}
+          tags={['Tag1', 'Tag2', 'Tag3']}
         />
       )}
       {showRedirectDialog && <RedirectingDialog open={showRedirectDialog} />}

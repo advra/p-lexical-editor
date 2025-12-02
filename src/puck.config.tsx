@@ -118,11 +118,7 @@ export const config: Config<Props> = {
             className="border border-gray-200 rounded-sm shadow-sm"
             style={{ padding }}
           >
-            <CardHeader
-              // avatar={<Avatar aria-label="recipe">R</Avatar>}
-              title={title}
-              subheader={subtitle}
-            />
+            <CardHeader title={title} subheader={subtitle} />
             <p>{description}</p>
           </div>
         );

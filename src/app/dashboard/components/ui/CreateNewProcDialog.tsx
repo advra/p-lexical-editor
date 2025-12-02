@@ -32,7 +32,7 @@ type Props = {
   tags?: string[]; // optional list of tags to show in a select
 };
 
-export default function CreateNewProcDialog({
+export default function CreateNewDocDialog({
   open,
   onClose,
   onCreate,

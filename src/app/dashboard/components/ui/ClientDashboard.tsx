@@ -1,12 +1,12 @@
 'use client';
 
 import ProfileAvatarMenu from '@/components/common/profile/profile-avatar';
-import ProcsTabbedTable, { Proc } from './ProcsTabbedTable';
+import DocsTabbedTable, { Doc } from './ProcsTabbedTable';
 import { useUser } from '@/context/UserContext';
 import { Suspense, useState } from 'react';
 import { ProcsTabbedTableSkeleton } from './ClientDashboardSkeleton';
 
-export const ClientDashboard = ({ procs }: { procs: Proc[] }) => {
+export const ClientDashboard = ({ procs }: { procs: Doc[] }) => {
   const { session, loading: userLoading, error: userError } = useUser();
   const [procsLoading, setProcsLoading] = useState(false);
   return (
@@ -37,8 +37,8 @@ export const ClientDashboard = ({ procs }: { procs: Proc[] }) => {
           <div className="container mx-auto flex-1 min-h-0">
             <Suspense fallback={<ProcsTabbedTableSkeleton />}>
               <div className="h-full">
-                <ProcsTabbedTable
-                  procs={procs}
+                <DocsTabbedTable
+                  docs={procs}
                   currentUser={session?.user ?? null}
                 />
               </div>
