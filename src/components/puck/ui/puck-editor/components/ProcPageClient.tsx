@@ -13,6 +13,7 @@ import { ProcProvider, ProcViewModes } from '@/context/ProcContext';
 import { RedlineLayoutWrapper } from '../../redline/RedlineLayoutWrapper';
 import { User } from '@/modules/auth/types';
 import { Header } from './Header';
+import { CircularProgress } from '@mui/material';
 
 type Props = {
   proc: ProcPublic | ProcPublicWithAcl;
@@ -65,7 +66,7 @@ export default function ProcPageClient({
       ),
     );
 
-    if (names.length === 0) return '—';
+    return <CircularProgress size="12px" className="align-middle" />;
 
     const shown = names.slice(0, MAX_NAMES);
     const rest = names.length - shown.length;

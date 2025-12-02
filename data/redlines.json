@@ -1,1 +1,19 @@
-{"redlines": []}
+{
+  "redlines": [
+    {
+      "_id": "redline_1764716758238",
+      "procId": "6aac05a4-e14e-4b7e-8084-5fd1023c3d68",
+      "blockId": "TextBlock-e6e21b24-ffa3-42ab-8f27-46f8d252b237",
+      "dcn": "123",
+      "redlineId": "6aac05a4-e14e-4b7e-8084-5fd1023c3d68_TextBlock-e6e21b24-ffa3-42ab-8f27-46f8d252b237_123_text_1764716758238",
+      "target": "text",
+      "originalText": "Sample paragraph text",
+      "newText": "123123 112 3",
+      "userId": "admin",
+      "status": "pending",
+      "comments": [],
+      "createdAt": "2025-12-02T23:05:58.238Z",
+      "updatedAt": "2025-12-02T23:05:58.238Z"
+    }
+  ]
+}

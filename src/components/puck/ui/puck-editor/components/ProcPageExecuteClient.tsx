@@ -12,6 +12,7 @@ import { useUser } from '@/context/UserContext';
 import { getSocket } from '@/lib/socket';
 import { ProcProvider, ProcViewModes } from '@/context/ProcContext';
 import { ExecuteStoreProvider } from '@/context/ExecuteStoreContext';
+import { CircularProgress } from '@mui/material';
 
 function waitForImages(root: HTMLElement) {
   const imgs = Array.from(root.querySelectorAll('img'));
@@ -112,7 +113,8 @@ export default function ProcPageExecuteClient({
       ),
     );
 
-    if (names.length === 0) return '—';
+    if (names.length === 0)
+      return <CircularProgress size="12px" className="align-middle" />;
 
     const shown = names.slice(0, MAX_NAMES);
     const rest = names.length - shown.length;

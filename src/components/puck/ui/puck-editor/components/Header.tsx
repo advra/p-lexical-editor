@@ -129,13 +129,6 @@ export const Header = ({
               </div>
             </div>
           </div>
-          {!executionMode && (
-            <div className="bg-yellow-100 text-center text-yellow-700 text-sm">
-              You are viewing a read-only version of this procedure. Items are
-              displayed based on your current user permissions. If you have
-              permissions you can begin a session to start a test execution.
-            </div>
-          )}
         </div>
       </div>
     </>

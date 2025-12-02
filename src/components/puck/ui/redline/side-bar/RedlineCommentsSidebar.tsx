@@ -194,7 +194,7 @@ export const RedlineCommentsSidebar = ({
     return (
       <div className="fixed right-0 top-0 h-screen w-[32rem] bg-white border-l border-gray-200 shadow-lg z-50 flex flex-col">
         <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
-          <h3 className="font-semibold text-gray-800">Redline Discussion</h3>
+          <h3 className="font-semibold text-gray-800">Discussion</h3>
           <button
             onClick={onClose}
             className="p-1 hover:bg-gray-200 rounded transition-colors"
@@ -205,8 +205,9 @@ export const RedlineCommentsSidebar = ({
         </div>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-gray-500 text-center">
-            <p>Redline not found</p>
+            <p>Discussions not found</p>
             <p className="text-sm mt-1">ID: {redlineId}</p>
+            <p>NOT IMPLEMENTED IN THIS VERSION</p>
           </div>
         </div>
       </div>
