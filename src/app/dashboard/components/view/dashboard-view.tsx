@@ -1,5 +1,3 @@
-import ClientDashboardSidebar from '../ui/ClientDashboardSidebar';
-import ProfileAvatarMenu from '@/components/common/profile/profile-avatar';
 import { ClientDashboard } from '../ui/ClientDashboard';
 import { PuckPageData } from '@/app/puck/types';
 
@@ -47,7 +45,6 @@ export default function DashboardView({ procs, total }: Props) {
     <>
       <div className="h-screen flex flex-col">
         <div className="flex flex-1 min-h-0">
-          <ClientDashboardSidebar links={links} />
           <div className="flex-1 min-h-0 min-w-0 overflow-hidden">
             <ClientDashboard procs={convertedProcs} />
           </div>

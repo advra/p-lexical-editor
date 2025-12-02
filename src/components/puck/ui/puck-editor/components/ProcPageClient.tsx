@@ -3,7 +3,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { PuckPreview } from './puck-preview';
-import { Header } from './Header';
 import {
   ProcPublic,
   ProcPublicWithAcl,
@@ -12,23 +11,7 @@ import { useUser } from '@/context/UserContext';
 import { getSocket } from '@/lib/socket';
 import { ProcProvider, ProcViewModes } from '@/context/ProcContext';
 import { RedlineLayoutWrapper } from '../../redline/RedlineLayoutWrapper';
-import { SessionProvider } from '@/context/SessionContext';
-import { JoinLiveSessionBanner } from '@/components/puck/ui/JoinLiveSessionBanner';
-
-function waitForImages(root: HTMLElement) {
-  const imgs = Array.from(root.querySelectorAll('img'));
-  if (!imgs.length) return Promise.resolve();
-  return Promise.all(
-    imgs.map((img) =>
-      img.complete
-        ? Promise.resolve()
-        : new Promise<void>((res) => {
-            img.addEventListener('load', () => res(), { once: true });
-            img.addEventListener('error', () => res(), { once: true });
-          }),
-    ),
-  );
-}
+import { User } from '@/modules/auth/types';
 
 type Props = {
   proc: ProcPublic | ProcPublicWithAcl;
@@ -68,27 +51,6 @@ export default function ProcPageClient({
     description: proc.description ?? '',
     tags: proc.tags,
   };
-
-  async function handlePreviewPrint() {
-    setPreview(true);
-
-    // ensure layout applied and assets ready
-    await new Promise((r) =>
-      requestAnimationFrame(() => requestAnimationFrame(r)),
-    );
-
-    if (document.fonts?.ready) await document.fonts.ready;
-    if (rootRef.current) await waitForImages(rootRef.current);
-
-    const prev = document.title;
-    document.title = `Eproc - Procedure: ${(proc.title ?? slug) as string}`;
-    window.print();
-    setTimeout(() => {
-      document.title = prev;
-      // go back to normal
-      setPreview(false);
-    }, 0);
-  }
 
   const presenceDisplay = useMemo(() => {
     // filter + dedupe names
@@ -185,17 +147,7 @@ export default function ProcPageClient({
     execute: !!(isOwner || isAdmin),
   };
 
-  console.log('userPermissions', userPermissions);
-
-  const handleAddComment = (redlineId: string, comment: string) => {
-    console.log('Adding comment to redline:', redlineId, comment);
-    // TODO: Implement actual comment addition logic via API
-  };
-
   const handleRedlineDelete = async (redlineId: string) => {
-    console.log('handleRedlineDelete called with redlineId:', redlineId);
-    console.log('Current redlines before deletion:', redlines);
-
     try {
       const response = await fetch('/api/redlines', {
         method: 'DELETE',
@@ -226,58 +178,40 @@ export default function ProcPageClient({
     }
   };
 
+  const stubbedUser: User = {
+    username: 'admin',
+    roles: ['super-admin', 'admin'],
+  };
   return (
     <ProcProvider
       viewMode={'view'}
-      owner={proc.owner}
-      currentUser={user}
+      owner={stubbedUser.username}
+      currentUser={stubbedUser}
       procId={proc._id}
     >
-      <SessionProvider procId={proc._id}>
-        <Header
-          viewMode={viewMode}
-          executionMode={executionMode}
-          handlePreviewPrint={handlePreviewPrint}
-          path={path}
-          title={proc.title}
-          description={proc.description}
-          tags={proc.tags}
-          metadata={metadata}
-          presenceDisplay={presenceDisplay}
-          permissions={userPermissions}
-          loading={loading}
-          user={user}
-        />
-
-        {/* Join Live Session Banner - Only shows when there are active sessions */}
-        <div className="mt-25 px-16">
-          <JoinLiveSessionBanner procId={proc._id} />
-        </div>
-
-        <div>
-          <RedlineLayoutWrapper
+      <div>
+        <RedlineLayoutWrapper
+          room={room}
+          redlines={redlines}
+          onAddComment={undefined}
+          onRedlineDelete={handleRedlineDelete}
+        >
+          <PuckPreview
+            ref={rootRef}
+            puckPageData={proc.data}
+            owner={proc.owner}
+            updatedAt={(proc.updatedAt ?? proc.createdAt) as string}
+            preview={preview}
+            page="letter"
+            procId={proc._id}
             room={room}
-            redlines={redlines}
-            onAddComment={handleAddComment}
-            onRedlineDelete={handleRedlineDelete}
-          >
-            <PuckPreview
-              ref={rootRef}
-              puckPageData={proc.data}
-              owner={proc.owner}
-              updatedAt={(proc.updatedAt ?? proc.createdAt) as string}
-              preview={preview}
-              page="letter"
-              procId={proc._id}
-              room={room}
-              title={proc.title}
-              onRedlineCreated={(redline) => {
-                console.log('Redline created from preview:', redline);
-              }}
-            />
-          </RedlineLayoutWrapper>
-        </div>
-      </SessionProvider>
+            title={proc.title}
+            onRedlineCreated={(redline) => {
+              console.log('Redline created from preview:', redline);
+            }}
+          />
+        </RedlineLayoutWrapper>
+      </div>
     </ProcProvider>
   );
 }

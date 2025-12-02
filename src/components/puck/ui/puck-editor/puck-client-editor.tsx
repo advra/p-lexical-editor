@@ -19,23 +19,6 @@ import {
 } from '@/modules/procs/models/proc-model';
 import { useUser } from '@/context/UserContext';
 
-function HeaderBar({ onPublish, slug }) {
-  const puck = usePuck();
-  return (
-    <>
-      <div className="flex h-[48px] w-full items-center justify-between p-2 border-b-1 border-b-gray-300 shadow-xs">
-        <BackToDashboardButton />
-        <div className="flex items-center">
-          <DiscardChangesButton slug={slug} />
-          <PublishChangesButton
-            onPublish={() => onPublish(puck.appState.data)}
-          />
-        </div>
-      </div>
-    </>
-  );
-}
-
 export function PuckClientEditor({
   pathName,
   proc,

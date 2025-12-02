@@ -7,32 +7,42 @@
 import { notFound } from 'next/navigation';
 import { getPage } from '@/lib/get-page';
 import ProcPageClient from '../../../components/puck/ui/puck-editor/components/ProcPageClient';
-import { LocalStoreProvider } from '@/context/LocalStoreContext';
-import {
-  ProcPublic,
-  ProcPublicWithAcl,
-} from '@/modules/procs/models/proc-model';
 import { RedlineProvider } from '@/context/RedlineContext';
+import { Metadata } from 'next';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ puckPath: string[] }>;
+}): Promise<Metadata> {
+  const { puckPath = [] } = await params;
+  const path = `/${puckPath.join('/')}`;
+
+  return {
+    title: getPage(path)?.root.props?.title,
+  };
+}
 
 export default async function Page({
   params,
 }: {
-  params: { puckPath?: string };
+  params: Promise<{ puckPath: string[] }>;
 }) {
-  const { puckPath } = await params;
-  const slug = puckPath;
-  if (!slug) return notFound();
+  const { puckPath = [] } = await params;
+  const path = `/${puckPath.join('/')}`;
+  const data = getPage(path);
 
-  const proc: ProcPublic | ProcPublicWithAcl = await getPage(slug);
-  if (!proc) return notFound();
-
-  // todo: eproc-2 determine if logged in user can see ProcPublicWithAcl
+  if (!data) {
+    return notFound();
+  }
 
   return (
-    <LocalStoreProvider initialProc={proc}>
-      <RedlineProvider>
-        <ProcPageClient proc={proc} slug={slug} path={`/procs/${slug}`} />
-      </RedlineProvider>
-    </LocalStoreProvider>
+    <RedlineProvider>
+      <ProcPageClient proc={proc} slug={slug} path={`/procs/${slug}`} />
+    </RedlineProvider>
   );
 }
+
+// Force Next.js to produce static pages: https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
+// Delete this if you need dynamic rendering, such as access to headers or cookies
+export const dynamic = 'force-static';

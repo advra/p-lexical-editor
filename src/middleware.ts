@@ -1,25 +1,12 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const EXACT_PROTECTED = ['/']; // home is protected, but only exact "/"
-const PREFIX_PROTECTED = ['/settings', '/dashboard', '/app', '/procs'];
-const PUBLIC = new Set(['/login', '/signup', '/forgot-password']);
-
 function isAsset(pathname: string) {
   return (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/static') ||
     pathname === '/favicon.ico' ||
     /\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|map)$/.test(pathname)
-  );
-}
-
-function isProtectedPath(pathname: string) {
-  if (PUBLIC.has(pathname)) return false;
-  if (EXACT_PROTECTED.includes(pathname)) return true;
-  // protect prefix + path boundary
-  return PREFIX_PROTECTED.some(
-    (p) => pathname === p || pathname.startsWith(p + '/'),
   );
 }
 
@@ -51,28 +38,6 @@ export async function middleware(req: NextRequest) {
     const url = req.nextUrl.clone();
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);
-  }
-  // 3) if already on /login and logged in, send home (optional nicety)
-  if (pathname === '/login') {
-    const token = req.cookies.get('user-session')?.value;
-    if (token) {
-      const url = req.nextUrl.clone();
-      url.pathname = '/';
-      return NextResponse.redirect(url);
-    }
-    return NextResponse.next();
-  }
-
-  // 4) protect routes
-  if (isProtectedPath(pathname)) {
-    const token = req.cookies.get('user-session')?.value;
-    if (!token) {
-      const url = req.nextUrl.clone();
-      url.pathname = '/login';
-      url.searchParams.set('next', pathname + search); // return here after login
-      return NextResponse.redirect(url);
-    }
-    // (optional) verify token here
   }
 
   return NextResponse.next();
