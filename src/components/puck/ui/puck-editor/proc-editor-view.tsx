@@ -1,21 +1,15 @@
 'use client';
 
 import { LocalStoreProvider } from '@/context/LocalStoreContext';
-import React, { useState } from 'react';
+import React from 'react';
 import ProcPageClient from './components/ProcPageClient';
-import {
-  ProcPublic,
-  ProcPublicWithAcl,
-} from '@/modules/procs/models/proc-model';
 import { useQuery } from '@tanstack/react-query';
-import { useTRPC } from '@/trpc/client';
 
 type Props = {
   slug: string;
 };
 
 function ProcEditorView({ slug }: Props) {
-  const trpc = useTRPC();
   const {
     data: proc,
     isLoading,
