@@ -11,7 +11,6 @@ import { Redline } from '@/modules/redlines/models/redline-model';
 import RedlineThreadCard from './Cards/ThreadCard';
 import { useUser } from '@/context/UserContext';
 import { formatTimestamp } from '@/lib/utils/dateformat';
-import { getRedlineById } from '@/lib/redlines-json';
 
 type RedlineCommentsSidebarProps = {
   room: string;
@@ -121,12 +120,19 @@ export const RedlineCommentsSidebar = ({
       setLoading(true);
       try {
         if (procId && selectedBlockId && selectedRedlineId) {
-          const redlineData = getRedlineById(
-            procId,
-            selectedBlockId,
-            selectedRedlineId,
+          // Fetch redline from API
+          const response = await fetch(
+            `/api/redlines?procId=${procId}&blockId=${selectedBlockId}`,
           );
-          setRedline(redlineData);
+
+          if (response.ok) {
+            const data = await response.json();
+            // Find the specific redline by ID
+            const redlineData = data.redlines.find(
+              (r: Redline) => r.redlineId === selectedRedlineId,
+            );
+            setRedline(redlineData || null);
+          }
 
           // Also fetch mock comments for now
           console.log('Fetching comments for redline:', selectedRedlineId);

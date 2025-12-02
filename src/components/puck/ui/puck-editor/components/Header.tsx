@@ -121,10 +121,7 @@ export const Header = ({
                   openMetadataDetails={handleMetadataDetails}
                 />
                 {executionMode ? (
-                  <SessionButtons
-                    user={user}
-                    canExecute={permissions.execute}
-                  />
+                  <></>
                 ) : (
                   <>
                     <ExportPDFButton handlePreviewPrint={handlePreviewPrint} />

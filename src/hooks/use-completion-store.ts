@@ -2,7 +2,6 @@
 import { useStore } from '@/context/LocalStoreContext';
 import { useExecuteStore } from '@/context/ExecuteStoreContext';
 import { useProc } from '@/context/ProcContext';
-import { useSession } from '@/context/SessionContext';
 import { useMemo } from 'react';
 
 export type CompletionState = {
@@ -37,21 +36,11 @@ export function useCompletionStore(): CompletionStore {
       // Use execute store for execution mode
       const executeStore = useExecuteStore();
       // Load records from procsessions database
-      const {activeSession} = useSession();
       const sessionCompletions = useMemo(() => {
         const completions: Record<string, CompletionState> = {};
-        if (activeSession?.records) {
-          activeSession.records.forEach((record) => {
-            completions[record.recordId] = {
-              completed: record.state === 'complete',
-              completedAt: record.data?.completedAt || record.updatedAt,
-              userId: record.updatedBy,
-              sessionId: activeSession._id,
-            };
-          });
-        }
+        
         return completions;
-      }, [activeSession]);
+      }, []);
 
       const mergedCompletions = useMemo(
         () => ({

@@ -4,7 +4,6 @@ import PuckLoadingSkeleton from '@/components/puck/ui/PuckLoadingSkeleton';
 import React, { useEffect, useState } from 'react';
 import { PuckClientEditor } from '../ui/puck-editor/puck-client-editor';
 import { useRouter } from 'next/navigation';
-import { getProcBySlug } from '@/lib/get-page';
 
 type Props = {
   segments: string[];
@@ -29,14 +28,19 @@ export default function PuckEditorView({ segments }: Props) {
     const fetchProc = async () => {
       try {
         setLoading(true);
-        const procData = getProcBySlug(slug);
-
-        if (!procData) {
-          setError('PROC_NOT_FOUND');
+        const response = await fetch(`/api/procs?slug=${slug}`);
+        
+        if (!response.ok) {
+          if (response.status === 404) {
+            setError('PROC_NOT_FOUND');
+          } else {
+            setError('FETCH_ERROR');
+          }
           return;
         }
-
-        setProc(procData);
+        
+        const data = await response.json();
+        setProc(data.proc);
       } catch (err) {
         console.error('Error fetching proc:', err);
         setError('FETCH_ERROR');

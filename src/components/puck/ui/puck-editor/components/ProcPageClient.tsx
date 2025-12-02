@@ -23,12 +23,11 @@ type Props = {
 const MAX_NAMES = 3;
 
 export default function ProcPageClient({
-  proc,
   slug,
   path,
   executionMode = false,
 }: Props) {
-  const room = useMemo(() => `proc:${proc._id}`, [proc._id]);
+  const room = useMemo(() => `proc:${slug}`, [slug]);
   const [presence, setPresence] = useState<Array<{ id: string; name: string }>>(
     [],
   );
@@ -41,15 +40,16 @@ export default function ProcPageClient({
   const viewMode = !executionMode;
 
   // Check if user has edit permissions
-  const isOwner = proc.owner === user?.username;
+  // const isOwner = proc.owner === user?.username;
+  const isOwner = true;
   const isAdmin = user?.roles?.includes('admin');
   // TODO: eproc-2 Add permissions canEdit and canExecute
   // const hasPermissions = proc.
   const canEdit = !!(isOwner || isAdmin);
   const metadata = {
-    title: proc.title,
-    description: proc.description ?? '',
-    tags: proc.tags,
+    title: slug,
+    description: '',
+    tags: 'test tag',
   };
 
   const presenceDisplay = useMemo(() => {
