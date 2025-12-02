@@ -5,7 +5,7 @@
   local changes on their end
 */
 import { notFound } from 'next/navigation';
-import { getPage } from '@/lib/get-page';
+import { getProcBySlug, ProcDoc } from '@/lib/get-page';
 import ProcPageClient from '../../../components/puck/ui/puck-editor/components/ProcPageClient';
 import { RedlineProvider } from '@/context/RedlineContext';
 import { Metadata } from 'next';
@@ -13,13 +13,13 @@ import { Metadata } from 'next';
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ puckPath: string[] }>;
+  params: Promise<{ puckPath: string }>;
 }): Promise<Metadata> {
-  const { puckPath = [] } = await params;
-  const path = `/${puckPath.join('/')}`;
+  const { puckPath } = await params;
+  const proc: ProcDoc | null = getProcBySlug(puckPath);
 
   return {
-    title: getPage(path)?.root.props?.title,
+    title: proc?.title || 'Untitled',
   };
 }
 
@@ -31,11 +31,15 @@ export default async function Page({
   const { puckPath } = await params;
   const slug = puckPath;
   if (!slug) return notFound();
-  const data = getPage(puckPath);
+  const proc: ProcDoc | null = getProcBySlug(slug);
+
+  if (!proc) {
+    return notFound();
+  }
 
   return (
     <RedlineProvider>
-      <ProcPageClient proc={data} slug={slug} path={`/procs/${slug}`} />
+      <ProcPageClient proc={proc} slug={slug} path={`/procs/${slug}`} />
     </RedlineProvider>
   );
 }

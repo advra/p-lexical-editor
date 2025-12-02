@@ -16,6 +16,8 @@ export interface ProcDoc {
   title: string;
   slug: string;
   owner: string;
+  status: 'draft' | 'published' | 'archived';
+  tags?: string[];
   sharedWith?: Array<{
     userId: string;
     permissions: { read?: boolean; edit?: boolean; execute?: boolean };
@@ -24,6 +26,7 @@ export interface ProcDoc {
   data: Data;
   version: number;
   createdAt: string;
+  publishedAt?: string | Date;
 }
 
 export const getAllProcs = (): { procs: ProcDoc[]; total: number } => {
@@ -53,11 +56,14 @@ export const getAllProcs = (): { procs: ProcDoc[]; total: number } => {
           title,
           slug,
           owner,
+          status: 'published' as const,
+          tags: value?.root?.props?.tags || [],
           sharedWith: [],
           updatedAt,
           data: value,
           version,
           createdAt,
+          publishedAt: value?.metadata?.publishedAt || createdAt,
         });
       }
     }
@@ -100,11 +106,14 @@ export const getProcBySlug = (slug: string): ProcDoc | null => {
       title,
       slug,
       owner,
+      status: 'published' as const,
+      tags: value?.root?.props?.tags || [],
       sharedWith: [],
       updatedAt,
       data: value,
       version,
       createdAt,
+      publishedAt: value?.metadata?.publishedAt || createdAt,
     };
   } catch (error) {
     console.error('Error getting proc by slug from database.json:', error);

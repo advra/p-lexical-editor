@@ -23,6 +23,7 @@ type Props = {
 const MAX_NAMES = 3;
 
 export default function ProcPageClient({
+  proc,
   slug,
   path,
   executionMode = false,
