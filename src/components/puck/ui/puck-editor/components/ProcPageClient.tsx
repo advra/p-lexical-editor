@@ -38,7 +38,7 @@ export default function ProcPageClient({
   const { session, loading } = useUser();
   const user = session?.user;
 
-  const viewMode = !executionMode;
+  const isExecutionMode = !executionMode;
 
   // Check if user has edit permissions
   // const isOwner = proc.owner === user?.username;
@@ -183,27 +183,33 @@ export default function ProcPageClient({
     username: 'admin',
     roles: ['super-admin', 'admin'],
   };
+
+  // Determine view mode based on permissions
+  const procViewMode = canEdit ? 'edit' : 'view';
+
   return (
-    <RedlineLayoutWrapper
-      room={room}
-      redlines={redlines}
-      onAddComment={undefined}
-      onRedlineDelete={handleRedlineDelete}
-    >
-      <PuckPreview
-        ref={rootRef}
-        puckPageData={proc.data}
-        owner={proc.owner}
-        updatedAt={(proc.updatedAt ?? proc.createdAt) as string}
-        preview={preview}
-        page="letter"
-        procId={proc._id}
+    <ProcProvider owner={proc.owner} procId={proc._id} viewMode={procViewMode}>
+      <RedlineLayoutWrapper
         room={room}
-        title={proc.title}
-        onRedlineCreated={(redline) => {
-          console.log('Redline created from preview:', redline);
-        }}
-      />
-    </RedlineLayoutWrapper>
+        redlines={redlines}
+        onAddComment={undefined}
+        onRedlineDelete={handleRedlineDelete}
+      >
+        <PuckPreview
+          ref={rootRef}
+          puckPageData={proc.data}
+          owner={proc.owner}
+          updatedAt={(proc.updatedAt ?? proc.createdAt) as string}
+          preview={preview}
+          page="letter"
+          procId={proc._id}
+          room={room}
+          title={proc.title}
+          onRedlineCreated={(redline) => {
+            console.log('Redline created from preview:', redline);
+          }}
+        />
+      </RedlineLayoutWrapper>
+    </ProcProvider>
   );
 }
