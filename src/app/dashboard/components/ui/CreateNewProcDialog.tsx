@@ -97,7 +97,7 @@ export default function CreateNewProcDialog({
       aria-labelledby="create-proc-title"
     >
       <div className="p-4">
-        <h3>Create New Proc</h3>
+        <h3>Create New Document</h3>
       </div>
 
       <div className="px-4 mb-8">
