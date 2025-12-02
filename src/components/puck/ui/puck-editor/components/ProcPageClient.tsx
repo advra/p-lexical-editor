@@ -12,6 +12,7 @@ import { getSocket } from '@/lib/socket';
 import { ProcProvider, ProcViewModes } from '@/context/ProcContext';
 import { RedlineLayoutWrapper } from '../../redline/RedlineLayoutWrapper';
 import { User } from '@/modules/auth/types';
+import { Header } from './Header';
 
 type Props = {
   proc: ProcPublic | ProcPublicWithAcl;
@@ -189,6 +190,19 @@ export default function ProcPageClient({
 
   return (
     <ProcProvider owner={proc.owner} procId={proc._id} viewMode={procViewMode}>
+      <Header
+        viewMode={'view'}
+        executionMode={executionMode}
+        path={path}
+        title={proc.title}
+        description={proc.description}
+        tags={proc.tags}
+        metadata={metadata}
+        presenceDisplay={presenceDisplay}
+        permissions={userPermissions}
+        loading={loading}
+        user={user}
+      />
       <RedlineLayoutWrapper
         room={room}
         redlines={redlines}

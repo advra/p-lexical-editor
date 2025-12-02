@@ -17,7 +17,6 @@ import { ProcPermissions } from '@/context/ProcContext';
 
 type Props = {
   viewMode: boolean;
-  handlePreviewPrint: () => void | Promise<void>;
   metadata: MetadataInfo;
   path: string;
   title: string;
@@ -31,7 +30,6 @@ type Props = {
 };
 
 export const Header = ({
-  handlePreviewPrint,
   path,
   executionMode = false,
   title,
@@ -117,23 +115,14 @@ export const Header = ({
               </div>
               {executionMode ? <ExecutionModeLabel /> : <ViewModeLabel />}
               <div className="ml-auto flex gap-1 items-center">
-                <ProcMetadataDetailsButton
-                  openMetadataDetails={handleMetadataDetails}
-                />
                 {executionMode ? (
                   <></>
                 ) : (
                   <>
-                    <ExportPDFButton handlePreviewPrint={handlePreviewPrint} />
                     <EditButton
                       path={path}
                       disabled={!permissions.edit}
                       canEdit={permissions.edit}
-                    />
-                    <ExecuteModeButton
-                      path={path}
-                      disabled={permissions.execute}
-                      canExecute={permissions.execute}
                     />
                   </>
                 )}
