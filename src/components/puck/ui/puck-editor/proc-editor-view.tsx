@@ -1,6 +1,5 @@
 'use client';
 
-import { LocalStoreProvider } from '@/context/LocalStoreContext';
 import React from 'react';
 import ProcPageClient from './components/ProcPageClient';
 import { useQuery } from '@tanstack/react-query';
@@ -20,11 +19,7 @@ function ProcEditorView({ slug }: Props) {
     return <>Failed to load Proc</>;
   }
 
-  return (
-    <LocalStoreProvider initialProc={proc}>
-      <ProcPageClient proc={proc} slug={slug} path={`/procs/${slug}`} />
-    </LocalStoreProvider>
-  );
+  return <ProcPageClient proc={proc} slug={slug} path={`/procs/${slug}`} />;
 }
 
 export default ProcEditorView;

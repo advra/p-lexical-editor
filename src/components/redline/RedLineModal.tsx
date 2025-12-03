@@ -104,7 +104,7 @@ export const RedLineModal = ({
         maxWidth="xl"
       >
         <div className="p-4">
-          <h3>{dcn ? 'Edit Redline' : 'Create New Redline'}</h3>
+          <h3>{dcn ? 'Edit Redline' : 'Create New Suggestion'}</h3>
         </div>
 
         <div className="px-4 mb-8">
@@ -118,7 +118,7 @@ export const RedLineModal = ({
             <TextField
               margin="dense"
               id="redline-text-dcn"
-              label="Document Change Number (DCN)"
+              label="Document Comment Number (DCN)"
               type="text"
               fullWidth
               variant="outlined"

@@ -8,7 +8,6 @@ import { ProcsTabbedTableSkeleton } from './ClientDashboardSkeleton';
 
 export const ClientDashboard = ({ procs }: { procs: Doc[] }) => {
   const { session, loading: userLoading, error: userError } = useUser();
-  const [procsLoading, setProcsLoading] = useState(false);
   return (
     <>
       <div className="h-full flex flex-col min-h-0">

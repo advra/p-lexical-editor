@@ -5,7 +5,7 @@ import config from '@/puck.config';
 import { formatTimestamp } from '@/lib/utils/dateformat';
 import type { PuckPageData } from '@/app/puck/types';
 import clsx from 'clsx';
-import { forwardRef, useEffect, useState, useMemo } from 'react';
+import { forwardRef, useState, useMemo } from 'react';
 import { RedlineRender } from '@/components/puck/ui/redline/RedlineRender';
 import { useUser } from '@/context/UserContext';
 import {
@@ -14,11 +14,8 @@ import {
 } from '@/components/puck/ui/NavigationDrawer';
 import { NavigationFloatingButton } from '@/components/puck/ui/NavigationFloatingButton';
 import { RedlineFloatingButton } from '@/components/puck/ui/redline/RedlineFloatingButton';
-import RedlineComment from '@/components/puck/ui/comments/comment';
 import { useRedline } from '@/context/RedlineContext';
 import { RedlineMarginLabels } from '../../redline/labels/RedlineMarginLabels';
-import { Redline } from '@/modules/redlines/models/redline-model';
-import { useCompletionStore } from '@/hooks/use-completion-store';
 
 export const PuckPreview = forwardRef<
   HTMLDivElement,
@@ -54,8 +51,6 @@ export const PuckPreview = forwardRef<
       ? 'w-[210mm] min-h-[297mm] p-[12mm]'
       : 'w-[8.5in] min-h-[11in] p-[0.5in]';
 
-  const completionStore = useCompletionStore();
-
   // Extract navigation items from the proc data - memoized to prevent unnecessary recalculations
   const navigationItems = useMemo(() => {
     const items: NavigationItem[] = [];
@@ -76,24 +71,21 @@ export const PuckPreview = forwardRef<
             id: block.props.id || `section-${index}`,
             label: block.props.text,
             type: 'section',
-            completed:
-              completionStore.completions[block.props.id]?.completed || false,
+            completed: false,
           });
         } else if (block.type === 'HeadingBlock' && block.props?.title) {
           items.push({
             id: block.props.id || `heading-${index}`,
             label: block.props.title,
             type: 'heading',
-            completed:
-              completionStore.completions[block.props.id]?.completed || false,
+            completed: false,
           });
         } else if (block.type === 'MarkCompleteButton' && block.props?.id) {
           items.push({
             id: block.props.id,
             label: block.props.label || 'Mark Complete',
             type: 'completion',
-            completed:
-              completionStore.completions[block.props.id]?.completed || false,
+            completed: false,
             dependencies: block.props.dependencies || [],
           });
         } else if (block.type === 'TaskItemBlock' && block.props?.id) {
@@ -101,15 +93,14 @@ export const PuckPreview = forwardRef<
             id: block.props.id,
             label: `Task: ${block.props.step || 'Untitled'}`,
             type: 'completion',
-            completed:
-              completionStore.completions[block.props.id]?.completed || false,
+            completed: false,
             dependencies: block.props.dependencies || [],
           });
         }
       });
     }
     return items;
-  }, [puckPageData.content, completionStore.completions, title]);
+  }, [puckPageData.content, title]);
 
   const handleNavigationItemClick = (item: any) => {
     if (item.id === 'title') {

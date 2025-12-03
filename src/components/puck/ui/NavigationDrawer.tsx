@@ -11,7 +11,6 @@ import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils/cn';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
-import { useCompletionStore } from '@/hooks/use-completion-store';
 
 export interface NavigationItem {
   id: string;
@@ -36,9 +35,6 @@ export const NavigationDrawer = ({
   onItemClick,
 }: NavigationDrawerProps) => {
   const [isVisible, setIsVisible] = useState(false);
-  const { completions } = useCompletionStore();
-
-  console.log('completions ALL: ', completions);
 
   useEffect(() => {
     if (isOpen) {

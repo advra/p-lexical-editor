@@ -1,7 +1,6 @@
 // Build the initial Puck page JSON for a new Proc
 
 import { PuckPageData } from '@/app/puck/types';
-import { now } from 'mongoose';
 
 export type InitialProcsProps = {
   owner: string;
