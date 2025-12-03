@@ -40,14 +40,14 @@
       {
         "type": "TextBlock",
         "props": {
-          "text": "Hi admin! This is your new page. Click the Edit Button at the top right to modify this page's contents.",
+          "text": "This is an example. Below is a \"Redline or Comment Suggestion created by a user\". Go to Edit mode (Top right button) and move the text below into the slot block component, then save.\n",
           "id": "TextBlock-admin-e5ed7726-96d7-4951-a5bf-78b6d80e45d9"
         }
       },
       {
         "type": "TextBlock",
         "props": {
-          "text": "Some text here by user ksfd klsdf  kjdfslksdf ls sdf ffsa",
+          "text": "Some sample text. Move me into the Slot Block Component Below then Save. Observe that this red note disappears inside the Slot Block's SlotComponent.",
           "id": "TextBlock-a2a321a4-7bc6-4a32-8007-a8238961149a"
         }
       },
@@ -70,8 +70,8 @@
     "zones": {},
     "metadata": {
       "title": "test",
-      "version": 4,
-      "updatedAt": "2025-12-02T23:43:05.359Z",
+      "version": 9,
+      "updatedAt": "2025-12-03T00:05:38.285Z",
       "createdBy": "admin",
       "createdAt": "2025-12-02T23:19:58.280Z"
     }

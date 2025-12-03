@@ -6,33 +6,15 @@ import SectionBlock, {
   SectionBlockProps,
 } from './components/puck/SectionBlock';
 import SlotBlock, { SlotBlockProps } from './components/puck/SlotBlock';
-import ColumnsBlock, { ColumnsBlockProps } from './components/puck/Columns';
 import TextBlock, { TextBlockProps } from './components/puck/TextBlock';
-import ToggleBlock, { ToggleBlockProps } from './components/puck/ToggleBlock';
-import { CardHeader } from '@mui/material';
 import classNames from 'classnames';
 import { PADDING_OPTIONS } from './components/puck/constants/padding';
-import {
-  ChecklistBlock,
-  ChecklistBlockProps,
-} from './components/puck/ChecklistBlock';
 
 type Props = {
-  ChecklistBlock: ChecklistBlockProps;
-  ToggleBlock: ToggleBlockProps;
   HeadingBlock: HeadingBlockProps;
   SectionBlock: SectionBlockProps;
-  ColumnsBlock: ColumnsBlockProps;
   TextBlock: TextBlockProps;
   SlotBlock: SlotBlockProps;
-  Grid: {};
-  Card: {
-    title: string;
-    subtitle: string;
-    description: string;
-    padding: number;
-  };
-  FlexContainer: {};
 };
 
 export const config: Config<Props> = {
@@ -70,76 +52,9 @@ export const config: Config<Props> = {
   },
   components: {
     SlotBlock,
-    ChecklistBlock,
-    ToggleBlock,
     HeadingBlock,
     SectionBlock,
-    ColumnsBlock,
     TextBlock,
-    Grid: {
-      label: 'Grid',
-      fields: {
-        columns: { type: 'number', label: 'Columns', placeholder: '3' },
-        gap: { type: 'number', label: 'Gap (px)', placeholder: '16' },
-        content: { type: 'slot', label: 'Grid content' },
-      },
-      defaultProps: {
-        columns: 3,
-        gap: 16,
-      },
-      render: ({ content: Content, columns = 3, gap = 16 }) => (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-            gap,
-          }}
-        >
-          <Content />
-        </div>
-      ),
-    },
-    Card: {
-      // Add the fields for the title, description and padding
-      fields: {
-        title: { type: 'text', contentEditable: true },
-        subtitle: { type: 'text', contentEditable: true },
-        description: { type: 'textarea', contentEditable: true },
-        padding: { type: 'number', min: 4, max: 64 },
-      },
-      // Add default values for each field
-      defaultProps: {
-        title: 'Card Title',
-        subtitle: 'Card Subtitle',
-        description: 'Example Description',
-        padding: 16,
-      },
-      render: ({ title, subtitle, description, padding }) => {
-        // Render the card using the values from its fields
-        return (
-          <div
-            className="border border-gray-200 rounded-sm shadow-sm"
-            style={{ padding }}
-          >
-            <CardHeader title={title} subheader={subtitle} />
-            <p>{description}</p>
-          </div>
-        );
-      },
-    },
-    FlexContainer: {
-      render: () => {
-        return (
-          <DropZone
-            zone="flex-zone"
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-            }}
-          />
-        );
-      },
-    },
   },
   categories: {
     typography: {
@@ -150,13 +65,7 @@ export const config: Config<Props> = {
     formatting: {
       defaultExpanded: true,
       title: 'Formatting',
-      components: [
-        'Grid',
-        'FlexContainer',
-        'ColumnsBlock',
-        'ToggleBlock',
-        'Card',
-      ],
+      components: ['SlotBlock'],
     },
   },
 };
