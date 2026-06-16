@@ -4,8 +4,7 @@
 
 'use client';
 
-import type { Data } from '@measured/puck';
-import { Puck, usePuck } from '@measured/puck';
+import { Puck } from '@puckeditor/core';
 import config from '../../../../puck.config';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';

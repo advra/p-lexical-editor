@@ -14,7 +14,7 @@
 import PuckEditorView from '@/components/puck/views/puck-editor-view';
 import { ProcProvider } from '@/context/ProcContext';
 import { RedlineProvider } from '@/context/RedlineContext';
-import '@measured/puck/puck.css';
+import '@puckeditor/core/puck.css';
 
 export default async function Page({
   params,

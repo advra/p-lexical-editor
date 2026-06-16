@@ -6,7 +6,7 @@
   the "applyRedlinesToBlock" method, and passing the modified blocks to the PuckRender component 
 */
 
-import { Render as PuckRender } from '@measured/puck';
+import { Render } from '@puckeditor/core';
 import { PuckPageData } from '@/app/puck/types';
 import { RedLineModal } from '@/components/redline/RedLineModal';
 import { useState, useEffect } from 'react';
@@ -245,7 +245,7 @@ export const RedlineRender = ({
 
   return (
     <>
-      <PuckRender config={config} data={modifiedData} />
+      <Render config={config} data={modifiedData} />
 
       {redlineModalState && (
         <RedLineModal
