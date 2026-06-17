@@ -21,7 +21,7 @@ import {
 import { ListNode, ListItemNode } from '@lexical/list';
 import { HeadingNode } from '@lexical/rich-text';
 import PuckTextIcon from './PuckTextIcon';
-import { $generateNodesFromDOM } from '@lexical/html';
+import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
 
 type Props = {
   field: any;
@@ -87,19 +87,15 @@ export function LexicalRichtextField({
     [readOnly],
   );
 
-  console.log(`field: ${JSON.stringify(field, null, 2)}`);
-  console.log(`id: ${JSON.stringify(id, null, 2)}`);
-
-  const [text, setText] = useState(value);
-
   const handleChange = (
     editorState: EditorState,
     editor: LexicalEditor,
     tags: Set<string>,
   ) => {
-    const json = JSON.stringify(editorState.toJSON());
-    console.log('Content changed:', json);
-    setText(json);
+    editor.read(() => {
+      const htmlString = $generateHtmlFromNodes(editor, null);
+      onChange(htmlString);
+    });
   };
 
   return (
@@ -111,7 +107,7 @@ export function LexicalRichtextField({
       <div className="lexical-richtext-field border border-gray-200 rounded-md overflow-hidden">
         <LexicalComposer initialConfig={initialConfig}>
           {/* Set initial HTML content */}
-          <InitialHtmlContentPlugin html={text} />
+          <InitialHtmlContentPlugin html={value} />
           {/* Toolbar */}
           {!readOnly && <LexicalToolbar />}
           {/* Editor */}

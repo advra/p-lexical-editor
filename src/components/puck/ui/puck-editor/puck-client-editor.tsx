@@ -127,7 +127,7 @@ export function PuckClientEditor({
           fieldTransforms={{
             richtext: richtextFieldTransform,
           }}
-        ></Puck>
+        />
       </div>
     </ProcProvider>
   );

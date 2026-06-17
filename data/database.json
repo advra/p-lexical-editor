@@ -2,29 +2,28 @@
   "/procs/test-document": {
     "root": {
       "props": {
-        "title": "Test Document",
-        "description": "some new test",
-        "tags": [],
-        "padding": "p-16"
+        "padding": "p-16",
+        "title": "Test asd",
+        "description": "some new testasd asd",
+        "tags": []
       }
     },
     "content": [
       {
         "type": "TextBlock",
         "props": {
-          "text": "Hi admin! This is your new page. Click the Edit Button at the top right to modify this page's contents.",
-          "id": "TextBlock-admin-e560fa4f-4d56-4f2c-92f6-0d6f11ee309d"
+          "text": "<p><strong>sadsa aasd</strong></p>",
+          "id": "TextBlock-fece9711-b0fb-4aee-9352-f8ef24f50b63"
         }
       }
     ],
     "zones": {},
     "metadata": {
-      "title": "Test Document",
-      "description": "some new test",
+      "title": "Test asd",
+      "version": 6,
+      "updatedAt": "2026-06-17T02:02:54.089Z",
       "createdBy": "admin",
-      "createdAt": "2025-12-02T23:12:28.642Z",
-      "updatedAt": "2025-12-02T23:12:28.642Z",
-      "version": 1
+      "createdAt": "2025-12-02T23:12:28.642Z"
     }
   },
   "/procs/test": {

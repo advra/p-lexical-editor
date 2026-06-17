@@ -59,6 +59,8 @@ function InlineLexicalEditor({
   const [localValue, setLocalValue] = useState(value);
   const anchorRef = useRef<HTMLDivElement>(null);
 
+  console.log(value);
+
   // Sync external value changes
   useEffect(() => {
     setLocalValue(value);
