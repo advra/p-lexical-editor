@@ -1,4 +1,4 @@
-import { DropZone, type Config } from '@measured/puck';
+import { Config } from '@puckeditor/core';
 import HeadingBlock, {
   HeadingBlockProps,
 } from './components/puck/HeadingBlock';

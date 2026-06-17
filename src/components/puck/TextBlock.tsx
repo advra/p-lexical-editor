@@ -23,7 +23,7 @@ export type TextBlockProps = {
 export const TextBlock: ComponentConfig<TextBlockProps & AddRedlineProps> = {
   label: 'Paragraph',
   fields: {
-    text: { type: 'textarea', contentEditable: true },
+    text: { type: 'richtext' },
   },
   defaultProps: {
     text: 'Sample paragraph text',

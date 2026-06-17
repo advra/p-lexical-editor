@@ -25,7 +25,7 @@ export const HeadingBlock: ComponentConfig<
 > = {
   label: 'Heading',
   fields: {
-    title: { type: 'text', contentEditable: true },
+    title: { type: 'richtext' },
   },
   defaultProps: {
     title: 'Heading',
@@ -45,20 +45,18 @@ export const HeadingBlock: ComponentConfig<
     const isRedlined = !!redlineData;
 
     return (
-      <>
-        <RedlineWrapper onClick={() => handleRedline(displayTitle, 'text')}>
-          <div className="text-center mx-16" id={id}>
-            <span className={cn('text-[42px] font-semibold')}>
-              <DisplayRedlineText
-                blockId={id}
-                isRedlined={isRedlined}
-                redline={redlineData}
-                originalText={displayTitle}
-              />
-            </span>
-          </div>
-        </RedlineWrapper>
-      </>
+      <RedlineWrapper onClick={() => handleRedline(displayTitle, 'text')}>
+        <div className="text-center mx-16" id={id}>
+          <span className={cn('text-[42px] font-semibold')}>
+            <DisplayRedlineText
+              blockId={id}
+              isRedlined={isRedlined}
+              redline={redlineData}
+              originalText={displayTitle}
+            />
+          </span>
+        </div>
+      </RedlineWrapper>
     );
   },
 };

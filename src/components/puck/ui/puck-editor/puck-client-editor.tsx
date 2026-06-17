@@ -9,12 +9,15 @@ import config from '../../../../puck.config';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { DiscardChangesButton } from '@/components/puck/ui/DiscardChangesButton';
+import { LexicalRichtextField } from '@/components/puck/ui/lexical/LexicalEditor';
+import { richtextFieldTransform } from '@/components/puck/ui/lexical/lexical-field-transform';
 import { ProcProvider } from '@/context/ProcContext';
 import {
   ProcPublic,
   ProcPublicWithAcl,
 } from '@/modules/procs/models/proc-model';
 import { useUser } from '@/context/UserContext';
+import { LexicalComposer } from '@lexical/react/LexicalComposer';
 
 export function PuckClientEditor({
   pathName,
@@ -66,45 +69,66 @@ export function PuckClientEditor({
   };
 
   return (
-    <>
-      <ProcProvider
-        viewMode={'edit'}
-        owner={proc.owner}
-        permissions={userPermissions}
-        currentUser={user}
-        procId={proc._id}
-      >
-        <div className="h-screen overflow-auto">
-          <Puck
-            iframe={{ enabled: false, waitForStyles: false }}
-            config={config}
-            data={proc.data}
-            onPublish={handlePublish}
-            overrides={{
-              headerActions: ({ children }) => (
-                <>
-                  <DiscardChangesButton slug={slug} />
-                  {children}
-                </>
-              ),
+    <ProcProvider
+      viewMode={'edit'}
+      owner={proc.owner}
+      permissions={userPermissions}
+      currentUser={user}
+      procId={proc._id}
+    >
+      <div className="h-screen overflow-auto">
+        <Puck
+          iframe={{ enabled: false, waitForStyles: false }}
+          config={config}
+          data={proc.data}
+          onPublish={handlePublish}
+          overrides={{
+            headerActions: ({ children }) => (
+              <>
+                <DiscardChangesButton slug={slug} />
+                {children}
+              </>
+            ),
 
-              // custom fields
-              fieldTypes: {
-                checkbox: ({ field, name, value, onChange }) => (
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={value}
-                      onChange={(e) => onChange(e.target.checked)}
-                    />
-                    {field.label || name}
-                  </label>
-                ),
-              },
-            }}
-          ></Puck>
-        </div>
-      </ProcProvider>
-    </>
+            // custom fields
+            fieldTypes: {
+              checkbox: ({ field, name, value, onChange }) => (
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={value}
+                    onChange={(e) => onChange(e.target.checked)}
+                  />
+                  {field.label || name}
+                </label>
+              ),
+              // Override the default TipTap richtext editor with Lexical
+              richtext: ({
+                field,
+                name,
+                value,
+                onChange,
+                readOnly,
+                children,
+              }) => (
+                <LexicalRichtextField
+                  field={field}
+                  value={value}
+                  name={name}
+                  onChange={onChange}
+                  readOnly={readOnly}
+                >
+                  {children}
+                </LexicalRichtextField>
+              ),
+            },
+          }}
+          // Field transforms enable inline editing with overlay portals
+          fieldTransforms={{
+            richtext: richtextFieldTransform,
+          }}
+        ></Puck>
+      </div>
+    </ProcProvider>
   );
 }
