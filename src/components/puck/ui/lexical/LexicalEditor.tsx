@@ -1,15 +1,12 @@
 'use client';
 
-import React, { useCallback, useMemo, useState } from 'react';
-import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
+import React, { useMemo, useState } from 'react';
 // load plugins
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
-import { AutoFocusPlugin } from '@lexical/react/LexicalAutoFocusPlugin';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
-import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import {
@@ -24,6 +21,7 @@ import {
 import { ListNode, ListItemNode } from '@lexical/list';
 import { HeadingNode } from '@lexical/rich-text';
 import PuckTextIcon from './PuckTextIcon';
+import { $generateNodesFromDOM } from '@lexical/html';
 
 type Props = {
   field: any;
@@ -77,7 +75,6 @@ export function LexicalRichtextField({
   name,
   children,
 }: Readonly<Props>) {
-  // Initial config for Lexical
   const initialConfig = useMemo(
     () => ({
       namespace: 'PuckLexical',
@@ -95,8 +92,11 @@ export function LexicalRichtextField({
 
   const [text, setText] = useState(value);
 
-  const handleChange = (editorState, editor, tags) => {
-    // Example: Serialize state for storage
+  const handleChange = (
+    editorState: EditorState,
+    editor: LexicalEditor,
+    tags: Set<string>,
+  ) => {
     const json = JSON.stringify(editorState.toJSON());
     console.log('Content changed:', json);
     setText(json);
@@ -118,7 +118,6 @@ export function LexicalRichtextField({
           <div className="relative">
             <RichTextPlugin
               contentEditable={
-                // styling inside the editor
                 <ContentEditable
                   className="lexical-editor min-h-[100px] p-3 focus:outline-none"
                   style={{ outline: 'none' }}
@@ -135,9 +134,6 @@ export function LexicalRichtextField({
           {/* Plugins */}
           <OnChangePlugin onChange={handleChange} />
           <ListPlugin />
-          {/* <HistoryPlugin /> */}
-          {/* <AutoFocusPlugin /> */}
-          {/* {children} */}
         </LexicalComposer>
       </div>
     </div>
@@ -145,8 +141,7 @@ export function LexicalRichtextField({
 }
 
 /**
- * Toolbar component for the Lexical editor.
- * Provides formatting buttons like bold, italic, underline, etc.
+ * Toolbar component for the Lexical editor that provides formatting button options
  */
 function LexicalToolbar() {
   const [editor] = useLexicalComposerContext();
@@ -219,12 +214,12 @@ function ToolbarButton({
   isActive,
   label,
   children,
-}: {
+}: Readonly<{
   onClick: () => void;
   isActive?: boolean;
   label: string;
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <button
       type="button"
