@@ -168,14 +168,14 @@ function LexicalToolbar() {
       >
         <span className="underline">U</span>
       </ToolbarButton>
-      <ToolbarButton
+      {/* <ToolbarButton
         onClick={() => {
           editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough');
         }}
         label="Strikethrough"
       >
         <span className="line-through">S</span>
-      </ToolbarButton>
+      </ToolbarButton> */}
       <span className="w-px bg-gray-300 mx-1" />
       <ToolbarButton
         onClick={() => {
