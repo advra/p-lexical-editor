@@ -18,6 +18,7 @@ import {
 } from '@/modules/procs/models/proc-model';
 import { useUser } from '@/context/UserContext';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
+import EditableText from '../lexical/field-transforms/EditableText';
 
 export function PuckClientEditor({
   pathName,
@@ -124,8 +125,9 @@ export function PuckClientEditor({
             },
           }}
           // Field transforms enable inline editing with overlay portals
+          // TODO fix this. comment out and i can click and editor appears on right side but if i dont it doesnt..
           fieldTransforms={{
-            richtext: richtextFieldTransform,
+            richtext: (props) => <EditableText value={props.value} />,
           }}
         />
       </div>
