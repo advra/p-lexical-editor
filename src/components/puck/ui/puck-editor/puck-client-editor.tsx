@@ -22,7 +22,7 @@ import {
 } from '@/modules/procs/models/proc-model';
 import { useUser } from '@/context/UserContext';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
-import EditableTextTransform from '../lexical/field-transforms/EditableText';
+import EditableTextTransform from '../lexical/field-transforms/editable-rich-text-transform';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';

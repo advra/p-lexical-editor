@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 // load plugins
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
@@ -40,7 +40,7 @@ type Props = {
 export const InitialHtmlContentPlugin = ({ html }: { html?: string }) => {
   const [editor] = useLexicalComposerContext();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!html) return;
 
     editor.update(() => {
