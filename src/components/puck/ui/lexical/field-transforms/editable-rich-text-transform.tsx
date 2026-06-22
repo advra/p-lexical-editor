@@ -22,12 +22,22 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
   const { value, isReadOnly, propName } = transformProps;
   const { dispatch } = usePuck();
   const ref = useRef<HTMLDivElement>(null);
+  const isExternalUpdate = useRef(false);
 
   useEffect(() => {
     if (ref.current) {
       registerOverlayPortal(ref.current);
     }
   }, []);
+
+  // Sync external value changes to the DOM without overwriting user edits
+  // The isExternalUpdate flag prevents feedback loops
+  useEffect(() => {
+    if (ref.current) {
+      isExternalUpdate.current = true;
+      ref.current.innerHTML = value ?? '';
+    }
+  }, [value]);
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
@@ -42,12 +52,15 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
   );
 
   return (
-    <div
-      ref={ref}
-      onClick={handleClick}
-      className="lexical-inline-preview cursor-text min-h-[1.5em] rounded px-1 inline-block"
-      dangerouslySetInnerHTML={{ __html: value ?? '' }}
-    />
+    <>
+      <div
+        contentEditable
+        ref={ref}
+        onClick={handleClick}
+        suppressContentEditableWarning
+        className="lexical-inline-preview cursor-text min-h-[1.5em] rounded px-1 inline-block"
+      />
+    </>
   );
 };
 
