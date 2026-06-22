@@ -1,31 +1,47 @@
 // source example: https://puckeditor.com/docs/extending-puck/field-transforms#making-it-interactive
 
-import { registerOverlayPortal } from '@puckeditor/core';
+import {
+  BaseField,
+  Field,
+  FieldTransformFnParams,
+  registerOverlayPortal,
+  usePuck,
+} from '@puckeditor/core';
 import { useEffect, useRef } from 'react';
 
 type Props = {
-  value: string;
+  transformProps: FieldTransformFnParams<
+    | ({
+        type: string;
+      } & BaseField)
+    | Field<any, {}>
+  >;
 };
 
-export const EditableText = ({ value }: Props) => {
+export const EditableTextTransform = ({ transformProps }: Props) => {
+  const { value, isReadOnly, componentId, field, propName, propPath } =
+    transformProps;
+  const { dispatch } = usePuck();
   const ref = useRef(null);
 
   useEffect(() => {
-    if (ref.current) {
+    if (ref.current && !isReadOnly) {
       // Register the element as an overlay portal
       registerOverlayPortal(ref.current);
     }
-  }, [ref.current]);
+  }, [ref.current, isReadOnly]);
 
   return (
-    // Mark the element as editable for inline text editing
     <div
       contentEditable
       ref={ref}
+      onClickCapture={() => {
+        dispatch({ type: 'setUi', ui: { field: { focus: propName } } });
+      }}
       className="lexical-inline-preview cursor-text min-h-[1.5em] rounded px-1"
       dangerouslySetInnerHTML={{ __html: value || '' }}
     />
   );
 };
 
-export default EditableText;
+export default EditableTextTransform;

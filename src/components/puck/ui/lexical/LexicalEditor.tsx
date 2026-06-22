@@ -37,7 +37,7 @@ type Props = {
  * Plugin that sets the initial HTML content into the Lexical editor.
  * This runs once when the editor is first created.
  */
-const InitialHtmlContentPlugin = ({ html }: { html: string }) => {
+export const InitialHtmlContentPlugin = ({ html }: { html?: string }) => {
   const [editor] = useLexicalComposerContext();
 
   React.useEffect(() => {
@@ -139,7 +139,7 @@ export function LexicalRichtextField({
 /**
  * Toolbar component for the Lexical editor that provides formatting button options
  */
-function LexicalToolbar() {
+export const LexicalToolbar = () => {
   const [editor] = useLexicalComposerContext();
 
   return (
@@ -203,7 +203,7 @@ function LexicalToolbar() {
       </ToolbarButton>
     </div>
   );
-}
+};
 
 function ToolbarButton({
   onClick,
