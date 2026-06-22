@@ -1,5 +1,6 @@
 // source example: https://puckeditor.com/docs/extending-puck/field-transforms#making-it-interactive
 
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import {
   BaseField,
   Field,
@@ -52,15 +53,18 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
   );
 
   return (
-    <>
+    <div className="relative">
       <div
         contentEditable
+        suppressContentEditableWarning
         ref={ref}
         onClick={handleClick}
-        suppressContentEditableWarning
-        className="lexical-inline-preview cursor-text min-h-[1.5em] rounded px-1 inline-block"
+        className="lexical-inline-preview cursor-text min-h-[1.5em] rounded px-1 mr-5"
       />
-    </>
+      <div className="absolute top-0 -right-1">
+        <DragIndicatorIcon className="text-gray-500" />
+      </div>
+    </div>
   );
 };
 
