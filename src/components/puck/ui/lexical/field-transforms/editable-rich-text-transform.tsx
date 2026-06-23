@@ -48,6 +48,8 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
       e.stopPropagation();
 
       dispatch({ type: 'setUi', ui: { field: { focus: propName } } });
+
+      console.log('INNER IS', e.currentTarget.innerHTML);
     },
     [isReadOnly, propName, dispatch],
   );
