@@ -54,12 +54,20 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
     [isReadOnly, propName, dispatch],
   );
 
+  const streamChangesToLexical = (input: string) => {
+    console.log(input);
+  };
+
   return (
     <div className="relative">
       <div
         contentEditable
         suppressContentEditableWarning
         ref={ref}
+        onInput={(e) => {
+          // Use textContent for plain text, innerHTML for rich text
+          streamChangesToLexical(e.currentTarget.innerHTML);
+        }}
         onClick={handleClick}
         className="lexical-inline-preview cursor-text min-h-[1.5em] rounded px-1 mr-5"
       />
