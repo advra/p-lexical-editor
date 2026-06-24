@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { DiscardChangesButton } from '@/components/puck/ui/DiscardChangesButton';
 import {
-  InitialHtmlContentPlugin,
+  HtmlContentPlugin,
   LexicalRichtextField,
   LexicalToolbar,
 } from '@/components/puck/ui/lexical/LexicalEditor';
@@ -78,15 +78,6 @@ export function PuckClientEditor({
     }
   };
 
-  const lexicalConfig = {
-    namespace: 'PuckLexical',
-    // editable: !readOnly,
-    onError: (error: Error) => {
-      console.error('Lexical error:', error);
-    },
-    // nodes: [ListNode, ListItemNode, HeadingNode],
-  };
-
   return (
     <ProcProvider
       viewMode={'edit'}
@@ -95,89 +86,62 @@ export function PuckClientEditor({
       currentUser={user}
       procId={proc._id}
     >
-      <LexicalComposer initialConfig={lexicalConfig}>
-        <InitialHtmlContentPlugin html={''} />
-        {/* Toolbar */}
-        <div className="">
-          <LexicalToolbarV2 />
-        </div>
-        {/* Editor */}
-        {/* <div className="relative">
-          <RichTextPlugin
-            contentEditable={
-              <ContentEditable
-                className="lexical-editor min-h-[100px] p-3 focus:outline-none"
-                style={{ outline: 'none' }}
-              />
-            }
-            placeholder={
-              <div className="absolute top-3 left-3 text-gray-400 pointer-events-none">
-                Enter text...
-              </div>
-            }
-            ErrorBoundary={LexicalErrorBoundary}
-          />
-        </div> */}
-        {/* Plugins */}
-        {/* <OnChangePlugin onChange={handleChange} /> */}
-        {/* <ListPlugin /> */}
-        <div className="h-screen overflow-auto">
-          <Puck
-            iframe={{ enabled: false, waitForStyles: false }}
-            config={config}
-            data={proc.data}
-            onPublish={handlePublish}
-            overrides={{
-              headerActions: ({ children }) => (
-                <>
-                  <DiscardChangesButton slug={slug} />
-                  {children}
-                </>
-              ),
+      <div className="h-screen overflow-auto">
+        <Puck
+          iframe={{ enabled: false, waitForStyles: false }}
+          config={config}
+          data={proc.data}
+          onPublish={handlePublish}
+          overrides={{
+            headerActions: ({ children }) => (
+              <>
+                <DiscardChangesButton slug={slug} />
+                {children}
+              </>
+            ),
 
-              // custom fields
-              fieldTypes: {
-                checkbox: ({ field, name, value, onChange }) => (
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={value}
-                      onChange={(e) => onChange(e.target.checked)}
-                    />
-                    {field.label || name}
-                  </label>
-                ),
-                // Override the default TipTap richtext editor with Lexical
-                richtext: ({
-                  field,
-                  name,
-                  value,
-                  onChange,
-                  readOnly,
-                  children,
-                }) => (
-                  <LexicalRichtextField
-                    field={field}
-                    value={value}
-                    name={name}
-                    onChange={onChange}
-                    readOnly={readOnly}
-                  >
-                    {children}
-                  </LexicalRichtextField>
-                ),
-              },
-            }}
-            // Field transforms enable inline editing with overlay portals
-            // TODO fix this. comment out and i can click and editor appears on right side but if i dont it doesnt..
-            fieldTransforms={{
-              richtext: (props) => (
-                <EditableTextTransform transformProps={props} />
+            // custom fields
+            fieldTypes: {
+              checkbox: ({ field, name, value, onChange }) => (
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={value}
+                    onChange={(e) => onChange(e.target.checked)}
+                  />
+                  {field.label || name}
+                </label>
               ),
-            }}
-          />
-        </div>
-      </LexicalComposer>
+              // Override the default TipTap richtext editor with Lexical
+              richtext: ({
+                field,
+                name,
+                value,
+                onChange,
+                readOnly,
+                children,
+              }) => (
+                <LexicalRichtextField
+                  field={field}
+                  value={value}
+                  name={name}
+                  onChange={onChange}
+                  readOnly={readOnly}
+                >
+                  {children}
+                </LexicalRichtextField>
+              ),
+            },
+          }}
+          // Field transforms enable inline editing with overlay portals
+          // TODO fix this. comment out and i can click and editor appears on right side but if i dont it doesnt..
+          fieldTransforms={{
+            richtext: (props) => (
+              <EditableTextTransform transformProps={props} />
+            ),
+          }}
+        />
+      </div>
     </ProcProvider>
   );
 }

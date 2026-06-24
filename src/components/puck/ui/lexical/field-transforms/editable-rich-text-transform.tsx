@@ -6,6 +6,7 @@ import {
   Field,
   FieldTransformFnParams,
   registerOverlayPortal,
+  setDeep,
   usePuck,
 } from '@puckeditor/core';
 import { useCallback, useEffect, useRef } from 'react';
@@ -20,10 +21,12 @@ type Props = {
 };
 
 export const EditableRichTextTransform = ({ transformProps }: Props) => {
-  const { value, isReadOnly, propName } = transformProps;
-  const { dispatch } = usePuck();
+  const { value, isReadOnly, propName, propPath, componentId } = transformProps;
+  const { dispatch, appState } = usePuck();
   const ref = useRef<HTMLDivElement>(null);
-  const isExternalUpdate = useRef(false);
+
+  console.log('propPath', propPath);
+  console.log('appState.data before', appState.data);
 
   useEffect(() => {
     if (ref.current) {
@@ -32,14 +35,13 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
   }, []);
 
   // Sync external value changes to the DOM without overwriting user edits
-  // The isExternalUpdate flag prevents feedback loops
   useEffect(() => {
     if (ref.current) {
-      isExternalUpdate.current = true;
       ref.current.innerHTML = value ?? '';
     }
   }, [value]);
 
+  // sync changes back to puck
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
       if (isReadOnly) return;
@@ -48,26 +50,53 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
       e.stopPropagation();
 
       dispatch({ type: 'setUi', ui: { field: { focus: propName } } });
-
-      console.log('INNER IS', e.currentTarget.innerHTML);
     },
     [isReadOnly, propName, dispatch],
   );
 
-  const streamChangesToLexical = (input: string) => {
-    console.log(input);
-  };
+  const applyChangesToPuck = useCallback(
+    (e: React.InputEvent<HTMLDivElement>) => {
+      if (isReadOnly) return;
+
+      const newValue = e.currentTarget.innerHTML;
+      const nextData = structuredClone(appState.data);
+
+      setDeep(nextData, propPath, newValue);
+
+      const component = nextData.content.find(
+        (item: any) => item.props?.id === componentId,
+      );
+
+      if (!component) return;
+
+      component.props[propName] = newValue;
+
+      dispatch({
+        type: 'setData',
+        data: nextData,
+      });
+    },
+    [isReadOnly, appState.data, componentId, propName, dispatch],
+  );
 
   return (
     <div className="relative">
-      <div
+      {/* <div
         contentEditable
         suppressContentEditableWarning
         ref={ref}
         onInput={(e) => {
           // Use textContent for plain text, innerHTML for rich text
-          streamChangesToLexical(e.currentTarget.innerHTML);
+          applyChangesToLexicalEditor(e);
         }}
+        onClick={handleClick}
+        className="lexical-inline-preview cursor-text min-h-[1.5em] rounded px-1 mr-5"
+      /> */}
+      <div
+        contentEditable={!isReadOnly}
+        suppressContentEditableWarning
+        ref={ref}
+        onInput={applyChangesToPuck}
         onClick={handleClick}
         className="lexical-inline-preview cursor-text min-h-[1.5em] rounded px-1 mr-5"
       />

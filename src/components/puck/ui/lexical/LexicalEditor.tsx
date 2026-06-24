@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 // load plugins
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
@@ -37,6 +37,29 @@ type Props = {
  * Plugin that sets the initial HTML content into the Lexical editor.
  * This runs once when the editor is first created.
  */
+export const HtmlContentPlugin = ({ html }: { html?: string }) => {
+  const [editor] = useLexicalComposerContext();
+  const lastHtmlRef = useRef<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (html === lastHtmlRef.current) return;
+
+    lastHtmlRef.current = html;
+
+    editor.update(() => {
+      const parser = new DOMParser();
+      const dom = parser.parseFromString(html ?? '', 'text/html');
+      const nodes = $generateNodesFromDOM(editor, dom);
+
+      const root = $getRoot();
+      root.clear();
+      root.append(...nodes);
+    });
+  }, [editor, html]);
+
+  return null;
+};
+
 export const InitialHtmlContentPlugin = ({ html }: { html?: string }) => {
   const [editor] = useLexicalComposerContext();
 
@@ -54,8 +77,6 @@ export const InitialHtmlContentPlugin = ({ html }: { html?: string }) => {
     // Only run once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editor]);
-
-  return null;
 };
 
 /**
