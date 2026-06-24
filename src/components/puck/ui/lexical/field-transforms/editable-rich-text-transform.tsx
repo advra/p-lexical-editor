@@ -22,7 +22,7 @@ type Props = {
 
 export const EditableRichTextTransform = ({ transformProps }: Props) => {
   const { value, isReadOnly, propName, propPath, componentId } = transformProps;
-  const { dispatch, appState } = usePuck();
+  const { dispatch, appState, getItemById, getSelectorForId } = usePuck();
   const ref = useRef<HTMLDivElement>(null);
 
   console.log('propPath', propPath);
@@ -46,7 +46,6 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
     (e: React.MouseEvent) => {
       if (isReadOnly) return;
 
-      e.preventDefault();
       e.stopPropagation();
 
       dispatch({ type: 'setUi', ui: { field: { focus: propName } } });
@@ -57,41 +56,31 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
   const applyChangesToPuck = useCallback(
     (e: React.InputEvent<HTMLDivElement>) => {
       if (isReadOnly) return;
-
       const newValue = e.currentTarget.innerHTML;
-      const nextData = structuredClone(appState.data);
-
-      setDeep(nextData, propPath, newValue);
-
-      const component = nextData.content.find(
-        (item: any) => item.props?.id === componentId,
-      );
-
-      if (!component) return;
-
-      component.props[propName] = newValue;
+      const item = getItemById(componentId);
+      const itemSelector = getSelectorForId(componentId);
+      if (!item || !itemSelector) return;
+      const nextProps = structuredClone(item.props);
+      setDeep(nextProps, propPath, newValue);
 
       dispatch({
-        type: 'setData',
-        data: nextData,
+        type: 'replace',
+        destinationZone: itemSelector.zone,
+        destinationIndex: itemSelector.index,
+        data: {
+          ...item,
+          props: {
+            ...item.props,
+            anotherProp: item.props.customFieldProp,
+          },
+        },
       });
     },
-    [isReadOnly, appState.data, componentId, propName, dispatch],
+    [isReadOnly, appState.data, componentId, propPath, dispatch],
   );
 
   return (
     <div className="relative">
-      {/* <div
-        contentEditable
-        suppressContentEditableWarning
-        ref={ref}
-        onInput={(e) => {
-          // Use textContent for plain text, innerHTML for rich text
-          applyChangesToLexicalEditor(e);
-        }}
-        onClick={handleClick}
-        className="lexical-inline-preview cursor-text min-h-[1.5em] rounded px-1 mr-5"
-      /> */}
       <div
         contentEditable={!isReadOnly}
         suppressContentEditableWarning
