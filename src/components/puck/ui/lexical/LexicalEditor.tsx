@@ -23,6 +23,10 @@ import {
 import PuckTextIcon from './PuckTextIcon';
 import { InitialHtmlContentPlugin } from './plugins/InitialHtmlContentPlugin';
 import CustomOnChangePlugin from './plugins/CustomOnChangePlugin';
+import {
+  LexicalEditorRefProvider,
+  useLexicalEditorRef,
+} from './plugins/LexicalEditorRefContext';
 
 type Props = {
   field: any;
@@ -51,6 +55,7 @@ export function LexicalRichtextField({
   name,
   children,
 }: Readonly<Props>) {
+  const editorRef = useLexicalEditorRef();
   return (
     <div className="space-y-3">
       <div className="flex items-center">
@@ -62,6 +67,7 @@ export function LexicalRichtextField({
         <InitialHtmlContentPlugin html={value} />
         <CustomOnChangePlugin value={value} onChange={onChange} />
         <ListPlugin />
+        <EditorRefPlugin editorRef={editorRef} />
         {/* Toolbar */}
         {!readOnly && <LexicalToolbar />}
         {/* Editor */}
