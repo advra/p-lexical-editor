@@ -9,6 +9,7 @@ import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
+import { EditorRefPlugin } from '@lexical/react/LexicalEditorRefPlugin';
 import {
   $getRoot,
   EditorState,
@@ -18,10 +19,10 @@ import {
 } from 'lexical';
 
 // load proper node types
-import { ListNode, ListItemNode } from '@lexical/list';
-import { HeadingNode } from '@lexical/rich-text';
+
 import PuckTextIcon from './PuckTextIcon';
-import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
+import { InitialHtmlContentPlugin } from './plugins/InitialHtmlContentPlugin';
+import CustomOnChangePlugin from './plugins/CustomOnChangePlugin';
 
 type Props = {
   field: any;
@@ -31,31 +32,6 @@ type Props = {
   id?: string;
   name: string;
   children?: React.ReactNode;
-};
-
-/**
- * Plugin that sets the initial HTML content into the Lexical editor.
- * This runs once when the editor is first created.
- */
-export const InitialHtmlContentPlugin = ({ html }: { html?: string }) => {
-  const [editor] = useLexicalComposerContext();
-
-  useEffect(() => {
-    if (!html) return;
-
-    editor.update(() => {
-      const parser = new DOMParser();
-      const dom = parser.parseFromString(html, 'text/html');
-      const nodes = $generateNodesFromDOM(editor, dom);
-      const root = $getRoot();
-      root.clear();
-      root.append(...nodes);
-    });
-    // Only run once on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editor]);
-
-  return null;
 };
 
 /**
@@ -75,29 +51,6 @@ export function LexicalRichtextField({
   name,
   children,
 }: Readonly<Props>) {
-  const initialConfig = useMemo(
-    () => ({
-      namespace: 'PuckLexical',
-      editable: !readOnly,
-      onError: (error: Error) => {
-        console.error('Lexical error:', error);
-      },
-      nodes: [ListNode, ListItemNode, HeadingNode],
-    }),
-    [readOnly],
-  );
-
-  const handleChange = (
-    editorState: EditorState,
-    editor: LexicalEditor,
-    tags: Set<string>,
-  ) => {
-    editor.read(() => {
-      const htmlString = $generateHtmlFromNodes(editor, null);
-      onChange(htmlString);
-    });
-  };
-
   return (
     <div className="space-y-3">
       <div className="flex items-center">
@@ -105,32 +58,29 @@ export function LexicalRichtextField({
         <span className="text-sm font-semibold capitalize">{name}</span>
       </div>
       <div className="lexical-richtext-field border border-gray-200 rounded-md overflow-hidden">
-        <LexicalComposer initialConfig={initialConfig}>
-          {/* Set initial HTML content */}
-          <InitialHtmlContentPlugin html={value} />
-          {/* Toolbar */}
-          {!readOnly && <LexicalToolbar />}
-          {/* Editor */}
-          <div className="relative">
-            <RichTextPlugin
-              contentEditable={
-                <ContentEditable
-                  className="lexical-editor min-h-[100px] p-3 focus:outline-none"
-                  style={{ outline: 'none' }}
-                />
-              }
-              placeholder={
-                <div className="absolute top-3 left-3 text-gray-400 pointer-events-none">
-                  Enter text...
-                </div>
-              }
-              ErrorBoundary={LexicalErrorBoundary}
-            />
-          </div>
-          {/* Plugins */}
-          <OnChangePlugin onChange={handleChange} />
-          <ListPlugin />
-        </LexicalComposer>
+        {/* Plugins */}
+        <InitialHtmlContentPlugin html={value} />
+        <CustomOnChangePlugin value={value} onChange={onChange} />
+        <ListPlugin />
+        {/* Toolbar */}
+        {!readOnly && <LexicalToolbar />}
+        {/* Editor */}
+        <div className="relative">
+          <RichTextPlugin
+            contentEditable={
+              <ContentEditable
+                className="lexical-editor min-h-[100px] p-3 focus:outline-none"
+                style={{ outline: 'none' }}
+              />
+            }
+            placeholder={
+              <div className="absolute top-3 left-3 text-gray-400 pointer-events-none">
+                Enter text...
+              </div>
+            }
+            ErrorBoundary={LexicalErrorBoundary}
+          />
+        </div>
       </div>
     </div>
   );
