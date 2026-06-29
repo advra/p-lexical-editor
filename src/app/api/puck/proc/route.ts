@@ -9,6 +9,34 @@ type createRequestProps = {
   data: PuckPageDataInput;
 };
 
+/**
+ * Response type for the POST /api/puck/proc endpoint.
+ * Returned when a new proc is successfully created.
+ */
+export type CreateProcResponse = {
+  /** The proc's unique identifier (slug-based). */
+  id: string;
+  /** URL-safe slug derived from the title. */
+  slug: string;
+  /** The canonical path to access this proc. */
+  path: string;
+  /** The full proc object as stored in the database. */
+  proc: {
+    _id: string;
+    title: string;
+    slug: string;
+    owner: string;
+    status: 'published';
+    tags: string[];
+    sharedWith: [];
+    updatedAt: string;
+    data: PuckPageDataInput & { metadata: Record<string, any> };
+    version: number;
+    createdAt: string;
+    publishedAt: string;
+  };
+};
+
 const DB_PATH = path.join(process.cwd(), 'data', 'database.json');
 
 // Helper to read database

@@ -12,7 +12,7 @@ import TextField from '@/components/common/TextField';
 import { default as CustomButton } from '@/components/common/buttons/Button';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { createResponse } from '@/app/api/puck/proc/route';
+import { CreateProcResponse } from '@/app/api/puck/proc/route';
 
 export type ProcPayload = {
   name: string;
@@ -23,7 +23,7 @@ export type ProcPayload = {
 type Props = {
   open: boolean;
   onClose: () => void;
-  onCreate: (payload: ProcPayload) => Promise<createResponse>;
+  onCreate: (payload: ProcPayload) => Promise<CreateProcResponse>;
   tags?: string[]; // optional list of tags to show in a select
 };
 
