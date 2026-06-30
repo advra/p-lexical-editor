@@ -1,5 +1,6 @@
 // source example: https://puckeditor.com/docs/extending-puck/field-transforms#making-it-interactive
 
+// TODO From input notify puck of changes
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import {
   BaseField,
@@ -19,7 +20,10 @@ import {
   CLICK_COMMAND,
   COMMAND_PRIORITY_EDITOR,
   COMMAND_PRIORITY_LOW,
+  createCommand,
+  INPUT_COMMAND,
   ParagraphNode,
+  PASTE_COMMAND,
 } from 'lexical';
 import { useCallback, useEffect, useRef } from 'react';
 import { $generateNodesFromDOM } from '@lexical/html';
@@ -33,6 +37,8 @@ type Props = {
     | Field<any, {}>
   >;
 };
+
+export const INLINE_INPUT_COMMAND = createCommand('INLINE_INPUT_COMMAND');
 
 export const EditableRichTextTransform = ({ transformProps }: Props) => {
   const { value, isReadOnly, propName, propPath, componentId } = transformProps;
@@ -101,9 +107,22 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
       }
 
       // dispatch to open the Puck ui
-      dispatch({ type: 'setUi', ui: { field: { focus: propName } } });
+      // dispatch({ type: 'setUi', ui: { field: { focus: propName } } });
+    },
+    [isReadOnly, propName, dispatch],
+  );
 
-      // then
+  const handleInputInlinePreview = useCallback(
+    (e: InputEvent) => {
+      if (isReadOnly) return;
+
+      e.stopPropagation();
+      if (editorRef.current) {
+        editorRef.current.dispatchCommand(INPUT_COMMAND, e);
+      }
+
+      // dispatch to open the Puck ui
+      // dispatch({ type: 'setUi', ui: { field: { focus: propName } } });
     },
     [isReadOnly, propName, dispatch],
   );
@@ -174,13 +193,29 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
   //   [isReadOnly, appState.data, componentId, propPath, dispatch],
   // );
 
+  const handleInput = useCallback(
+    (e: React.InputEvent<HTMLDivElement>) => {
+      if (isReadOnly) return;
+      const html = e.currentTarget.outerHTML;
+
+      // Push the HTML into the Lexical editor via the shared editor ref
+      const currEditor = editorRef.current;
+      if (editorRef.current) {
+        editorRef.current.dispatchCommand(INLINE_INPUT_COMMAND, html);
+      }
+    },
+    [isReadOnly, editorRef],
+  );
+
   return (
     <div className="relative">
       <div
         contentEditable={!isReadOnly}
         suppressContentEditableWarning
         ref={ref}
-        onInput={applyChangesToPuck}
+        onInput={handleInput}
+        // onInput={applyChangesToPuck}
+        onInput={handleInputInlinePreview}
         onClick={handleClickInlinePreview}
         className="lexical-inline-preview cursor-text min-h-[1.5em] rounded px-1 mr-5"
       />
