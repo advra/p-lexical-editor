@@ -7,6 +7,9 @@ import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { EditorRefPlugin } from '@lexical/react/LexicalEditorRefPlugin';
+import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
+import { AutoFocusPlugin } from '@lexical/react/LexicalAutoFocusPlugin';
+import DebugTreeViewPlugin from './plugins/DebugTreeViewPlugin';
 
 // load proper node types
 
@@ -47,26 +50,30 @@ export function LexicalRichtextField({
   children,
 }: Readonly<Props>) {
   const editorRef = useLexicalEditorRef();
+
   return (
     <div className="space-y-3">
       <div className="flex items-center">
         <PuckTextIcon />
         <span className="text-sm font-semibold capitalize">{name}</span>
       </div>
-      <div className="lexical-richtext-field border border-gray-200 rounded-md overflow-hidden">
+      <div className="editor-container border border-gray-200 rounded-md overflow-hidden">
         {/* Plugins */}
         <InitialHtmlContentPlugin html={value} />
         <CustomOnChangePlugin value={value} onChange={onChange} />
         <ListPlugin />
         <EditorRefPlugin editorRef={editorRef} />
+        <HistoryPlugin />
+        <AutoFocusPlugin />
+        <DebugTreeViewPlugin />
         {/* Toolbar */}
         {!readOnly && <LexicalToolbar />}
         {/* Editor */}
-        <div className="relative">
+        <div className="editor-container relative">
           <RichTextPlugin
             contentEditable={
               <ContentEditable
-                className="lexical-editor min-h-[100px] p-3 focus:outline-none"
+                className="editor-input min-h-[100px] p-3 focus:outline-none"
                 style={{ outline: 'none' }}
               />
             }
