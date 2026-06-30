@@ -17,6 +17,9 @@ import {
   FORMAT_TEXT_COMMAND,
   LexicalEditor,
 } from 'lexical';
+import FormatAlignLeftIcon from '@mui/icons-material/FormatAlignLeft';
+import FormatAlignCenterIcon from '@mui/icons-material/FormatAlignCenter';
+import FormatAlignRightIcon from '@mui/icons-material/FormatAlignCenter';
 
 // load proper node types
 
@@ -139,7 +142,7 @@ export const LexicalToolbar = () => {
         }}
         label="Align Left"
       >
-        ≡
+        <FormatAlignLeftIcon fontSize="inherit" />
       </ToolbarButton>
       <ToolbarButton
         onClick={() => {
@@ -147,7 +150,7 @@ export const LexicalToolbar = () => {
         }}
         label="Align Center"
       >
-        ≡
+        <FormatAlignCenterIcon fontSize="inherit" />
       </ToolbarButton>
       <ToolbarButton
         onClick={() => {
@@ -155,7 +158,7 @@ export const LexicalToolbar = () => {
         }}
         label="Align Right"
       >
-        ≡
+        <FormatAlignRightIcon fontSize="inherit" />
       </ToolbarButton>
     </div>
   );
