@@ -4,6 +4,17 @@
 
 Eproc is a .... It is developed using nvm lts version `v20.19.5`.
 
+## Quick Start
+
+```bash
+npm install
+npm run dev
+
+navigate to http://localhost:3000/procs/test-document/
+Click Green Edit icon at the top right
+Attempt to make changes using the inline
+```
+
 ## I. Getting Started
 
 Make sure you are on the correct nodejs version for this build. Run the following:
