@@ -12,7 +12,7 @@
       {
         "type": "TextBlock",
         "props": {
-          "text": "<p style=\"text-align: right;\"><span style=\"white-space: pre-wrap;\">okay</span></p>",
+          "text": "<p style=\"text-align: left;\"><span style=\"white-space: pre-wrap;\">this is a test rich text </span></p><p style=\"text-align: center;\"><span style=\"white-space: pre-wrap;\">with several</span></p><p style=\"text-align: center;\"><span style=\"white-space: pre-wrap;\">more</span></p><p style=\"text-align: right;\"><span style=\"white-space: pre-wrap;\">lines here</span></p>",
           "id": "TextBlock-fece9711-b0fb-4aee-9352-f8ef24f50b63"
         }
       }
@@ -20,8 +20,8 @@
     "zones": {},
     "metadata": {
       "title": "Test asd",
-      "version": 28,
-      "updatedAt": "2026-06-30T21:08:39.524Z",
+      "version": 30,
+      "updatedAt": "2026-06-30T21:15:20.133Z",
       "createdBy": "admin",
       "createdAt": "2025-12-02T23:12:28.642Z"
     }
