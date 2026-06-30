@@ -12,7 +12,7 @@
       {
         "type": "TextBlock",
         "props": {
-          "text": "<p style=\"text-align: right;\"><span style=\"white-space: pre-wrap;\">okay and here we go</span></p>",
+          "text": "<p style=\"text-align: right;\"><span style=\"white-space: pre-wrap;\">okay</span></p>",
           "id": "TextBlock-fece9711-b0fb-4aee-9352-f8ef24f50b63"
         }
       }
@@ -20,8 +20,8 @@
     "zones": {},
     "metadata": {
       "title": "Test asd",
-      "version": 23,
-      "updatedAt": "2026-06-30T16:27:54.900Z",
+      "version": 28,
+      "updatedAt": "2026-06-30T21:08:39.524Z",
       "createdBy": "admin",
       "createdAt": "2025-12-02T23:12:28.642Z"
     }
