@@ -20,7 +20,7 @@ type Props = {
 export const config: Config<Props> = {
   root: {
     fields: {
-      title: { type: 'text' }, // You need to redefine the `title` field if we want to retain it
+      title: { type: 'text', contentEditable: true }, // You need to redefine the `title` field if we want to retain it
       description: {
         label: 'Description: (Not displayed)',
         type: 'textarea',

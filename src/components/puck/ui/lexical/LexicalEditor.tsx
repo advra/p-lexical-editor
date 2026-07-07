@@ -65,7 +65,6 @@ export function LexicalRichtextField({
         <EditorRefPlugin editorRef={editorRef} />
         <HistoryPlugin />
         <AutoFocusPlugin />
-        <DebugTreeViewPlugin />
         {/* Toolbar */}
         {!readOnly && <LexicalToolbar />}
         {/* Editor */}
@@ -86,6 +85,7 @@ export function LexicalRichtextField({
           />
         </div>
       </div>
+      <DebugTreeViewPlugin />
     </div>
   );
 }

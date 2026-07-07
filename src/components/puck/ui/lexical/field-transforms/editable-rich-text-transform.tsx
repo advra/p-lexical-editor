@@ -77,8 +77,11 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
       if (isReadOnly) return;
 
       e.stopPropagation();
-      if (editorRef.current) {
-        editorRef.current.dispatchCommand(CLICK_COMMAND, e.nativeEvent);
+      // if (editorRef.current) {
+      //   editorRef.current.dispatchCommand(CLICK_COMMAND, e.nativeEvent);
+      // }
+      if (ref.current) {
+        ref.current.focus();
       }
 
       // dispatch to open the Puck ui
@@ -203,7 +206,6 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
         suppressContentEditableWarning
         ref={ref}
         onInput={handleInput}
-        // onInput={applyChangesToPuck}
         onInput={applyChangesToPuck}
         onClick={handleClickInlinePreview}
         className="lexical-inline-preview cursor-text min-h-[1.5em] rounded px-1 mr-5"
