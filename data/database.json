@@ -12,7 +12,7 @@
       {
         "type": "TextBlock",
         "props": {
-          "text": "<p style=\"text-align: center;\"><span style=\"white-space: pre-wrap;\">heellooo there </span><b><strong style=\"white-space: pre-wrap;\">comie </strong></b><span style=\"white-space: pre-wrap;\">the </span><b><strong style=\"white-space: pre-wrap;\">others </strong></b><span style=\"white-space: pre-wrap;\">and here</span></p><p style=\"text-align: right;\"><span style=\"white-space: pre-wrap;\">sad asd asd asd </span></p><p><span style=\"white-space: pre-wrap;\"> dsaijd </span></p>",
+          "text": "<p style=\"text-align: center;\"><span style=\"white-space: pre-wrap;\">heellooo there </span><b><strong style=\"white-space: pre-wrap;\">comie </strong></b><span style=\"white-space: pre-wrap;\">the </span><b><strong style=\"white-space: pre-wrap;\">others </strong></b><span style=\"white-space: pre-wrap;\">and her</span></p><p style=\"text-align: center;\"><span style=\"font-size: 12px; white-space: pre-wrap;\">12 point</span><span style=\"font-size: 14px; white-space: pre-wrap;\">14point</span><span style=\"font-size: 16px; white-space: pre-wrap;\">16pt</span><span style=\"font-size: 18px; white-space: pre-wrap;\">18pt</span><span style=\"font-size: 20px; white-space: pre-wrap;\">20pt</span><span style=\"font-size: 24px; white-space: pre-wrap;\">24pt</span><span style=\"font-size: 28px; white-space: pre-wrap;\">28pt</span><span style=\"font-size: 32px; white-space: pre-wrap;\">32pt</span><span style=\"font-size: 36px; white-space: pre-wrap;\">36pt</span><span style=\"font-size: 48px; white-space: pre-wrap;\">48pt</span><span style=\"font-size: 60px; white-space: pre-wrap;\">60Pt</span></p><p style=\"text-align: center;\"><br></p><p style=\"text-align: right;\"><span style=\"white-space: pre-wrap;\">sad asd asd asd </span></p><p><span style=\"white-space: pre-wrap;\"> dsaijd </span></p>",
           "id": "TextBlock-fece9711-b0fb-4aee-9352-f8ef24f50b63"
         }
       },
@@ -42,8 +42,8 @@
     "zones": {},
     "metadata": {
       "title": "Test asd",
-      "version": 41,
-      "updatedAt": "2026-07-08T05:38:53.525Z",
+      "version": 43,
+      "updatedAt": "2026-07-08T05:47:49.170Z",
       "createdBy": "admin",
       "createdAt": "2025-12-02T23:12:28.642Z"
     }
