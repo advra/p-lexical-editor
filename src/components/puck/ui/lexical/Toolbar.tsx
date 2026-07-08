@@ -22,7 +22,7 @@ export const LexicalToolbar = () => {
         onClick={() => {
           editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
         }}
-        label="Bold"
+        label="Bold (Ctrl+B)"
       >
         <strong>B</strong>
       </ToolbarButton>
@@ -30,7 +30,7 @@ export const LexicalToolbar = () => {
         onClick={() => {
           editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
         }}
-        label="Italic"
+        label="Italic (Ctrl+I)"
       >
         <em>I</em>
       </ToolbarButton>
@@ -38,18 +38,18 @@ export const LexicalToolbar = () => {
         onClick={() => {
           editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline');
         }}
-        label="Underline"
+        label="Underline (Ctrl+U)"
       >
         <span className="underline">U</span>
       </ToolbarButton>
-      {/* <ToolbarButton
+      <ToolbarButton
         onClick={() => {
           editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough');
         }}
         label="Strikethrough"
       >
         <span className="line-through">S</span>
-      </ToolbarButton> */}
+      </ToolbarButton>
       <span className="w-px bg-gray-300 mx-1" />
       <ToolbarButton
         onClick={() => {
