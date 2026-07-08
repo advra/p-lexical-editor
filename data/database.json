@@ -12,7 +12,7 @@
       {
         "type": "TextBlock",
         "props": {
-          "text": "<p><span style=\"white-space: pre-wrap;\">d</span></p><p><span style=\"white-space: pre-wrap;\">s d d sd </span><b><strong style=\"white-space: pre-wrap;\">sdadd sdddd sad d</strong></b><span style=\"white-space: pre-wrap;\">d asd asd as dd</span></p><p style=\"text-align: left;\"><b><strong style=\"white-space: pre-wrap;\">a</strong></b><span style=\"white-space: pre-wrap;\">sssthis is a test rich text sa dsa asa s d dss sadaad asdd as asd sadad s</span></p><p style=\"text-align: center;\"><span style=\"white-space: pre-wrap;\">s ad sadwith sevs ad </span><b><strong style=\"white-space: pre-wrap;\">asderadls</strong></b><span style=\"white-space: pre-wrap;\">darsad sa dasd asdd saads sdas</span></p><p style=\"text-align: center;\"><span style=\"white-space: pre-wrap;\">mosa da sda dreesa dd</span></p><p style=\"text-align: right;\"><span style=\"white-space: pre-wrap;\">lis dasas dda sa sdas dd sdads sad nes her</span></p>",
+          "text": "<p style=\"text-align: center;\"><span style=\"white-space: pre-wrap;\">heellooo there comie the others and here</span></p><p style=\"text-align: right;\"><span style=\"white-space: pre-wrap;\">sad asd asd asd </span></p><p><span style=\"white-space: pre-wrap;\"> dsaijd </span></p>",
           "id": "TextBlock-fece9711-b0fb-4aee-9352-f8ef24f50b63"
         }
       }
@@ -20,8 +20,8 @@
     "zones": {},
     "metadata": {
       "title": "Test asd",
-      "version": 36,
-      "updatedAt": "2026-07-08T03:46:56.584Z",
+      "version": 37,
+      "updatedAt": "2026-07-08T04:01:25.694Z",
       "createdBy": "admin",
       "createdAt": "2025-12-02T23:12:28.642Z"
     }

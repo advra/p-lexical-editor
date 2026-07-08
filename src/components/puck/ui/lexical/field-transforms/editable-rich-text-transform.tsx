@@ -12,25 +12,14 @@ import {
 } from '@puckeditor/core';
 import {
   $addUpdateTag,
-  $createParagraphNode,
-  $createRangeSelection,
-  $getNearestNodeFromDOMNode,
   $getRoot,
-  $getSelection,
-  $setSelection,
   CLICK_COMMAND,
   COMMAND_PRIORITY_EDITOR,
-  COMMAND_PRIORITY_LOW,
-  createCommand,
-  INPUT_COMMAND,
-  ParagraphNode,
-  PASTE_COMMAND,
   SKIP_DOM_SELECTION_TAG,
 } from 'lexical';
 import { useCallback, useEffect, useRef } from 'react';
 import { $generateNodesFromDOM } from '@lexical/html';
 import { useLexicalEditorRef } from '../plugins/LexicalEditorRefContext';
-import { INLINE_INPUT_COMMAND } from '../plugins/InlineInputPlugin';
 
 type Props = {
   transformProps: FieldTransformFnParams<
@@ -48,6 +37,7 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
   const { dispatch, appState, getItemById, getSelectorForId } = usePuck();
   const ref = useRef<HTMLDivElement>(null);
   const editorRef = useLexicalEditorRef();
+  const isInlineFocused = useRef(false);
 
   useEffect(() => {
     if (ref.current) {
@@ -67,9 +57,10 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
     );
   }, [editorRef.current]);
 
-  // Sync external value changes to the DOM without overwriting user edits
+  // Sync external value changes to the DOM only when the inline editor is NOT focused
+  // This prevents overwriting user edits while typing in the inline div
   useEffect(() => {
-    if (ref.current) {
+    if (ref.current && !isInlineFocused.current) {
       ref.current.innerHTML = value ?? '';
     }
   }, [value]);
@@ -80,43 +71,20 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
       if (isReadOnly) return;
 
       e.stopPropagation();
-      // if (editorRef.current) {
-      //   editorRef.current.dispatchCommand(CLICK_COMMAND, e.nativeEvent);
-      // }
       if (ref.current) {
         ref.current.focus();
       }
-
-      // dispatch to open the Puck ui
-      // dispatch({ type: 'setUi', ui: { field: { focus: propName } } });
     },
     [isReadOnly, propName, dispatch],
   );
 
-  // const applyChangesToPuck = useCallback(
-  //   (e: React.InputEvent<HTMLDivElement>) => {
-  //     if (isReadOnly) return;
+  const handleFocus = useCallback(() => {
+    isInlineFocused.current = true;
+  }, []);
 
-  //     const newValue = e.currentTarget.innerHTML;
-  //     const item = getItemById(componentId);
-  //     const itemSelector = getSelectorForId(componentId);
-  //     if (!item || !itemSelector) return;
-  //     console.log('item is or selector: ', item, itemSelector);
-  //     const nextProps = structuredClone(item.props);
-  //     setDeep(nextProps, propPath, newValue);
-
-  //     dispatch({
-  //       type: 'replace',
-  //       destinationZone: itemSelector.zone,
-  //       destinationIndex: itemSelector.index,
-  //       data: {
-  //         type: item.type,
-  //         props: nextProps,
-  //       },
-  //     });
-  //   },
-  //   [isReadOnly, propName, dispatch],
-  // );
+  const handleBlur = useCallback(() => {
+    isInlineFocused.current = false;
+  }, []);
 
   const handleInput = useCallback(
     (e: React.InputEvent<HTMLDivElement>) => {
@@ -124,17 +92,11 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
       const html = e.currentTarget.outerHTML;
 
       // Push the HTML into the Lexical editor via the shared editor ref
-      // if (editorRef.current) {
-      //   // editorRef.current.dispatchCommand(INLINE_INPUT_COMMAND, html);
-      //   editorRef.current.update(() => {});
-      // }
       const currEditor = editorRef.current;
       if (currEditor) {
         currEditor.update(() => {
           // Prevent the browser from stealing focus
           $addUpdateTag(SKIP_DOM_SELECTION_TAG);
-
-          $setSelection(null);
 
           const parser = new DOMParser();
           const dom = parser.parseFromString(html, 'text/html');
@@ -144,13 +106,6 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
           root.append(...nodes);
         });
       }
-      // Re-focus the inline div after the update
-      // Use requestAnimationFrame to ensure it runs after React's render cycle
-      requestAnimationFrame(() => {
-        if (ref.current) {
-          ref.current.focus();
-        }
-      });
     },
     [isReadOnly, editorRef],
   );
@@ -162,7 +117,8 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
         suppressContentEditableWarning
         ref={ref}
         onInput={handleInput}
-        // onInput={applyChangesToPuck}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         onClick={handleClickInlinePreview}
         className="lexical-inline-preview cursor-text min-h-[1.5em] rounded px-1 mr-5"
       />
