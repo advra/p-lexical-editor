@@ -22,6 +22,7 @@ import {
 } from './plugins/LexicalEditorRefContext';
 import { LexicalToolbar } from './Toolbar';
 import { InlineInputPlugin } from './plugins/InlineInputPlugin';
+import { cn } from '@/lib/utils/cn';
 
 type Props = {
   field: any;
@@ -74,12 +75,12 @@ export function LexicalEditorRichTextField({
           <RichTextPlugin
             contentEditable={
               <ContentEditable
-                className="editor-input min-h-[100px] p-3 focus:outline-none"
+                className="editor-input min-h-[100px] p-1 focus:outline-none text-black"
                 style={{ outline: 'none' }}
               />
             }
             placeholder={
-              <div className="absolute top-3 left-3 text-gray-400 pointer-events-none">
+              <div className="absolute top-1 left-1 text-gray-400 pointer-events-none">
                 Enter text...
               </div>
             }
