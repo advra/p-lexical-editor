@@ -66,7 +66,7 @@ export function LexicalEditorRichTextField({
         <ListPlugin />
         <EditorRefPlugin editorRef={editorRef} />
         <HistoryPlugin />
-        <AutoFocusPlugin />
+        {/* <AutoFocusPlugin /> */}
         <InlineInputPlugin />
         {/* Toolbar */}
         {!readOnly && <LexicalToolbar />}
