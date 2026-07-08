@@ -10,19 +10,29 @@ import { useCallback, useState } from 'react';
 import FormatAlignLeftIcon from '@mui/icons-material/FormatAlignLeft';
 import FormatAlignCenterIcon from '@mui/icons-material/FormatAlignCenter';
 import FormatAlignRightIcon from '@mui/icons-material/FormatAlignRight';
+import TextIncreaseIcon from '@mui/icons-material/TextIncrease';
+import TextDecreaseIcon from '@mui/icons-material/TextDecrease';
 
-const FONT_SIZES = [
-  { label: '12', value: '12px' },
-  { label: '14', value: '14px' },
-  { label: '16', value: '16px' },
-  { label: '18', value: '18px' },
-  { label: '20', value: '20px' },
-  { label: '24', value: '24px' },
-  { label: '28', value: '28px' },
-  { label: '32', value: '32px' },
-  { label: '36', value: '36px' },
-  { label: '48', value: '48px' },
-  { label: '60', value: '60px' },
+export const FONT_SIZES = [
+  { label: '8', value: '8pt' },
+  { label: '10', value: '10pt' },
+  { label: '12', value: '12pt' },
+  { label: '14', value: '14pt' },
+  { label: '16', value: '16pt' },
+  { label: '18', value: '18pt' },
+  { label: '20', value: '20pt' },
+  { label: '24', value: '24pt' },
+  { label: '28', value: '28pt' },
+  { label: '32', value: '32pt' },
+  { label: '36', value: '36pt' },
+  { label: '48', value: '48pt' },
+  { label: '60', value: '60pt' },
+  // { label: 'Small Text', value: '0.875rem' },
+  // { label: 'Paragraph', value: '1rem' },
+  // { label: 'Lead Paragraph', value: '1.2rem' },
+  // { label: 'Section Header', value: '1.25rem' },
+  // { label: 'Subtitle', value: '2rem' },
+  // { label: 'Main Title', value: '2.5rem' },
 ];
 
 const TEXT_COLORS = [
@@ -44,7 +54,7 @@ const TEXT_COLORS = [
  */
 export const LexicalToolbar = () => {
   const [editor] = useLexicalComposerContext();
-  const [fontSize, setFontSize] = useState('14px');
+  const [fontSize, setFontSize] = useState('10pt');
 
   const handleFontSizeChange = useCallback(
     (size: string) => {
@@ -67,7 +77,7 @@ export const LexicalToolbar = () => {
         onChange={(e) => handleFontSizeChange(e.target.value)}
         title="Font Size"
         aria-label="Font Size"
-        className="cursor-pointer px-1 py-1 text-sm rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400"
+        className="cursor-pointer pl-1 pr-2 py-1 text-sm rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400"
       >
         {FONT_SIZES.map((opt) => (
           <option key={opt.value} value={opt.value}>
@@ -75,8 +85,38 @@ export const LexicalToolbar = () => {
           </option>
         ))}
       </select>
-
-      <span className="w-px bg-gray-300 mx-1" />
+      {/* increase font size */}
+      <ToolbarButton
+        onClick={() => {
+          const currentIndex = FONT_SIZES.findIndex(
+            (s) => s.value === fontSize,
+          );
+          const nextIndex = Math.min(currentIndex + 1, FONT_SIZES.length - 1);
+          const nextFont = FONT_SIZES[nextIndex];
+          if (nextFont) {
+            handleFontSizeChange(nextFont.value);
+          }
+        }}
+        label="Increase Font Size (Ctrl+Shift+>)"
+      >
+        <TextIncreaseIcon fontSize="small" />
+      </ToolbarButton>
+      {/* decrease font size */}
+      <ToolbarButton
+        onClick={() => {
+          const currentIndex = FONT_SIZES.findIndex(
+            (s) => s.value === fontSize,
+          );
+          const nextIndex = Math.max(currentIndex - 1, 0);
+          const nextFont = FONT_SIZES[nextIndex];
+          if (nextFont) {
+            handleFontSizeChange(nextFont.value);
+          }
+        }}
+        label="Decrease Font Size (Ctrl+Shift+>)"
+      >
+        <TextDecreaseIcon fontSize="small" />
+      </ToolbarButton>
 
       <ToolbarButton
         onClick={() => {
