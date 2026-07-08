@@ -66,9 +66,16 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
   }, [value]);
 
   // Handle keyboard shortcuts for formatting (Ctrl+B, Ctrl+I, Ctrl+U)
+  // Also prevent Enter from propagating to Puck's block-level keyboard handlers
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (isReadOnly) return;
+
+      // Prevent Enter key from bubbling up to Puck's block duplication handler
+      if (e.key === 'Enter') {
+        e.stopPropagation();
+        return;
+      }
 
       const isCtrl = e.ctrlKey || e.metaKey; // metaKey for Mac
 
@@ -116,7 +123,8 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
   const handleInput = useCallback(
     (e: React.InputEvent<HTMLDivElement>) => {
       if (isReadOnly) return;
-      const html = e.currentTarget.outerHTML;
+      // Use innerHTML instead of outerHTML to avoid including the wrapper div element
+      const html = e.currentTarget.innerHTML;
 
       // Push the HTML into the Lexical editor via the shared editor ref
       const currEditor = editorRef.current;

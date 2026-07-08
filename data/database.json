@@ -15,13 +15,35 @@
           "text": "<p style=\"text-align: center;\"><span style=\"white-space: pre-wrap;\">heellooo there </span><b><strong style=\"white-space: pre-wrap;\">comie </strong></b><span style=\"white-space: pre-wrap;\">the </span><b><strong style=\"white-space: pre-wrap;\">others </strong></b><span style=\"white-space: pre-wrap;\">and here</span></p><p style=\"text-align: right;\"><span style=\"white-space: pre-wrap;\">sad asd asd asd </span></p><p><span style=\"white-space: pre-wrap;\"> dsaijd </span></p>",
           "id": "TextBlock-fece9711-b0fb-4aee-9352-f8ef24f50b63"
         }
+      },
+      {
+        "type": "SlotBlock",
+        "props": {
+          "slot": [
+            {
+              "type": "TextBlock",
+              "props": {
+                "text": "<p style=\"text-align: center;\"><b><strong style=\"white-space: pre-wrap;\">heellooo there comie the others and here</strong></b></p>",
+                "id": "TextBlock-f8f4ce31-b193-4808-8ce3-218bbab54258"
+              }
+            },
+            {
+              "type": "TextBlock",
+              "props": {
+                "text": "<p><span style=\"white-space: pre-wrap;\">example text ghere</span></p>",
+                "id": "TextBlock-1e62f223-f24f-4b01-b80e-4d9c9dfbcf0f"
+              }
+            }
+          ],
+          "id": "SlotBlock-93c479e3-4e5f-4544-85e9-b1c6af3c2dfb"
+        }
       }
     ],
     "zones": {},
     "metadata": {
       "title": "Test asd",
-      "version": 38,
-      "updatedAt": "2026-07-08T04:06:59.942Z",
+      "version": 41,
+      "updatedAt": "2026-07-08T05:38:53.525Z",
       "createdBy": "admin",
       "createdAt": "2025-12-02T23:12:28.642Z"
     }
