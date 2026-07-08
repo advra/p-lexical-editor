@@ -1,6 +1,9 @@
 // source example: https://puckeditor.com/docs/extending-puck/field-transforms#making-it-interactive
 
-// TODO From input notify puck of changes
+/*
+  This component is the inline content editable inside puck editor that allows users to click and edit directly
+  It handles things such as click events, so when clicked on will notify puck to open the Lexical Editor on the right panel
+*/
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import {
   BaseField,
