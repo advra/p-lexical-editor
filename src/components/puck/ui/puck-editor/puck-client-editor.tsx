@@ -4,16 +4,12 @@
 
 'use client';
 
-import { Puck } from '@puckeditor/core';
+import { Data, Puck } from '@puckeditor/core';
 import config from '../../../../puck.config';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { DiscardChangesButton } from '@/components/puck/ui/DiscardChangesButton';
-import {
-  HtmlContentPlugin,
-  LexicalEditorRichTextField,
-  LexicalToolbar,
-} from '@/components/puck/ui/lexical/LexicalEditor';
+import { LexicalEditorRichTextField } from '@/components/puck/ui/lexical/LexicalEditor';
 import { richtextFieldTransform } from '@/components/puck/ui/lexical/lexical-field-transform';
 import { ProcProvider } from '@/context/ProcContext';
 import {
@@ -27,7 +23,6 @@ import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
-import { LexicalToolbarV2 } from '../lexical/Toobarv2';
 import { ListNode, ListItemNode } from '@lexical/list';
 import { HeadingNode } from '@lexical/rich-text';
 import { useMemo } from 'react';
@@ -38,7 +33,7 @@ export function PuckClientEditor({
   pathName,
   proc,
   slug,
-}: {
+}: Readonly<{
   pathName: string;
   proc:
     | ProcPublic
@@ -46,7 +41,7 @@ export function PuckClientEditor({
         data: Partial<Data>;
       });
   slug: string;
-}) {
+}>) {
   const router = useRouter();
   // const slug = path.split('/').filter(Boolean).pop()!;
   const { session, loading } = useUser();

@@ -25,6 +25,20 @@ const FONT_SIZES = [
   { label: '60', value: '60px' },
 ];
 
+const TEXT_COLORS = [
+  { label: 'Default', value: '' },
+  { label: 'Black', value: '#000000' },
+  { label: 'Gray', value: '#6B7280' },
+  { label: 'Red', value: '#EF4444' },
+  { label: 'Orange', value: '#F97316' },
+  { label: 'Yellow', value: '#EAB308' },
+  { label: 'Green', value: '#22C55E' },
+  { label: 'Blue', value: '#3B82F6' },
+  { label: 'Purple', value: '#A855F7' },
+  { label: 'Pink', value: '#EC4899' },
+  { label: 'White', value: '#FFFFFF' },
+];
+
 /**
  * Toolbar component for the Lexical editor that provides formatting button options
  */
