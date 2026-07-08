@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { DiscardChangesButton } from '@/components/puck/ui/DiscardChangesButton';
 import {
   HtmlContentPlugin,
-  LexicalRichtextField,
+  LexicalEditorRichTextField,
   LexicalToolbar,
 } from '@/components/puck/ui/lexical/LexicalEditor';
 import { richtextFieldTransform } from '@/components/puck/ui/lexical/lexical-field-transform';
@@ -140,7 +140,7 @@ export function PuckClientEditor({
                     readOnly,
                     children,
                   }) => (
-                    <LexicalRichtextField
+                    <LexicalEditorRichTextField
                       field={field}
                       value={value}
                       name={name}
@@ -148,7 +148,7 @@ export function PuckClientEditor({
                       readOnly={readOnly}
                     >
                       {children}
-                    </LexicalRichtextField>
+                    </LexicalEditorRichTextField>
                   ),
                 },
               }}

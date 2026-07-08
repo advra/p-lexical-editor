@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { LexicalRichtextField } from './LexicalEditor';
+import { LexicalEditorRichTextField } from './LexicalEditor';
 
 /**
  * Field transform for the "richtext" field type that enables inline editing
@@ -111,7 +111,7 @@ function InlineLexicalEditor({
                 </button>
               </div>
               <div className="p-4">
-                <LexicalRichtextField
+                <LexicalEditorRichTextField
                   field={{}}
                   value={localValue}
                   onChange={(newValue) => setLocalValue(newValue)}

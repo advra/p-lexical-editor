@@ -41,7 +41,7 @@ type Props = {
  *
  * The editor stores content as HTML strings, which is compatible with Puck's data model.
  */
-export function LexicalRichtextField({
+export function LexicalEditorRichTextField({
   field,
   value,
   onChange,
