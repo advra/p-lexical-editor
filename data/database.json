@@ -12,7 +12,7 @@
       {
         "type": "TextBlock",
         "props": {
-          "text": "<p style=\"text-align: center;\"><span style=\"white-space: pre-wrap;\">heellooo there comie the others and here</span></p><p style=\"text-align: right;\"><span style=\"white-space: pre-wrap;\">sad asd asd asd </span></p><p><span style=\"white-space: pre-wrap;\"> dsaijd </span></p>",
+          "text": "<p style=\"text-align: center;\"><span style=\"white-space: pre-wrap;\">heellooo there </span><b><strong style=\"white-space: pre-wrap;\">comie </strong></b><span style=\"white-space: pre-wrap;\">the </span><b><strong style=\"white-space: pre-wrap;\">others </strong></b><span style=\"white-space: pre-wrap;\">and here</span></p><p style=\"text-align: right;\"><span style=\"white-space: pre-wrap;\">sad asd asd asd </span></p><p><span style=\"white-space: pre-wrap;\"> dsaijd </span></p>",
           "id": "TextBlock-fece9711-b0fb-4aee-9352-f8ef24f50b63"
         }
       }
@@ -20,8 +20,8 @@
     "zones": {},
     "metadata": {
       "title": "Test asd",
-      "version": 37,
-      "updatedAt": "2026-07-08T04:01:25.694Z",
+      "version": 38,
+      "updatedAt": "2026-07-08T04:06:59.942Z",
       "createdBy": "admin",
       "createdAt": "2025-12-02T23:12:28.642Z"
     }

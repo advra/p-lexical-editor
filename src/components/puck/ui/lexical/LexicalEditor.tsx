@@ -56,7 +56,7 @@ export function LexicalEditorRichTextField({
     <div className="space-y-3">
       <div className="flex items-center">
         <PuckTextIcon />
-        <span className="text-sm font-semibold capitalize">{name}</span>
+        <span className="text-sm font-semibold capitalize">{name} Editor</span>
       </div>
       <div className="editor-container border border-gray-200 rounded-md overflow-hidden">
         {/* Plugins */}

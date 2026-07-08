@@ -96,7 +96,7 @@ function ToolbarButton({
       onClick={onClick}
       title={label}
       aria-label={label}
-      className={`px-2 py-1 text-sm rounded ${
+      className={`cursor-pointer px-2 py-1 text-sm rounded ${
         isActive
           ? 'bg-blue-100 text-blue-700'
           : 'text-gray-700 hover:bg-gray-100'
