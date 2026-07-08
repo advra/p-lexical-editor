@@ -1,6 +1,6 @@
 import { $generateNodesFromDOM } from '@lexical/html';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { $getRoot } from 'lexical';
+import { $createParagraphNode, $getRoot, $isElementNode } from 'lexical';
 import { useEffect } from 'react';
 
 /**
@@ -19,7 +19,18 @@ export const InitialHtmlContentPlugin = ({ html }: { html?: string }) => {
       const nodes = $generateNodesFromDOM(editor, dom);
       const root = $getRoot();
       root.clear();
-      root.append(...nodes);
+
+      // Wrap any non-element nodes (e.g. bare text nodes) in <p> elements
+      // because the root node only accepts element or decorator nodes.
+      for (const node of nodes) {
+        if ($isElementNode(node)) {
+          root.append(node);
+        } else {
+          const p = $createParagraphNode();
+          p.append(node);
+          root.append(p);
+        }
+      }
     });
     // Only run once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps

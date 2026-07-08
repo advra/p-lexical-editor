@@ -10,12 +10,13 @@ import {
   Field,
   FieldTransformFnParams,
   registerOverlayPortal,
-  setDeep,
   usePuck,
 } from '@puckeditor/core';
 import {
   $addUpdateTag,
+  $createParagraphNode,
   $getRoot,
+  $isElementNode,
   CLICK_COMMAND,
   COMMAND_PRIORITY_EDITOR,
   SKIP_DOM_SELECTION_TAG,
@@ -32,8 +33,6 @@ type Props = {
     | Field<any, {}>
   >;
 };
-
-// export const INLINE_INPUT_COMMAND = createCommand('INLINE_INPUT_COMMAND');
 
 export const EditableRichTextTransform = ({ transformProps }: Props) => {
   const { value, isReadOnly, propName, propPath, componentId } = transformProps;
@@ -141,7 +140,19 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
           const nodes = $generateNodesFromDOM(currEditor, dom);
           const root = $getRoot();
           root.clear();
-          root.append(...nodes);
+
+          // Wrap any non-element nodes (e.g. bare text nodes) in <p> elements
+          // because the root node only accepts element or decorator nodes
+          for (const node of nodes) {
+            if ($isElementNode(node)) {
+              root.append(node);
+            } else {
+              // Wrap bare text/other non-element nodes in a paragraph
+              const p = $createParagraphNode();
+              p.append(node);
+              root.append(p);
+            }
+          }
         });
       }
     },

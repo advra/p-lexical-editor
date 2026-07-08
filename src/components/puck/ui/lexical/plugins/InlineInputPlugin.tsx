@@ -7,7 +7,13 @@
 // src/components/puck/ui/lexical/plugins/InlineInputPlugin.tsx
 import { $generateNodesFromDOM } from '@lexical/html';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { $getRoot, COMMAND_PRIORITY_EDITOR, createCommand } from 'lexical';
+import {
+  $createParagraphNode,
+  $getRoot,
+  $isElementNode,
+  COMMAND_PRIORITY_EDITOR,
+  createCommand,
+} from 'lexical';
 import { useEffect } from 'react';
 
 export const INLINE_INPUT_COMMAND = createCommand<string>(
@@ -27,7 +33,18 @@ export const InlineInputPlugin = () => {
           const nodes = $generateNodesFromDOM(editor, dom);
           const root = $getRoot();
           root.clear();
-          root.append(...nodes);
+
+          // Wrap any non-element nodes (e.g. bare text nodes) in <p> elements
+          // because the root node only accepts element or decorator nodes.
+          for (const node of nodes) {
+            if ($isElementNode(node)) {
+              root.append(node);
+            } else {
+              const p = $createParagraphNode();
+              p.append(node);
+              root.append(p);
+            }
+          }
         });
         return true;
       },
