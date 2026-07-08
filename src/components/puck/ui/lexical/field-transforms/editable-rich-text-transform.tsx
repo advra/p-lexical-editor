@@ -11,6 +11,7 @@ import {
   usePuck,
 } from '@puckeditor/core';
 import {
+  $addUpdateTag,
   $createParagraphNode,
   $createRangeSelection,
   $getNearestNodeFromDOMNode,
@@ -24,10 +25,12 @@ import {
   INPUT_COMMAND,
   ParagraphNode,
   PASTE_COMMAND,
+  SKIP_DOM_SELECTION_TAG,
 } from 'lexical';
 import { useCallback, useEffect, useRef } from 'react';
 import { $generateNodesFromDOM } from '@lexical/html';
 import { useLexicalEditorRef } from '../plugins/LexicalEditorRefContext';
+import { INLINE_INPUT_COMMAND } from '../plugins/InlineInputPlugin';
 
 type Props = {
   transformProps: FieldTransformFnParams<
@@ -38,7 +41,7 @@ type Props = {
   >;
 };
 
-export const INLINE_INPUT_COMMAND = createCommand('INLINE_INPUT_COMMAND');
+// export const INLINE_INPUT_COMMAND = createCommand('INLINE_INPUT_COMMAND');
 
 export const EditableRichTextTransform = ({ transformProps }: Props) => {
   const { value, isReadOnly, propName, propPath, componentId } = transformProps;
@@ -90,82 +93,15 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
     [isReadOnly, propName, dispatch],
   );
 
-  const applyChangesToPuck = useCallback(
-    (e: React.InputEvent<HTMLDivElement>) => {
-      if (isReadOnly) return;
-
-      const newValue = e.currentTarget.innerHTML;
-      const item = getItemById(componentId);
-      const itemSelector = getSelectorForId(componentId);
-      if (!item || !itemSelector) return;
-      console.log('item is or selector: ', item, itemSelector);
-      const nextProps = structuredClone(item.props);
-      setDeep(nextProps, propPath, newValue);
-
-      console.log('nextProps: ', nextProps);
-      console.log('item: ', item);
-      console.log('itemSelector: ', itemSelector);
-
-      dispatch({
-        type: 'replace',
-        destinationZone: itemSelector.zone,
-        destinationIndex: itemSelector.index,
-        data: {
-          type: item.type,
-          props: nextProps,
-        },
-      });
-    },
-    [isReadOnly, propName, dispatch],
-  );
-
   // const applyChangesToPuck = useCallback(
   //   (e: React.InputEvent<HTMLDivElement>) => {
   //     if (isReadOnly) return;
-  //     const html = e.currentTarget.outerHTML;
 
-  //     // Push the HTML into the Lexical editor via the shared editor ref
-  //     const currEditor = editorRef.current;
-  //     if (currEditor) {
-  //       currEditor.update(() => {
-  //         const parser = new DOMParser();
-  //         const dom = parser.parseFromString(html, 'text/html');
-  //         const nodes = $generateNodesFromDOM(currEditor, dom);
-  //         // const root = $getRoot();
-  //         // root.clear();
-  //         // root.append(...nodes);
-
-  //         // Get the RootNode from the EditorState
-  //         const root = $getRoot();
-
-  //         // // Get the selection from the EditorState
-  //         // const selection = $getSelection();
-
-  //         // // Create a new ParagraphNode
-  //         // const paragraphNode = $createParagraphNode();
-
-  //         // // Create a new TextNode
-  //         // const textNode = $createTextNode('Hello world');
-
-  //         // // Append the text node to the paragraph
-  //         // paragraphNode.append(textNode);
-
-  //         // // Finally, append the paragraph to the root
-  //         // root.append(paragraphNode);
-  //         // console.log('text is ', text);
-  //       });
-  //     }
-  //   },
-  //   [isReadOnly, editorRef],
-  // );
-
-  // const applyChangesToPuck = useCallback(
-  //   (e: React.InputEvent<HTMLDivElement>) => {
-  //     if (isReadOnly) return;
   //     const newValue = e.currentTarget.innerHTML;
   //     const item = getItemById(componentId);
   //     const itemSelector = getSelectorForId(componentId);
   //     if (!item || !itemSelector) return;
+  //     console.log('item is or selector: ', item, itemSelector);
   //     const nextProps = structuredClone(item.props);
   //     setDeep(nextProps, propPath, newValue);
 
@@ -174,15 +110,12 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
   //       destinationZone: itemSelector.zone,
   //       destinationIndex: itemSelector.index,
   //       data: {
-  //         ...item,
-  //         props: {
-  //           ...item.props,
-  //           anotherProp: item.props.customFieldProp,
-  //         },
+  //         type: item.type,
+  //         props: nextProps,
   //       },
   //     });
   //   },
-  //   [isReadOnly, appState.data, componentId, propPath, dispatch],
+  //   [isReadOnly, propName, dispatch],
   // );
 
   const handleInput = useCallback(
@@ -191,10 +124,33 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
       const html = e.currentTarget.outerHTML;
 
       // Push the HTML into the Lexical editor via the shared editor ref
+      // if (editorRef.current) {
+      //   // editorRef.current.dispatchCommand(INLINE_INPUT_COMMAND, html);
+      //   editorRef.current.update(() => {});
+      // }
       const currEditor = editorRef.current;
-      if (editorRef.current) {
-        editorRef.current.dispatchCommand(INLINE_INPUT_COMMAND, html);
+      if (currEditor) {
+        currEditor.update(() => {
+          // Prevent the browser from stealing focus
+          $addUpdateTag(SKIP_DOM_SELECTION_TAG);
+
+          $setSelection(null);
+
+          const parser = new DOMParser();
+          const dom = parser.parseFromString(html, 'text/html');
+          const nodes = $generateNodesFromDOM(currEditor, dom);
+          const root = $getRoot();
+          root.clear();
+          root.append(...nodes);
+        });
       }
+      // Re-focus the inline div after the update
+      // Use requestAnimationFrame to ensure it runs after React's render cycle
+      requestAnimationFrame(() => {
+        if (ref.current) {
+          ref.current.focus();
+        }
+      });
     },
     [isReadOnly, editorRef],
   );
@@ -206,7 +162,7 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
         suppressContentEditableWarning
         ref={ref}
         onInput={handleInput}
-        onInput={applyChangesToPuck}
+        // onInput={applyChangesToPuck}
         onClick={handleClickInlinePreview}
         className="lexical-inline-preview cursor-text min-h-[1.5em] rounded px-1 mr-5"
       />

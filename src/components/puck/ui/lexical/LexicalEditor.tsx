@@ -21,6 +21,7 @@ import {
   useLexicalEditorRef,
 } from './plugins/LexicalEditorRefContext';
 import { LexicalToolbar } from './Toolbar';
+import { InlineInputPlugin } from './plugins/InlineInputPlugin';
 
 type Props = {
   field: any;
@@ -65,6 +66,7 @@ export function LexicalRichtextField({
         <EditorRefPlugin editorRef={editorRef} />
         <HistoryPlugin />
         <AutoFocusPlugin />
+        <InlineInputPlugin />
         {/* Toolbar */}
         {!readOnly && <LexicalToolbar />}
         {/* Editor */}
