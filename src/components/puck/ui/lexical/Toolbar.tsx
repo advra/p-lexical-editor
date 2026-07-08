@@ -10,6 +10,7 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import FormatAlignLeftIcon from '@mui/icons-material/FormatAlignLeft';
 import FormatAlignCenterIcon from '@mui/icons-material/FormatAlignCenter';
+import FormatAlignJustifyIcon from '@mui/icons-material/FormatAlignJustify';
 import FormatAlignRightIcon from '@mui/icons-material/FormatAlignRight';
 import TextIncreaseIcon from '@mui/icons-material/TextIncrease';
 import TextDecreaseIcon from '@mui/icons-material/TextDecrease';
@@ -35,6 +36,14 @@ export const FONT_SIZES = [
   // { label: 'Subtitle', value: '2rem' },
   // { label: 'Main Title', value: '2.5rem' },
 ];
+export const DEFAULT_FONT_FAMILIES = [
+  { label: 'Arial', value: 'Arial' },
+  { label: 'Courier New', value: 'Courier New' },
+  { label: 'Georgia', value: 'Georgia' },
+  { label: 'Times New Roman', value: 'Times New Roman' },
+  { label: 'Trebuchet MS', value: 'Trebuchet MS' },
+  { label: 'Verdana', value: 'Verdana' },
+];
 
 const TEXT_COLORS = [
   { label: 'Default', value: '' },
@@ -55,6 +64,7 @@ const TEXT_COLORS = [
  */
 export const LexicalToolbar = () => {
   const [editor] = useLexicalComposerContext();
+  const [fontFamily, setFontFamily] = useState(DEFAULT_FONT_FAMILIES[0].value);
   const [fontSize, setFontSize] = useState('10pt');
   const [blockFormat, setBlockFormat] = useState<string>('left');
 
@@ -65,6 +75,19 @@ export const LexicalToolbar = () => {
         const selection = $getSelection();
         if ($isRangeSelection(selection)) {
           $patchStyleText(selection, { 'font-size': size });
+        }
+      });
+    },
+    [editor],
+  );
+
+  const handleFontFamilyChange = useCallback(
+    (font: string) => {
+      setFontFamily(font);
+      editor.update(() => {
+        const selection = $getSelection();
+        if ($isRangeSelection(selection)) {
+          $patchStyleText(selection, { 'font-family': font });
         }
       });
     },
@@ -94,6 +117,20 @@ export const LexicalToolbar = () => {
 
   return (
     <div className="lexical-toolbar flex flex-wrap gap-1 border-b border-gray-200 p-2 bg-gray-50 items-center">
+      {/* Font Family */}
+      <select
+        value={fontFamily}
+        onChange={(e) => handleFontFamilyChange(e.target.value)}
+        title="Font Family"
+        aria-label="Font Family"
+        className="cursor-pointer px-1 py-1 text-sm rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400"
+      >
+        {DEFAULT_FONT_FAMILIES.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
       {/* Font Size */}
       <select
         value={fontSize}
@@ -141,6 +178,8 @@ export const LexicalToolbar = () => {
         <TextDecreaseIcon fontSize="small" />
       </ToolbarButton>
 
+      <span id="separator" className="w-px h-5 bg-slate-300" />
+
       <ToolbarButton
         onClick={() => {
           editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
@@ -173,7 +212,7 @@ export const LexicalToolbar = () => {
       >
         <span className="line-through">S</span>
       </ToolbarButton>
-      <span className="w-px bg-gray-300 mx-1" />
+      <span id="separator" className="w-px h-5 bg-slate-300" />
       <ToolbarButton
         onClick={() => {
           editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left');
@@ -193,6 +232,16 @@ export const LexicalToolbar = () => {
         label="Align Center"
       >
         <FormatAlignCenterIcon fontSize="inherit" />
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => {
+          editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'justify');
+          setBlockFormat('right');
+        }}
+        isActive={blockFormat === 'justify'}
+        label="Justify Align"
+      >
+        <FormatAlignJustifyIcon fontSize="inherit" />
       </ToolbarButton>
       <ToolbarButton
         onClick={() => {
