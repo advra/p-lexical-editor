@@ -65,6 +65,33 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
     }
   }, [value]);
 
+  // Handle keyboard shortcuts for formatting (Ctrl+B, Ctrl+I, Ctrl+U)
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (isReadOnly) return;
+
+      const isCtrl = e.ctrlKey || e.metaKey; // metaKey for Mac
+
+      if (isCtrl) {
+        switch (e.key.toLowerCase()) {
+          case 'b':
+            e.preventDefault();
+            document.execCommand('bold');
+            break;
+          case 'i':
+            e.preventDefault();
+            document.execCommand('italic');
+            break;
+          case 'u':
+            e.preventDefault();
+            document.execCommand('underline');
+            break;
+        }
+      }
+    },
+    [isReadOnly],
+  );
+
   // sync changes back to puck
   const handleClickInlinePreview = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
@@ -120,6 +147,7 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
         onFocus={handleFocus}
         onBlur={handleBlur}
         onClick={handleClickInlinePreview}
+        onKeyDown={handleKeyDown}
         className="lexical-inline-preview cursor-text min-h-[1.5em] rounded px-1 mr-5"
       />
       <div className="absolute top-0 -right-1">
