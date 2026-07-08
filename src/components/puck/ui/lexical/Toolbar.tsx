@@ -2,11 +2,12 @@ import { $patchStyleText } from '@lexical/selection';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import {
   $getSelection,
+  $isElementNode,
   $isRangeSelection,
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
 } from 'lexical';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import FormatAlignLeftIcon from '@mui/icons-material/FormatAlignLeft';
 import FormatAlignCenterIcon from '@mui/icons-material/FormatAlignCenter';
 import FormatAlignRightIcon from '@mui/icons-material/FormatAlignRight';
@@ -55,6 +56,7 @@ const TEXT_COLORS = [
 export const LexicalToolbar = () => {
   const [editor] = useLexicalComposerContext();
   const [fontSize, setFontSize] = useState('10pt');
+  const [blockFormat, setBlockFormat] = useState<string>('left');
 
   const handleFontSizeChange = useCallback(
     (size: string) => {
@@ -68,6 +70,27 @@ export const LexicalToolbar = () => {
     },
     [editor],
   );
+
+  useEffect(() => {
+    const unregister = editor.registerUpdateListener(({ editorState }) => {
+      editorState.read(() => {
+        const selection = $getSelection();
+        if ($isRangeSelection(selection)) {
+          const anchorNode = selection.anchor.getNode();
+          // Walk up to find the block-level element (paragraph, heading, etc.)
+          let node = anchorNode;
+          while (node && !$isElementNode(node)) {
+            node = node.getParentOrThrow();
+          }
+          if (node) {
+            const format = node.getFormatType(); // returns 'left' | 'center' | 'right' | 'justify' | 'start'
+            setBlockFormat(format);
+          }
+        }
+      });
+    });
+    return () => unregister();
+  }, [editor]);
 
   return (
     <div className="lexical-toolbar flex flex-wrap gap-1 border-b border-gray-200 p-2 bg-gray-50 items-center">
@@ -154,7 +177,9 @@ export const LexicalToolbar = () => {
       <ToolbarButton
         onClick={() => {
           editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left');
+          setBlockFormat('left');
         }}
+        isActive={blockFormat === 'left'}
         label="Align Left"
       >
         <FormatAlignLeftIcon fontSize="inherit" />
@@ -162,7 +187,9 @@ export const LexicalToolbar = () => {
       <ToolbarButton
         onClick={() => {
           editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center');
+          setBlockFormat('center');
         }}
+        isActive={blockFormat === 'center'}
         label="Align Center"
       >
         <FormatAlignCenterIcon fontSize="inherit" />
@@ -170,7 +197,9 @@ export const LexicalToolbar = () => {
       <ToolbarButton
         onClick={() => {
           editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'right');
+          setBlockFormat('right');
         }}
+        isActive={blockFormat === 'right'}
         label="Align Right"
       >
         <FormatAlignRightIcon fontSize="inherit" />
