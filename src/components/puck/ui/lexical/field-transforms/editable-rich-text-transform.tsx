@@ -34,7 +34,7 @@ type Props = {
   >;
 };
 
-export const EditableRichTextTransform = ({ transformProps }: Props) => {
+export const EditableInlineRichTextTransform = ({ transformProps }: Props) => {
   const { value, isReadOnly, propName, propPath, componentId } = transformProps;
   const { dispatch, appState, getItemById, getSelectorForId } = usePuck();
   const ref = useRef<HTMLDivElement>(null);
@@ -179,4 +179,4 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
   );
 };
 
-export default EditableRichTextTransform;
+export default EditableInlineRichTextTransform;

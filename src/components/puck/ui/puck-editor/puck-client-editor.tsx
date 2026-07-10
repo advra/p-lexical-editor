@@ -10,7 +10,6 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { DiscardChangesButton } from '@/components/puck/ui/DiscardChangesButton';
 import { LexicalEditorRichTextField } from '@/components/puck/ui/lexical/LexicalEditor';
-import { richtextFieldTransform } from '@/components/puck/ui/lexical/lexical-field-transform';
 import { ProcProvider } from '@/context/ProcContext';
 import {
   ProcPublic,
@@ -21,7 +20,7 @@ import {
   InitialConfigType,
   LexicalComposer,
 } from '@lexical/react/LexicalComposer';
-import EditableTextTransform from '../lexical/field-transforms/editable-rich-text-transform';
+import EditableInlineRichTextTransform from '../lexical/field-transforms/editable-rich-text-transform';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
@@ -33,7 +32,6 @@ import { tr } from 'zod/v4/locales';
 import { LexicalEditorRefProvider } from '../lexical/plugins/LexicalEditorRefContext';
 import { $isTextNode, ParagraphNode, TextNode } from 'lexical';
 import { htmlExportMap } from '../lexical/htmlExportMap';
-import { StyledTextNode } from '../lexical/nodes/StylizedTextNode';
 
 export function PuckClientEditor({
   pathName,
@@ -179,7 +177,7 @@ export function PuckClientEditor({
               // TODO fix this. comment out and i can click and editor appears on right side but if i dont it doesnt..
               fieldTransforms={{
                 richtext: (props) => (
-                  <EditableTextTransform transformProps={props} />
+                  <EditableInlineRichTextTransform transformProps={props} />
                 ),
               }}
             />
