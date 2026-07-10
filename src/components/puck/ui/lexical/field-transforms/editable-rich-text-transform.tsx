@@ -43,7 +43,7 @@ export const EditableRichTextTransform = ({ transformProps }: Props) => {
 
   useEffect(() => {
     if (ref.current) {
-      registerOverlayPortal(ref.current);
+      registerOverlayPortal(ref.current, { disableDrag: true });
     }
   }, []);
 
