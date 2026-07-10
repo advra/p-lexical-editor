@@ -17,7 +17,10 @@ import {
   ProcPublicWithAcl,
 } from '@/modules/procs/models/proc-model';
 import { useUser } from '@/context/UserContext';
-import { LexicalComposer } from '@lexical/react/LexicalComposer';
+import {
+  InitialConfigType,
+  LexicalComposer,
+} from '@lexical/react/LexicalComposer';
 import EditableTextTransform from '../lexical/field-transforms/editable-rich-text-transform';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -28,6 +31,9 @@ import { HeadingNode } from '@lexical/rich-text';
 import { useMemo } from 'react';
 import { tr } from 'zod/v4/locales';
 import { LexicalEditorRefProvider } from '../lexical/plugins/LexicalEditorRefContext';
+import { $isTextNode, ParagraphNode, TextNode } from 'lexical';
+import { htmlExportMap } from '../lexical/htmlExportMap';
+import { StyledTextNode } from '../lexical/nodes/StylizedTextNode';
 
 export function PuckClientEditor({
   pathName,
@@ -78,14 +84,36 @@ export function PuckClientEditor({
     }
   };
 
-  const initialConfig = useMemo(
+  const initialConfig: InitialConfigType = useMemo(
     () => ({
       namespace: 'PuckLexical',
       editable: true,
       onError: (error: Error) => {
         console.error('Lexical error:', error);
       },
-      nodes: [ListNode, ListItemNode, HeadingNode],
+      nodes: [ListNode, ListItemNode, HeadingNode, ParagraphNode, TextNode],
+      html: {
+        export: htmlExportMap,
+        import: {
+          span: () => ({
+            conversion: (domNode) => {
+              const span = domNode as HTMLSpanElement;
+              const style = span.getAttribute('style') || '';
+              return {
+                forChild: (lexicalNode) => {
+                  if ($isTextNode(lexicalNode) && style) {
+                    lexicalNode.setStyle(style);
+                  }
+                  return lexicalNode;
+                },
+                node: null,
+              };
+            },
+            // Higher priority than default
+            priority: 1,
+          }),
+        },
+      },
     }),
     [],
   );

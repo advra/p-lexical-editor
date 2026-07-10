@@ -14,8 +14,8 @@ const CustomOnChangePlugin = ({ value, onChange }: Props) => {
     tags: Set<string>,
   ) => {
     editor.read(() => {
-      // const htmlString = $generateHtmlFromNodes(editor, null);
-      onChange(value);
+      const htmlString = $generateHtmlFromNodes(editor, null);
+      onChange(htmlString);
     });
   };
 
