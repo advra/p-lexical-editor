@@ -1,4 +1,7 @@
-import { $patchStyleText } from '@lexical/selection';
+import {
+  $getSelectionStyleValueForProperty,
+  $patchStyleText,
+} from '@lexical/selection';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import {
   $getSelection,
@@ -65,7 +68,7 @@ const TEXT_COLORS = [
 export const LexicalToolbar = () => {
   const [editor] = useLexicalComposerContext();
   const [fontFamily, setFontFamily] = useState(DEFAULT_FONT_FAMILIES[0].value);
-  const [fontSize, setFontSize] = useState('10pt');
+  const [fontSize, setFontSize] = useState('12pt');
   const [blockFormat, setBlockFormat] = useState<string>('left');
   const [isBold, setIsBold] = useState<boolean>(false);
   const [isItalics, setIsItalics] = useState<boolean>(false);
@@ -115,10 +118,24 @@ export const LexicalToolbar = () => {
             setBlockFormat(format);
           }
 
+          // font formatting bold, italics, underline, strike
           setIsBold(selection.hasFormat('bold'));
           setIsItalics(selection.hasFormat('italic'));
           setIsUnderline(selection.hasFormat('underline'));
           setIsStrikethrough(selection.hasFormat('strikethrough'));
+          // font family and size
+          const family = $getSelectionStyleValueForProperty(
+            selection,
+            'font-family',
+            DEFAULT_FONT_FAMILIES[0].value,
+          );
+          const size = $getSelectionStyleValueForProperty(
+            selection,
+            'font-size',
+            '12pt',
+          );
+          setFontFamily(family);
+          setFontSize(size);
         }
       });
     });
