@@ -10,13 +10,14 @@ import {
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
 } from 'lexical';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import FormatAlignLeftIcon from '@mui/icons-material/FormatAlignLeft';
 import FormatAlignCenterIcon from '@mui/icons-material/FormatAlignCenter';
 import FormatAlignJustifyIcon from '@mui/icons-material/FormatAlignJustify';
 import FormatAlignRightIcon from '@mui/icons-material/FormatAlignRight';
 import TextIncreaseIcon from '@mui/icons-material/TextIncrease';
 import TextDecreaseIcon from '@mui/icons-material/TextDecrease';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 export const FONT_SIZES = [
   { label: '8', value: '8pt' },
@@ -49,7 +50,6 @@ export const DEFAULT_FONT_FAMILIES = [
 ];
 
 const TEXT_COLORS = [
-  { label: 'Default', value: '' },
   { label: 'Black', value: '#000000' },
   { label: 'Gray', value: '#6B7280' },
   { label: 'Red', value: '#EF4444' },
@@ -74,6 +74,23 @@ export const LexicalToolbar = () => {
   const [isItalics, setIsItalics] = useState<boolean>(false);
   const [isUnderline, setIsUnderline] = useState<boolean>(false);
   const [isStrikethrough, setIsStrikethrough] = useState<boolean>(false);
+  const [selectedTextColor, setSelectedTextColor] = useState<string>('#000000');
+  const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
+  const colorPickerRef = useRef<HTMLDivElement>(null);
+
+  const handleColorChange = useCallback(
+    (color: string) => {
+      setSelectedTextColor(color);
+      editor.update(() => {
+        const selection = $getSelection();
+        if ($isRangeSelection(selection)) {
+          $patchStyleText(selection, { color });
+        }
+      });
+      setShowColorPicker(false);
+    },
+    [editor],
+  );
 
   const handleFontSizeChange = useCallback(
     (size: string) => {
@@ -100,6 +117,20 @@ export const LexicalToolbar = () => {
     },
     [editor],
   );
+
+  // Close color picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        colorPickerRef.current &&
+        !colorPickerRef.current.contains(event.target as Node)
+      ) {
+        setShowColorPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Read the selected node info
   useEffect(() => {
@@ -136,6 +167,12 @@ export const LexicalToolbar = () => {
           );
           setFontFamily(family);
           setFontSize(size);
+          // text color
+          const color = $getSelectionStyleValueForProperty(
+            selection,
+            'color',
+            '',
+          );
         }
       });
     });
@@ -205,7 +242,72 @@ export const LexicalToolbar = () => {
         <TextDecreaseIcon fontSize="small" />
       </ToolbarButton>
 
-      <span id="separator" className="w-px h-5 bg-slate-300" />
+      <span id="separator" className="w-px h-7 bg-slate-300" />
+
+      {/* Text Color Picker */}
+      <div className="relative flex items-center" ref={colorPickerRef}>
+        <button
+          type="button"
+          onClick={() => handleColorChange(selectedTextColor || '#000000')}
+          title="Text Color"
+          aria-label="Text Color"
+          className="cursor-pointer w-7 h-7 text-sm rounded-l border border-r-0 border-gray-300 bg-white text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400 flex items-center justify-center"
+        >
+          <span className="relative -top-1/7 left-1/2 text-gray-500">A</span>
+          <span
+            className="relative top-2/7 w-8 h-[5px]"
+            style={{
+              backgroundColor: selectedTextColor || 'transparent',
+              ...(selectedTextColor === '#FFFFFF'
+                ? { borderColor: '#9CA3AF' }
+                : {}),
+            }}
+          />
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowColorPicker(!showColorPicker)}
+          title="Select Color"
+          aria-label="Select Color"
+          className="cursor-pointer w-7 h-7 text-sm rounded-r border border-l-0 border-gray-300 bg-white text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400 flex items-center justify-center"
+        >
+          <KeyboardArrowDownIcon fontSize="small" />
+        </button>
+        {showColorPicker && (
+          <div className="absolute top-full left-0 mt-1 z-50 bg-white border border-gray-300 rounded shadow-lg p-2 w-44">
+            <div className="grid grid-cols-4 gap-1.5">
+              {TEXT_COLORS.map((color) => (
+                <button
+                  key={color.value || 'default'}
+                  type="button"
+                  onClick={() => handleColorChange(color.value)}
+                  title={color.label}
+                  aria-label={color.label}
+                  className={`cursor-pointer w-8 h-8 rounded border flex items-center justify-center text-xs ${
+                    selectedTextColor === color.value
+                      ? 'border-blue-500 ring-1 ring-blue-400'
+                      : 'border-gray-300 hover:border-gray-500'
+                  }`}
+                  style={{
+                    backgroundColor: color.value || 'white',
+                    ...(color.value === '#FFFFFF' || color.value === ''
+                      ? { borderColor: '#D1D5DB' }
+                      : {}),
+                  }}
+                >
+                  {color.value === '' && (
+                    <span className="text-gray-400 text-xs leading-none line-through">
+                      A
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <span id="separator" className="w-px h-7 bg-slate-300" />
 
       <ToolbarButton
         onClick={() => {
@@ -247,7 +349,7 @@ export const LexicalToolbar = () => {
       >
         <span className="line-through">S</span>
       </ToolbarButton>
-      <span id="separator" className="w-px h-5 bg-slate-300" />
+      <span id="separator" className="w-px h-7 bg-slate-300" />
       <ToolbarButton
         onClick={() => {
           editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left');
