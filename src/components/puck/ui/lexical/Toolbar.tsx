@@ -249,8 +249,8 @@ export const LexicalToolbar = () => {
         <button
           type="button"
           onClick={() => handleColorChange(selectedTextColor || '#000000')}
-          title="Text Color"
-          aria-label="Text Color"
+          title="Apply Text Color"
+          aria-label="Apply Text Color"
           className="cursor-pointer w-7 h-7 text-sm rounded-l border border-r-0 border-gray-300 bg-white text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400 flex items-center justify-center"
         >
           <span className="relative -top-1/7 left-1/2 text-gray-500">A</span>
@@ -267,8 +267,8 @@ export const LexicalToolbar = () => {
         <button
           type="button"
           onClick={() => setShowColorPicker(!showColorPicker)}
-          title="Select Color"
-          aria-label="Select Color"
+          title="Pick Text Color"
+          aria-label="Pick Text Color"
           className="cursor-pointer w-7 h-7 text-sm rounded-r border border-l-0 border-gray-300 bg-white text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400 flex items-center justify-center"
         >
           <KeyboardArrowDownIcon fontSize="small" />
