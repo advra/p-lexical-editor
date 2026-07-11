@@ -67,7 +67,9 @@ export const htmlExportMap: DOMExportOutputMap = new Map();
 //   return node;
 // });
 
-
+/*
+  Map html tags
+*/
 htmlExportMap.set(TextNode, (editor, t) => {
   const target = t as TextNode;
   const node = target.exportDOM(editor);
@@ -84,13 +86,17 @@ htmlExportMap.set(TextNode, (editor, t) => {
     if (target.hasFormat('italic')) {
       styles.push('font-style: italic');
     }
-    // Underline
+    const textDecorations: string[] = [];
+    // underline
     if (target.hasFormat('underline')) {
-      styles.push('text-decoration-line: underline');
+      textDecorations.push('underline');
     }
-    // Strikethrough
+    // strikethrough
     if (target.hasFormat('strikethrough')) {
-      styles.push('text-decoration-line: line-through');
+      textDecorations.push('line-through');
+    }
+    if (textDecorations.length > 0) {
+      styles.push(`text-decoration-line: ${textDecorations.join(' ')}`);
     }
 
     // Font size, font family, color, etc. from $patchStyleText

@@ -67,6 +67,10 @@ export const LexicalToolbar = () => {
   const [fontFamily, setFontFamily] = useState(DEFAULT_FONT_FAMILIES[0].value);
   const [fontSize, setFontSize] = useState('10pt');
   const [blockFormat, setBlockFormat] = useState<string>('left');
+  const [isBold, setIsBold] = useState<boolean>(false);
+  const [isItalics, setIsItalics] = useState<boolean>(false);
+  const [isUnderline, setIsUnderline] = useState<boolean>(false);
+  const [isStrikethrough, setIsStrikethrough] = useState<boolean>(false);
 
   const handleFontSizeChange = useCallback(
     (size: string) => {
@@ -94,6 +98,7 @@ export const LexicalToolbar = () => {
     [editor],
   );
 
+  // Read the selected node info
   useEffect(() => {
     const unregister = editor.registerUpdateListener(({ editorState }) => {
       editorState.read(() => {
@@ -109,6 +114,11 @@ export const LexicalToolbar = () => {
             const format = node.getFormatType(); // returns 'left' | 'center' | 'right' | 'justify' | 'start'
             setBlockFormat(format);
           }
+
+          setIsBold(selection.hasFormat('bold'));
+          setIsItalics(selection.hasFormat('italic'));
+          setIsUnderline(selection.hasFormat('underline'));
+          setIsStrikethrough(selection.hasFormat('strikethrough'));
         }
       });
     });
@@ -183,7 +193,9 @@ export const LexicalToolbar = () => {
       <ToolbarButton
         onClick={() => {
           editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
+          setIsBold(true);
         }}
+        isActive={isBold}
         label="Bold (Ctrl+B)"
       >
         <strong>B</strong>
@@ -191,7 +203,9 @@ export const LexicalToolbar = () => {
       <ToolbarButton
         onClick={() => {
           editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
+          setIsItalics(true);
         }}
+        isActive={isItalics}
         label="Italic (Ctrl+I)"
       >
         <em>I</em>
@@ -199,7 +213,9 @@ export const LexicalToolbar = () => {
       <ToolbarButton
         onClick={() => {
           editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline');
+          setIsUnderline(true);
         }}
+        isActive={isUnderline}
         label="Underline (Ctrl+U)"
       >
         <span className="underline">U</span>
@@ -207,7 +223,9 @@ export const LexicalToolbar = () => {
       <ToolbarButton
         onClick={() => {
           editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough');
+          setIsStrikethrough(true);
         }}
+        isActive={isStrikethrough}
         label="Strikethrough"
       >
         <span className="line-through">S</span>

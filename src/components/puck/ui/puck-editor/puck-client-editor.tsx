@@ -93,6 +93,13 @@ export function PuckClientEditor({
         console.error('Lexical error:', error);
       },
       nodes: [ListNode, ListItemNode, HeadingNode, ParagraphNode, TextNode],
+      // update globals.css
+      theme: {
+        text: {
+          underline: 'lexical-underline',
+          strikethrough: 'lexical-strikethrough',
+        },
+      },
       html: {
         export: htmlExportMap,
         import: {
