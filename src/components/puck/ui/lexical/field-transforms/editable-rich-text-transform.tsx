@@ -24,6 +24,7 @@ import {
 import { useCallback, useEffect, useRef } from 'react';
 import { $generateNodesFromDOM } from '@lexical/html';
 import { useLexicalEditorRef } from '../plugins/LexicalEditorRefContext';
+import { extractRichTextContent } from '../plugins/lexicalUtils';
 
 type Props = {
   transformProps: FieldTransformFnParams<
@@ -63,7 +64,7 @@ export const EditableInlineRichTextTransform = ({ transformProps }: Props) => {
   // This prevents overwriting user edits while typing in the inline div
   useEffect(() => {
     if (ref.current && !isInlineFocused.current) {
-      ref.current.innerHTML = value ?? '';
+      ref.current.innerHTML = extractRichTextContent(value);
     }
   }, [value]);
 

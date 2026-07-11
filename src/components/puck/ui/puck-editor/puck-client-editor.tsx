@@ -75,8 +75,11 @@ export function PuckClientEditor({
 
       toast.success('Changes saved!');
       // Redirect to view mode instead of staying in edit mode
+      // dont use router.push
       const viewPath = pathName.replace('/edit', '');
       router.push(viewPath);
+      // router.refresh();
+      window.location.href = viewPath;
     } catch {
       toast.error('Error saving, please try again...');
     }

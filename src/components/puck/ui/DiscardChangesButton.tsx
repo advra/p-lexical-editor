@@ -21,7 +21,11 @@ export const DiscardChangesButton = ({ slug }: Props) => {
   const [open, setOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
 
-  const backToPreview = () => router.push(`/procs/${slug}`);
+  const backToPreview = () => {
+    router.push(`/procs/${slug}`);
+    // router.refresh();
+    window.location.href = `/procs/${slug}`;
+  };
 
   const handleOpen = () => setOpen(true);
   const handleCancel = () => {
@@ -49,7 +53,7 @@ export const DiscardChangesButton = ({ slug }: Props) => {
           hover:cursor-pointer  border border-red-500 focus:outline-none 
           focus:ring-transparent font-medium rounded-md text-sm p-1
           text-center inline-flex items-center me-2
-           h-full aspect-square  
+          h-full aspect-square  
           "
         onClick={handleOpen}
         aria-label="Discard changes"

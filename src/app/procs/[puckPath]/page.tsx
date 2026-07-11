@@ -44,6 +44,5 @@ export default async function Page({
   );
 }
 
-// Force Next.js to produce static pages: https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
-// Delete this if you need dynamic rendering, such as access to headers or cookies
-export const dynamic = 'force-static';
+// Ensure fresh data is always fetched from the server (e.g., after discarding edits)
+export const dynamic = 'force-dynamic';

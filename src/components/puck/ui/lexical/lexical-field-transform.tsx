@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { LexicalEditorRichTextField } from './LexicalEditor';
+import { extractRichTextContent } from './plugins/lexicalUtils';
 
 /**
  * Field transform for the "richtext" field type that enables inline editing
@@ -83,7 +84,7 @@ function InlineLexicalEditor({
         ref={anchorRef}
         onClick={handleOpen}
         className="lexical-inline-preview cursor-pointer min-h-[1.5em] hover:ring-2 hover:ring-blue-200 rounded px-1 transition-all"
-        dangerouslySetInnerHTML={{ __html: localValue || '' }}
+        dangerouslySetInnerHTML={{ __html: extractRichTextContent(localValue) }}
       />
 
       {/* Overlay portal for inline editing */}
