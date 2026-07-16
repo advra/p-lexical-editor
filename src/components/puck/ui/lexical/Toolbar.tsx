@@ -18,27 +18,36 @@ import FormatAlignRightIcon from '@mui/icons-material/FormatAlignRight';
 import TextIncreaseIcon from '@mui/icons-material/TextIncrease';
 import TextDecreaseIcon from '@mui/icons-material/TextDecrease';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import { cn } from '@/lib/utils/cn';
 
 export const FONT_SIZES = [
-  { label: '8', value: '8pt' },
-  { label: '10', value: '10pt' },
-  { label: '12', value: '12pt' },
-  { label: '14', value: '14pt' },
-  { label: '16', value: '16pt' },
-  { label: '18', value: '18pt' },
-  { label: '20', value: '20pt' },
-  { label: '24', value: '24pt' },
-  { label: '28', value: '28pt' },
-  { label: '32', value: '32pt' },
-  { label: '36', value: '36pt' },
-  { label: '48', value: '48pt' },
-  { label: '60', value: '60pt' },
+  // { label: '8', value: '8pt' },
+  // { label: '9', value: '9pt' },
+  // { label: '10', value: '10pt' },
+  // { label: '11', value: '11pt' },
+  // { label: '12', value: '12pt' },
+  // { label: '14', value: '14pt' },
+  // { label: '16', value: '16pt' },
+  // { label: '18', value: '18pt' },
+  // { label: '20', value: '20pt' },
+  // { label: '22', value: '22pt' },
+  // { label: '24', value: '24pt' },
+  // { label: '26', value: '26pt' },
+  // { label: '28', value: '28pt' },
+  // { label: '32', value: '32pt' },
+  // { label: '36', value: '36pt' },
+  // { label: '48', value: '48pt' },
+  // { label: '60', value: '60pt' },
   // { label: 'Small Text', value: '0.875rem' },
   // { label: 'Paragraph', value: '1rem' },
   // { label: 'Lead Paragraph', value: '1.2rem' },
   // { label: 'Section Header', value: '1.25rem' },
   // { label: 'Subtitle', value: '2rem' },
   // { label: 'Main Title', value: '2.5rem' },
+  { label: 'Small Text', value: '0.75rem' }, //9pt
+  { label: 'Paragraph', value: '0.833rem' }, //10pt
+  { label: 'Subtitle', value: '1rem' }, //12
+  { label: 'Title', value: '1.167rem' }, //14
 ];
 export const DEFAULT_FONT_FAMILIES = [
   { label: 'Arial', value: 'Arial' },
@@ -65,9 +74,21 @@ const TEXT_COLORS = [
 /**
  * Toolbar component for the Lexical editor that provides formatting button options
  */
-export const LexicalToolbar = () => {
+type props = {
+  // used to override default styles
+  dropdownClassName?: string;
+  buttonClassName?: string;
+  activeButtonClassName?: string;
+  dividerClassName?: string;
+};
+export const LexicalToolbar = ({
+  dropdownClassName,
+  buttonClassName,
+  activeButtonClassName,
+  dividerClassName,
+}: props) => {
   const [editor] = useLexicalComposerContext();
-  const [fontFamily, setFontFamily] = useState(DEFAULT_FONT_FAMILIES[0].value);
+  const [fontFamily, setFontFamily] = useState(DEFAULT_FONT_FAMILIES[1].value);
   const [fontSize, setFontSize] = useState('12pt');
   const [blockFormat, setBlockFormat] = useState<string>('left');
   const [isBold, setIsBold] = useState<boolean>(false);
@@ -180,14 +201,17 @@ export const LexicalToolbar = () => {
   }, [editor]);
 
   return (
-    <div className="lexical-toolbar flex flex-wrap gap-1 border-b border-gray-200 p-2 bg-gray-50 items-center">
+    <div className="lexical-toolbar flex flex-wrap gap-1 items-center">
       {/* Font Family */}
       <select
         value={fontFamily}
         onChange={(e) => handleFontFamilyChange(e.target.value)}
         title="Font Family"
         aria-label="Font Family"
-        className="cursor-pointer px-1 py-1 text-sm rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400"
+        className={cn(
+          dropdownClassName,
+          'cursor-pointer px-1 py-1 text-sm rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400',
+        )}
       >
         {DEFAULT_FONT_FAMILIES.map((opt) => (
           <option key={opt.value} value={opt.value}>
@@ -201,7 +225,10 @@ export const LexicalToolbar = () => {
         onChange={(e) => handleFontSizeChange(e.target.value)}
         title="Font Size"
         aria-label="Font Size"
-        className="cursor-pointer pl-1 pr-2 py-1 text-sm rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400"
+        className={cn(
+          dropdownClassName,
+          'cursor-pointer pl-1 pr-2 py-1 text-sm rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400',
+        )}
       >
         {FONT_SIZES.map((opt) => (
           <option key={opt.value} value={opt.value}>
@@ -211,6 +238,7 @@ export const LexicalToolbar = () => {
       </select>
       {/* increase font size */}
       <ToolbarButton
+        className={buttonClassName}
         onClick={() => {
           const currentIndex = FONT_SIZES.findIndex(
             (s) => s.value === fontSize,
@@ -227,6 +255,7 @@ export const LexicalToolbar = () => {
       </ToolbarButton>
       {/* decrease font size */}
       <ToolbarButton
+        className={buttonClassName}
         onClick={() => {
           const currentIndex = FONT_SIZES.findIndex(
             (s) => s.value === fontSize,
@@ -242,7 +271,10 @@ export const LexicalToolbar = () => {
         <TextDecreaseIcon fontSize="small" />
       </ToolbarButton>
 
-      <span id="separator" className="w-px h-7 bg-slate-300" />
+      <span
+        id="separator"
+        className={cn(dividerClassName, 'w-px h-7 bg-slate-300')}
+      />
 
       {/* Text Color Picker */}
       <div className="relative flex items-center" ref={colorPickerRef}>
@@ -307,9 +339,14 @@ export const LexicalToolbar = () => {
         )}
       </div>
 
-      <span id="separator" className="w-px h-7 bg-slate-300" />
+      <span
+        id="separator"
+        className={cn(dividerClassName, 'w-px h-7 bg-slate-300')}
+      />
 
       <ToolbarButton
+        className={buttonClassName}
+        activeButtonClassName={activeButtonClassName}
         onClick={() => {
           editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
           setIsBold(true);
@@ -320,6 +357,8 @@ export const LexicalToolbar = () => {
         <strong>B</strong>
       </ToolbarButton>
       <ToolbarButton
+        className={buttonClassName}
+        activeButtonClassName={activeButtonClassName}
         onClick={() => {
           editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
           setIsItalics(true);
@@ -330,6 +369,8 @@ export const LexicalToolbar = () => {
         <em>I</em>
       </ToolbarButton>
       <ToolbarButton
+        className={buttonClassName}
+        activeButtonClassName={activeButtonClassName}
         onClick={() => {
           editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline');
           setIsUnderline(true);
@@ -340,6 +381,8 @@ export const LexicalToolbar = () => {
         <span className="underline">U</span>
       </ToolbarButton>
       <ToolbarButton
+        className={buttonClassName}
+        activeButtonClassName={activeButtonClassName}
         onClick={() => {
           editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough');
           setIsStrikethrough(true);
@@ -349,8 +392,13 @@ export const LexicalToolbar = () => {
       >
         <span className="line-through">S</span>
       </ToolbarButton>
-      <span id="separator" className="w-px h-7 bg-slate-300" />
+      <span
+        id="separator"
+        className={cn(dividerClassName, 'w-px h-7 bg-slate-300')}
+      />
       <ToolbarButton
+        className={buttonClassName}
+        activeButtonClassName={activeButtonClassName}
         onClick={() => {
           editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left');
           setBlockFormat('left');
@@ -361,6 +409,8 @@ export const LexicalToolbar = () => {
         <FormatAlignLeftIcon fontSize="inherit" />
       </ToolbarButton>
       <ToolbarButton
+        className={buttonClassName}
+        activeButtonClassName={activeButtonClassName}
         onClick={() => {
           editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center');
           setBlockFormat('center');
@@ -371,6 +421,8 @@ export const LexicalToolbar = () => {
         <FormatAlignCenterIcon fontSize="inherit" />
       </ToolbarButton>
       <ToolbarButton
+        className={buttonClassName}
+        activeButtonClassName={activeButtonClassName}
         onClick={() => {
           editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'justify');
           setBlockFormat('right');
@@ -381,6 +433,8 @@ export const LexicalToolbar = () => {
         <FormatAlignJustifyIcon fontSize="inherit" />
       </ToolbarButton>
       <ToolbarButton
+        className={buttonClassName}
+        activeButtonClassName={activeButtonClassName}
         onClick={() => {
           editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'right');
           setBlockFormat('right');
@@ -395,27 +449,36 @@ export const LexicalToolbar = () => {
 };
 
 function ToolbarButton({
+  className,
+  activeButtonClassName,
   onClick,
   isActive,
   label,
   children,
 }: Readonly<{
+  className?: string;
+  activeButtonClassName?: string;
   onClick: () => void;
   isActive?: boolean;
   label: string;
   children: React.ReactNode;
 }>) {
+  const activeColorStyle =
+    isActive && activeButtonClassName
+      ? activeButtonClassName
+      : 'bg-blue-100 text-blue-700';
   return (
     <button
       type="button"
       onClick={onClick}
       title={label}
       aria-label={label}
-      className={`cursor-pointer px-2 py-1 text-sm rounded ${
-        isActive
-          ? 'bg-blue-100 text-blue-700'
-          : 'text-gray-700 hover:bg-gray-100'
-      }`}
+      className={cn(
+        className,
+        `cursor-pointer px-2 py-1 text-sm rounded ${
+          isActive ? activeColorStyle : 'text-gray-700 hover:bg-gray-100'
+        }`,
+      )}
     >
       {children}
     </button>

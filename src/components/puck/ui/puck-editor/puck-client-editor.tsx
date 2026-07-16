@@ -4,7 +4,7 @@
 
 'use client';
 
-import { Data, Puck } from '@puckeditor/core';
+import { ActionBar, Data, Puck } from '@puckeditor/core';
 import config from '../../../../puck.config';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -32,6 +32,7 @@ import { tr } from 'zod/v4/locales';
 import { LexicalEditorRefProvider } from '../lexical/plugins/LexicalEditorRefContext';
 import { $isTextNode, ParagraphNode, TextNode } from 'lexical';
 import { htmlExportMap } from '../lexical/htmlExportMap';
+import { LexicalToolbar } from '../lexical/Toolbar';
 
 export function PuckClientEditor({
   pathName,
@@ -143,6 +144,19 @@ export function PuckClientEditor({
               data={proc.data}
               onPublish={handlePublish}
               overrides={{
+                //  custom shortcut menu bar
+                actionBar: ({ children, label }) => (
+                  <ActionBar label={label}>
+                    <ActionBar.Group>
+                      <LexicalToolbar
+                        buttonClassName="!text-gray-200 hover:!text-blue-400 hover:!bg-transparent"
+                        activeButtonClassName="!bg-gray-600 hover:!bg-gray-700"
+                        dividerClassName="!bg-gray-500"
+                      />
+                      {children}
+                    </ActionBar.Group>
+                  </ActionBar>
+                ),
                 headerActions: ({ children }) => (
                   <>
                     <DiscardChangesButton slug={slug} />

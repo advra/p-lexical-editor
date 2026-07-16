@@ -57,7 +57,9 @@ export function LexicalEditorRichTextField({
     <div className="space-y-3">
       <div className="flex items-center">
         <PuckTextIcon />
-        <span className="text-sm font-semibold capitalize">{name} Editor</span>
+        <span className="text-sm font-semibold capitalize">
+          {name} Lexical Editor
+        </span>
       </div>
       <div className="editor-container border border-gray-200 rounded-md overflow-hidden">
         {/* Plugins */}
@@ -69,7 +71,11 @@ export function LexicalEditorRichTextField({
         {/* <AutoFocusPlugin /> */}
         <InlineInputPlugin />
         {/* Toolbar */}
-        {!readOnly && <LexicalToolbar />}
+        {!readOnly && (
+          <div className="border-b border-gray-200 p-2 bg-gray-50">
+            <LexicalToolbar />
+          </div>
+        )}
         {/* Editor */}
         <div className="editor-container relative">
           <RichTextPlugin
