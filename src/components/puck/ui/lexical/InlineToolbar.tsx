@@ -1,3 +1,5 @@
+'use client';
+
 import {
   $getSelectionStyleValueForProperty,
   $patchStyleText,
@@ -19,74 +21,109 @@ import TextIncreaseIcon from '@mui/icons-material/TextIncrease';
 import TextDecreaseIcon from '@mui/icons-material/TextDecrease';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { cn } from '@/lib/utils/cn';
-
-export const FONT_SIZES = [
-  // { label: '8', value: '8pt' },
-  // { label: '9', value: '9pt' },
-  // { label: '10', value: '10pt' },
-  // { label: '11', value: '11pt' },
-  // { label: '12', value: '12pt' },
-  // { label: '14', value: '14pt' },
-  // { label: '16', value: '16pt' },
-  // { label: '18', value: '18pt' },
-  // { label: '20', value: '20pt' },
-  // { label: '22', value: '22pt' },
-  // { label: '24', value: '24pt' },
-  // { label: '26', value: '26pt' },
-  // { label: '28', value: '28pt' },
-  // { label: '32', value: '32pt' },
-  // { label: '36', value: '36pt' },
-  // { label: '48', value: '48pt' },
-  // { label: '60', value: '60pt' },
-  // { label: 'Small Text', value: '0.875rem' },
-  // { label: 'Paragraph', value: '1rem' },
-  // { label: 'Lead Paragraph', value: '1.2rem' },
-  // { label: 'Section Header', value: '1.25rem' },
-  // { label: 'Subtitle', value: '2rem' },
-  // { label: 'Main Title', value: '2.5rem' },
-  { label: 'Small Text', value: '0.75rem' }, //9pt
-  { label: 'Paragraph', value: '0.833rem' }, //10pt
-  { label: 'Subtitle', value: '1rem' }, //12
-  { label: 'Title', value: '1.167rem' }, //14
-];
-export const DEFAULT_FONT_FAMILIES = [
-  { label: 'Arial', value: 'Arial' },
-  { label: 'Courier New', value: 'Courier New' },
-  { label: 'Georgia', value: 'Georgia' },
-  { label: 'Times New Roman', value: 'Times New Roman' },
-  { label: 'Trebuchet MS', value: 'Trebuchet MS' },
-  { label: 'Verdana', value: 'Verdana' },
-];
-
-export const TEXT_COLORS = [
-  { label: 'Black', value: '#000000' },
-  { label: 'Gray', value: '#6B7280' },
-  { label: 'Red', value: '#EF4444' },
-  { label: 'Orange', value: '#F97316' },
-  { label: 'Yellow', value: '#EAB308' },
-  { label: 'Green', value: '#22C55E' },
-  { label: 'Blue', value: '#3B82F6' },
-  { label: 'Purple', value: '#A855F7' },
-  { label: 'Pink', value: '#EC4899' },
-  { label: 'White', value: '#FFFFFF' },
-];
+import { FONT_SIZES, DEFAULT_FONT_FAMILIES, TEXT_COLORS } from './Toolbar';
 
 /**
- * Toolbar component for the Lexical editor that provides formatting button options
+ * InlineToolbar - A toolbar for Puck's ActionBar that operates on the
+ * currently active editor context.
+ *
+ * - If the user is focused in an inline contentEditable div (the
+ *   EditableInlineRichTextTransform), it uses native DOM APIs
+ *   (document.execCommand, Range.surroundContents) to format the text.
+ * - Otherwise, it falls back to Lexical commands via useLexicalComposerContext().
+ *
+ * Changes made to the inline contentEditable div automatically sync to the
+ * Lexical editor via the existing onInput handler in EditableInlineRichTextTransform.
  */
-type props = {
+type Props = {
   // used to override default styles
   dropdownClassName?: string;
   buttonClassName?: string;
   activeButtonClassName?: string;
   dividerClassName?: string;
 };
-export const LexicalToolbar = ({
+
+/** Check if the currently focused element is an inline contentEditable div */
+function isInlineEditorActive(): boolean {
+  const el = document.activeElement;
+  return (
+    el instanceof HTMLElement &&
+    el.isContentEditable &&
+    el.classList.contains('lexical-inline-preview')
+  );
+}
+
+const getSelection = () => {
+  const sel = window.getSelection();
+  if (sel && sel.rangeCount > 0) {
+    const range = sel.getRangeAt(0);
+    // range.startContainer, range.endContainer, etc.
+    return range;
+  }
+};
+
+/** Trigger input event on the inline editor to sync changes to Lexical */
+function triggerInlineSync(editor: HTMLElement) {
+  editor.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+/** Apply a style to the native selection by wrapping in a <span> */
+function applyInlineStyle(styleProp: string, value: string) {
+  const sel = window.getSelection();
+  if (!sel?.rangeCount || sel.isCollapsed) return;
+
+  const range = sel.getRangeAt(0);
+  const span = document.createElement('span');
+  (span.style as any)[styleProp] = value;
+  try {
+    range.surroundContents(span);
+  } catch {
+    const fragment = range.extractContents();
+    span.appendChild(fragment);
+    range.insertNode(span);
+  }
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+/** Apply alignment to the parent block of the native selection */
+function applyInlineAlignment(align: string, container: HTMLElement) {
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return;
+
+  const node = sel.anchorNode;
+  if (!node) return;
+
+  let el: HTMLElement | null =
+    node.nodeType === Node.ELEMENT_NODE
+      ? (node as HTMLElement)
+      : node.parentElement;
+  while (el && el !== container && getComputedStyle(el).display !== 'block') {
+    el = el.parentElement;
+  }
+  if (el && el !== container) {
+    el.style.textAlign = align;
+  } else {
+    // Wrap in a div with alignment
+    const range = sel.getRangeAt(0);
+    const wrapper = document.createElement('div');
+    wrapper.style.textAlign = align;
+    try {
+      range.surroundContents(wrapper);
+    } catch {
+      const fragment = range.extractContents();
+      wrapper.appendChild(fragment);
+      range.insertNode(wrapper);
+    }
+  }
+}
+
+export const InlineToolbar = ({
   dropdownClassName,
   buttonClassName,
   activeButtonClassName,
   dividerClassName,
-}: props) => {
+}: Props) => {
   const [editor] = useLexicalComposerContext();
   const [fontFamily, setFontFamily] = useState(DEFAULT_FONT_FAMILIES[1].value);
   const [fontSize, setFontSize] = useState('12pt');
@@ -99,8 +136,76 @@ export const LexicalToolbar = ({
   const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
   const colorPickerRef = useRef<HTMLDivElement>(null);
 
+  const inlineEditorRef = useRef<HTMLElement | null>(null);
+
+  // Capture the inline editor on mousedown, before focus is stolen by the button
+  const handleToolbarMouseDown = useCallback(() => {
+    const el = document.activeElement;
+    if (
+      el instanceof HTMLElement &&
+      el.isContentEditable &&
+      el.classList.contains('lexical-inline-preview')
+    ) {
+      inlineEditorRef.current = el;
+    } else {
+      inlineEditorRef.current = null;
+    }
+  }, []);
+
+  // --- Inline editor helpers (native DOM) ---
+
+  const execInlineCommand = useCallback(
+    (command: 'bold' | 'underline' | 'italic' | 'strikethrough') => {
+      const inlineEditor = inlineEditorRef.current;
+      if (!inlineEditor) return;
+      inlineEditor.focus();
+      document.execCommand(command);
+      triggerInlineSync(inlineEditor);
+    },
+    [],
+  );
+
+  const handleInlineColorChange = useCallback((color: string) => {
+    const inlineEditor = inlineEditorRef.current;
+    if (!inlineEditor) return;
+    inlineEditor.focus();
+    applyInlineStyle('color', color);
+    triggerInlineSync(inlineEditor);
+  }, []);
+
+  const handleInlineFontSizeChange = useCallback((size: string) => {
+    const inlineEditor = inlineEditorRef.current;
+    if (!inlineEditor) return;
+    inlineEditor.focus();
+    applyInlineStyle('fontSize', size);
+    triggerInlineSync(inlineEditor);
+  }, []);
+
+  const handleInlineFontFamilyChange = useCallback((font: string) => {
+    const inlineEditor = inlineEditorRef.current;
+    if (!inlineEditor) return;
+    inlineEditor.focus();
+    applyInlineStyle('fontFamily', font);
+    triggerInlineSync(inlineEditor);
+  }, []);
+
+  const handleInlineAlignment = useCallback((align: string) => {
+    const inlineEditor = inlineEditorRef.current;
+    if (!inlineEditor) return;
+    inlineEditor.focus();
+    applyInlineAlignment(align, inlineEditor);
+    triggerInlineSync(inlineEditor);
+  }, []);
+
+  // --- Lexical editor helpers ---
+
   const handleColorChange = useCallback(
     (color: string) => {
+      if (isInlineEditorActive()) {
+        handleInlineColorChange(color);
+        setShowColorPicker(false);
+        return;
+      }
       setSelectedTextColor(color);
       editor.update(() => {
         const selection = $getSelection();
@@ -110,11 +215,15 @@ export const LexicalToolbar = ({
       });
       setShowColorPicker(false);
     },
-    [editor],
+    [editor, handleInlineColorChange],
   );
 
   const handleFontSizeChange = useCallback(
     (size: string) => {
+      if (isInlineEditorActive()) {
+        handleInlineFontSizeChange(size);
+        return;
+      }
       setFontSize(size);
       editor.update(() => {
         const selection = $getSelection();
@@ -123,11 +232,15 @@ export const LexicalToolbar = ({
         }
       });
     },
-    [editor],
+    [editor, handleInlineFontSizeChange],
   );
 
   const handleFontFamilyChange = useCallback(
     (font: string) => {
+      if (isInlineEditorActive()) {
+        handleInlineFontFamilyChange(font);
+        return;
+      }
       setFontFamily(font);
       editor.update(() => {
         const selection = $getSelection();
@@ -136,7 +249,7 @@ export const LexicalToolbar = ({
         }
       });
     },
-    [editor],
+    [editor, handleInlineFontFamilyChange],
   );
 
   // Close color picker when clicking outside
@@ -153,55 +266,61 @@ export const LexicalToolbar = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Read the selected node info
+  // Track inline editor selection changes for active state updates
   useEffect(() => {
-    const unregister = editor.registerUpdateListener(({ editorState }) => {
-      editorState.read(() => {
-        const selection = $getSelection();
-        if ($isRangeSelection(selection)) {
-          const anchorNode = selection.anchor.getNode();
-          // Walk up to find the block-level element (paragraph, heading, etc.)
-          let node = anchorNode;
-          while (node && !$isElementNode(node)) {
-            node = node.getParentOrThrow();
-          }
-          if (node) {
-            const format = node.getFormatType(); // returns 'left' | 'center' | 'right' | 'justify' | 'start'
-            setBlockFormat(format);
-          }
+    const updateInlineStates = () => {
+      if (!isInlineEditorActive()) return;
 
-          // font formatting bold, italics, underline, strike
-          setIsBold(selection.hasFormat('bold'));
-          setIsItalics(selection.hasFormat('italic'));
-          setIsUnderline(selection.hasFormat('underline'));
-          setIsStrikethrough(selection.hasFormat('strikethrough'));
-          // font family and size
-          const family = $getSelectionStyleValueForProperty(
-            selection,
-            'font-family',
-            DEFAULT_FONT_FAMILIES[0].value,
-          );
-          const size = $getSelectionStyleValueForProperty(
-            selection,
-            'font-size',
-            '12pt',
-          );
-          setFontFamily(family);
-          setFontSize(size);
-          // text color
-          const color = $getSelectionStyleValueForProperty(
-            selection,
-            'color',
-            '',
-          );
+      const sel = window.getSelection();
+      if (!sel?.rangeCount) return;
+
+      setIsBold(document.queryCommandState('bold'));
+      setIsItalics(document.queryCommandState('italic'));
+      setIsUnderline(document.queryCommandState('underline'));
+      setIsStrikethrough(document.queryCommandState('strikeThrough'));
+
+      const node = sel.anchorNode;
+      if (node) {
+        const el: HTMLElement | null =
+          node.nodeType === Node.ELEMENT_NODE
+            ? (node as HTMLElement)
+            : node.parentElement;
+        if (el) {
+          const computed = getComputedStyle(el);
+          setFontFamily(computed.fontFamily || DEFAULT_FONT_FAMILIES[0].value);
+          setFontSize(computed.fontSize || '12pt');
+          setSelectedTextColor(computed.color || '#000000');
+
+          let block: HTMLElement | null = el;
+          const container = inlineEditorRef.current;
+          while (
+            block &&
+            container &&
+            block !== container &&
+            getComputedStyle(block).display !== 'block'
+          ) {
+            block = block.parentElement;
+          }
+          if (block && container && block !== container) {
+            setBlockFormat(block.style.textAlign || 'left');
+          }
         }
-      });
-    });
-    return () => unregister();
-  }, [editor]);
+      }
+    };
+
+    document.addEventListener('selectionchange', updateInlineStates);
+    document.addEventListener('mouseup', updateInlineStates);
+    return () => {
+      document.removeEventListener('selectionchange', updateInlineStates);
+      document.removeEventListener('mouseup', updateInlineStates);
+    };
+  }, []);
 
   return (
-    <div className="lexical-toolbar flex flex-wrap gap-1 items-center">
+    <div
+      className="lexical-toolbar flex flex-wrap gap-1 items-center"
+      onMouseDown={handleToolbarMouseDown}
+    >
       {/* Font Family */}
       <select
         value={fontFamily}
@@ -347,10 +466,7 @@ export const LexicalToolbar = ({
       <ToolbarButton
         className={buttonClassName}
         activeButtonClassName={activeButtonClassName}
-        onClick={() => {
-          editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
-          setIsBold(true);
-        }}
+        onClick={() => execInlineCommand('bold')}
         isActive={isBold}
         label="Bold (Ctrl+B)"
       >
@@ -359,10 +475,7 @@ export const LexicalToolbar = ({
       <ToolbarButton
         className={buttonClassName}
         activeButtonClassName={activeButtonClassName}
-        onClick={() => {
-          editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
-          setIsItalics(true);
-        }}
+        onClick={() => execInlineCommand('italic')}
         isActive={isItalics}
         label="Italic (Ctrl+I)"
       >
@@ -371,10 +484,7 @@ export const LexicalToolbar = ({
       <ToolbarButton
         className={buttonClassName}
         activeButtonClassName={activeButtonClassName}
-        onClick={() => {
-          editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline');
-          setIsUnderline(true);
-        }}
+        onClick={() => execInlineCommand('underline')}
         isActive={isUnderline}
         label="Underline (Ctrl+U)"
       >
@@ -383,10 +493,7 @@ export const LexicalToolbar = ({
       <ToolbarButton
         className={buttonClassName}
         activeButtonClassName={activeButtonClassName}
-        onClick={() => {
-          editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough');
-          setIsStrikethrough(true);
-        }}
+        onClick={() => execInlineCommand('strikethrough')}
         isActive={isStrikethrough}
         label="Strikethrough"
       >
@@ -400,7 +507,7 @@ export const LexicalToolbar = ({
         className={buttonClassName}
         activeButtonClassName={activeButtonClassName}
         onClick={() => {
-          editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left');
+          handleInlineAlignment('left');
           setBlockFormat('left');
         }}
         isActive={blockFormat === 'left'}
@@ -412,7 +519,7 @@ export const LexicalToolbar = ({
         className={buttonClassName}
         activeButtonClassName={activeButtonClassName}
         onClick={() => {
-          editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center');
+          handleInlineAlignment('center');
           setBlockFormat('center');
         }}
         isActive={blockFormat === 'center'}
@@ -424,8 +531,8 @@ export const LexicalToolbar = ({
         className={buttonClassName}
         activeButtonClassName={activeButtonClassName}
         onClick={() => {
-          editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'justify');
-          setBlockFormat('right');
+          handleInlineAlignment('justify');
+          setBlockFormat('justify');
         }}
         isActive={blockFormat === 'justify'}
         label="Justify Align"
@@ -436,7 +543,7 @@ export const LexicalToolbar = ({
         className={buttonClassName}
         activeButtonClassName={activeButtonClassName}
         onClick={() => {
-          editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'right');
+          handleInlineAlignment('right');
           setBlockFormat('right');
         }}
         isActive={blockFormat === 'right'}

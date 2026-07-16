@@ -33,6 +33,7 @@ import { LexicalEditorRefProvider } from '../lexical/plugins/LexicalEditorRefCon
 import { $isTextNode, ParagraphNode, TextNode } from 'lexical';
 import { htmlExportMap } from '../lexical/htmlExportMap';
 import { LexicalToolbar } from '../lexical/Toolbar';
+import { InlineToolbar } from '../lexical/InlineToolbar';
 
 export function PuckClientEditor({
   pathName,
@@ -148,7 +149,7 @@ export function PuckClientEditor({
                 actionBar: ({ children, label }) => (
                   <ActionBar label={label}>
                     <ActionBar.Group>
-                      <LexicalToolbar
+                      <InlineToolbar
                         buttonClassName="!text-gray-200 hover:!text-blue-400 hover:!bg-transparent"
                         activeButtonClassName="!bg-gray-600 hover:!bg-gray-700"
                         dividerClassName="!bg-gray-500"

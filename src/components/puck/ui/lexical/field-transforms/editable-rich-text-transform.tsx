@@ -70,18 +70,51 @@ export const EditableInlineRichTextTransform = ({ transformProps }: Props) => {
 
   // Handle keyboard shortcuts for formatting (Ctrl+B, Ctrl+I, Ctrl+U)
   // Also prevent Enter from propagating to Puck's block-level keyboard handlers
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLDivElement>) => {
-      if (isReadOnly) return;
+  // const handleKeyDown = useCallback(
+  //   (e: React.KeyboardEvent<HTMLDivElement>) => {
+  //     if (isReadOnly) return;
 
-      // Prevent Enter key from bubbling up to Puck's block duplication handler
+  //     // Prevent Enter key from bubbling up to Puck's block duplication handler
+  //     if (e.key === 'Enter') {
+  //       e.stopPropagation();
+  //       return;
+  //     }
+
+  //     const isCtrl = e.ctrlKey || e.metaKey; // metaKey for Mac
+
+  //     if (isCtrl) {
+  //       switch (e.key.toLowerCase()) {
+  //         case 'b':
+  //           e.preventDefault();
+  //           document.execCommand('bold');
+  //           break;
+  //         case 'i':
+  //           e.preventDefault();
+  //           document.execCommand('italic');
+  //           break;
+  //         case 'u':
+  //           e.preventDefault();
+  //           document.execCommand('underline');
+  //           break;
+  //       }
+  //     }
+  //   },
+  //   [isReadOnly],
+  // );
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || isReadOnly) return;
+
+    const handleNativeKeyDown = (e: KeyboardEvent) => {
+      // Stop propagation so Puck's document-level listener doesn't see it
+      e.stopPropagation();
+
       if (e.key === 'Enter') {
-        e.stopPropagation();
         return;
       }
 
-      const isCtrl = e.ctrlKey || e.metaKey; // metaKey for Mac
-
+      const isCtrl = e.ctrlKey || e.metaKey;
       if (isCtrl) {
         switch (e.key.toLowerCase()) {
           case 'b':
@@ -98,9 +131,11 @@ export const EditableInlineRichTextTransform = ({ transformProps }: Props) => {
             break;
         }
       }
-    },
-    [isReadOnly],
-  );
+    };
+
+    el.addEventListener('keydown', handleNativeKeyDown);
+    return () => el.removeEventListener('keydown', handleNativeKeyDown);
+  }, [isReadOnly]);
 
   // sync changes back to puck
   const handleClickInlinePreview = useCallback(
@@ -170,7 +205,7 @@ export const EditableInlineRichTextTransform = ({ transformProps }: Props) => {
         onFocus={handleFocus}
         onBlur={handleBlur}
         onClick={handleClickInlinePreview}
-        onKeyDown={handleKeyDown}
+        // onKeyDown={handleKeyDown}
         className="lexical-inline-preview cursor-text min-h-[1.5em] rounded px-1 mr-5"
       />
       <div className="absolute top-0 -right-1">
