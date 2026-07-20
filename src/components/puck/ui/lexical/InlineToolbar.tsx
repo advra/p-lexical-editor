@@ -396,6 +396,7 @@ export const InlineToolbar = ({
       const node = sel.focusNode;
       if (node) {
         // Walk up from the focus node to find the nearest element with inline styles
+        // or a <font> tag (created by execCommand('fontName') / execCommand('foreColor'))
         let targetEl: HTMLElement | null = null;
         let current: Node | null = node;
         const container = inlineEditorRef.current;
@@ -403,7 +404,13 @@ export const InlineToolbar = ({
         while (current && current !== container) {
           if (current.nodeType === Node.ELEMENT_NODE) {
             const el = current as HTMLElement;
-            if (el.hasAttribute('style')) {
+            // Check for inline style (span) or font tag attributes (font)
+            if (
+              el.hasAttribute('style') ||
+              el.tagName === 'FONT' ||
+              el.hasAttribute('face') ||
+              el.hasAttribute('color')
+            ) {
               targetEl = el;
               break;
             }
@@ -412,11 +419,15 @@ export const InlineToolbar = ({
         }
 
         if (targetEl) {
-          // Read inline styles directly from the styled span
+          // Read inline styles directly from the styled span or font tag
 
-          // detect font
+          // detect font family (from inline style or font[face] attribute)
+          const fontFamilyFromStyle = targetEl.style.fontFamily;
+          const fontFamilyFromAttr = targetEl.getAttribute('face');
           setFontFamily(
-            targetEl.style.fontFamily || DEFAULT_FONT_FAMILIES[0].value,
+            fontFamilyFromStyle ||
+              fontFamilyFromAttr ||
+              DEFAULT_FONT_FAMILIES[0].value,
           );
           // detect font size
           const computed = getComputedStyle(targetEl);
@@ -426,8 +437,12 @@ export const InlineToolbar = ({
             return Math.abs(optPx - computedPx) < 0.5; // within 0.5px tolerance
           });
           setFontSize(matched ? matched.value : computed.fontSize);
-          // detect font color
-          setSelectedTextColor(targetEl.style.color || '#000000');
+          // detect font color (from inline style or font[color] attribute)
+          const colorFromStyle = targetEl.style.color;
+          const colorFromAttr = targetEl.getAttribute('color');
+          setSelectedTextColor(
+            colorFromStyle || colorFromAttr || '#000000',
+          );
         } else {
           // Fall back to computed style on the parent element
           const el: HTMLElement | null =
