@@ -47,11 +47,31 @@ type Props = {
 /** Check if the currently focused element is an inline contentEditable div */
 function isInlineEditorActive(): boolean {
   const el = document.activeElement;
-  return (
+  if (
     el instanceof HTMLElement &&
     el.isContentEditable &&
     el.classList.contains('lexical-inline-preview')
-  );
+  ) {
+    return true;
+  }
+
+  // Fallback: check if selection is inside an inline editor
+  const sel = window.getSelection();
+  if (sel && sel.rangeCount > 0) {
+    let node = sel.anchorNode;
+    while (node) {
+      if (
+        node instanceof HTMLElement &&
+        node.isContentEditable &&
+        node.classList.contains('lexical-inline-preview')
+      ) {
+        return true;
+      }
+      node = node.parentNode;
+    }
+  }
+
+  return false;
 }
 
 const getSelection = () => {
@@ -71,9 +91,26 @@ function triggerInlineSync(editor: HTMLElement) {
 /** Apply a style to the native selection by wrapping in a <span> */
 function applyInlineStyle(styleProp: string, value: string) {
   const sel = window.getSelection();
-  if (!sel?.rangeCount || sel.isCollapsed) return;
+  if (!sel?.rangeCount) return;
 
   const range = sel.getRangeAt(0);
+  // No text selected - insert a zero-width character, style it, then position cursor after it
+  // This sets the style for newly typed text
+  if (sel.isCollapsed) {
+    const span = document.createElement('span');
+    (span.style as any)[styleProp] = value;
+    span.appendChild(document.createTextNode('\u200B')); // zero-width space
+    range.insertNode(span);
+
+    // Move cursor after the styled span
+    range.setStartAfter(span);
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return;
+  }
+
+  // text is selected (wrap it in a styled span)
   const span = document.createElement('span');
   (span.style as any)[styleProp] = value;
   try {
