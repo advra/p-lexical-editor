@@ -349,7 +349,6 @@ export const LexicalToolbar = ({
         activeButtonClassName={activeButtonClassName}
         onClick={() => {
           editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
-          setIsBold(true);
         }}
         isActive={isBold}
         label="Bold (Ctrl+B)"
@@ -361,7 +360,6 @@ export const LexicalToolbar = ({
         activeButtonClassName={activeButtonClassName}
         onClick={() => {
           editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
-          setIsItalics(true);
         }}
         isActive={isItalics}
         label="Italic (Ctrl+I)"
@@ -373,7 +371,6 @@ export const LexicalToolbar = ({
         activeButtonClassName={activeButtonClassName}
         onClick={() => {
           editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline');
-          setIsUnderline(true);
         }}
         isActive={isUnderline}
         label="Underline (Ctrl+U)"
@@ -385,7 +382,6 @@ export const LexicalToolbar = ({
         activeButtonClassName={activeButtonClassName}
         onClick={() => {
           editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough');
-          setIsStrikethrough(true);
         }}
         isActive={isStrikethrough}
         label="Strikethrough"

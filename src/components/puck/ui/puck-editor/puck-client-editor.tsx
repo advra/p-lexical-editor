@@ -98,8 +98,11 @@ export function PuckClientEditor({
       // update globals.css
       theme: {
         text: {
+          bold: 'lexical-bold',
+          italic: 'lexical-italic',
           underline: 'lexical-underline',
           strikethrough: 'lexical-strikethrough',
+          underlineStrikethrough: 'lexical-underline-strikethrough',
         },
       },
       html: {
