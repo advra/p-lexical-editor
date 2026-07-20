@@ -79,6 +79,9 @@ function triggerInlineSync(editor: HTMLElement) {
  * Apply a style to the native selection using execCommand with styleWithCSS.
  * This is the standard browser API for inline styling and handles cursor
  * position, text selection, and nested elements correctly.
+ *
+ * Note: execCommand('fontSize') only accepts integers 1-7 (HTML font sizes),
+ * not CSS values like rem/pt. So for font-size we use insertHTML instead.
  */
 function applyInlineStyle(styleProp: string, value: string) {
   // Enable CSS styling via execCommand
@@ -86,7 +89,6 @@ function applyInlineStyle(styleProp: string, value: string) {
 
   // Map our style properties to execCommand commands
   const commandMap: Record<string, string> = {
-    fontSize: 'fontSize',
     fontFamily: 'fontName',
     color: 'foreColor',
   };
@@ -94,6 +96,27 @@ function applyInlineStyle(styleProp: string, value: string) {
   const command = commandMap[styleProp];
   if (command) {
     document.execCommand(command, false, value);
+    return;
+  }
+
+  // For font-size, execCommand('fontSize') only accepts integers 1-7.
+  // Use insertHTML to apply arbitrary CSS font-size values.
+  if (styleProp === 'fontSize') {
+    const sel = window.getSelection();
+    if (!sel?.rangeCount) return;
+
+    if (sel.isCollapsed) {
+      // Collapsed cursor: insert a zero-width space with the style
+      document.execCommand(
+        'insertHTML',
+        false,
+        `<span style="font-size: ${value}">\u200B</span>`,
+      );
+    } else {
+      // Text selected: wrap selection in a styled span
+      // ref: https://developer.mozilla.org/en-US/docs/Web/API/Document/execCommand#fontsize
+      document.execCommand('fontSize', false, value);
+    }
   }
 }
 

@@ -44,10 +44,10 @@ export const FONT_SIZES = [
   // { label: 'Section Header', value: '1.25rem' },
   // { label: 'Subtitle', value: '2rem' },
   // { label: 'Main Title', value: '2.5rem' },
-  { label: 'Small Text', value: '0.75rem' }, //9pt
-  { label: 'Paragraph', value: '0.833rem' }, //10pt
-  { label: 'Subtitle', value: '1rem' }, //12
-  { label: 'Title', value: '1.167rem' }, //14
+  { label: 'Small Text', value: '0.75rem', size: 9 },
+  { label: 'Paragraph', value: '0.833rem', size: 10 },
+  { label: 'Subtitle', value: '1rem', size: 12 },
+  { label: 'Title', value: '1.167rem', size: 14 },
 ];
 export const DEFAULT_FONT_FAMILIES = [
   { label: 'Arial', value: 'Arial' },
