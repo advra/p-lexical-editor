@@ -30,7 +30,7 @@ import { HeadingNode } from '@lexical/rich-text';
 import { useMemo } from 'react';
 import { tr } from 'zod/v4/locales';
 import { LexicalEditorRefProvider } from '../lexical/plugins/LexicalEditorRefContext';
-import { $isTextNode, ParagraphNode, TextNode } from 'lexical';
+import { $isElementNode, $isTextNode, ParagraphNode, TextNode } from 'lexical';
 import { htmlExportMap } from '../lexical/htmlExportMap';
 import { LexicalToolbar } from '../lexical/Toolbar';
 import { InlineToolbar } from '../lexical/InlineToolbar';
@@ -116,6 +116,23 @@ export function PuckClientEditor({
                 forChild: (lexicalNode) => {
                   if ($isTextNode(lexicalNode) && style) {
                     lexicalNode.setStyle(style);
+                  } else if ($isElementNode(lexicalNode) && style) {
+                    // Apply the style to all text descendants recursively
+                    // This handles cases like <span style="font-size:18px"><b>text</b></span>
+                    // where the span wraps formatted elements (bold, italic, etc.)
+                    const children = lexicalNode.getChildren();
+                    const applyStyleToTextNodes = (
+                      nodes: import('lexical').LexicalNode[],
+                    ) => {
+                      for (const child of nodes) {
+                        if ($isTextNode(child)) {
+                          child.setStyle(style);
+                        } else if ($isElementNode(child)) {
+                          applyStyleToTextNodes(child.getChildren());
+                        }
+                      }
+                    };
+                    applyStyleToTextNodes(children);
                   }
                   return lexicalNode;
                 },
@@ -123,6 +140,49 @@ export function PuckClientEditor({
               };
             },
             // Higher priority than default
+            priority: 1,
+          }),
+          // Handle <font color="..."> and <font face="..."> tags created by
+          // document.execCommand('foreColor') / document.execCommand('fontName')
+          // when styleWithCSS is not supported or disabled.
+          // Convert the attributes to inline styles so they're preserved
+          // when syncing back to Lexical.
+          font: () => ({
+            conversion: (domNode) => {
+              const font = domNode as HTMLElement;
+              const color = font.getAttribute('color') || '';
+              const face = font.getAttribute('face') || '';
+              const existingStyle = font.getAttribute('style') || '';
+              const styles: string[] = [];
+              if (existingStyle) styles.push(existingStyle);
+              if (color) styles.push(`color: ${color}`);
+              if (face) styles.push(`font-family: ${face}`);
+              const styleStr = styles.join('; ');
+              return {
+                forChild: (lexicalNode) => {
+                  if ($isTextNode(lexicalNode) && styleStr) {
+                    lexicalNode.setStyle(styleStr);
+                  } else if ($isElementNode(lexicalNode) && styleStr) {
+                    // Apply the style to all text descendants recursively
+                    const children = lexicalNode.getChildren();
+                    const applyStyleToTextNodes = (
+                      nodes: import('lexical').LexicalNode[],
+                    ) => {
+                      for (const child of nodes) {
+                        if ($isTextNode(child)) {
+                          child.setStyle(styleStr);
+                        } else if ($isElementNode(child)) {
+                          applyStyleToTextNodes(child.getChildren());
+                        }
+                      }
+                    };
+                    applyStyleToTextNodes(children);
+                  }
+                  return lexicalNode;
+                },
+                node: null,
+              };
+            },
             priority: 1,
           }),
         },

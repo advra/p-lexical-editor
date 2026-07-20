@@ -95,7 +95,6 @@ function applyInlineStyle(
     command === 'backColor' ||
     command === 'hiliteColor'
   ) {
-    console.log('command', command, ' value: ', value);
     // Enable CSS styling via execCommand
     // required for foreColor, backColor and hiliteColor
     document.execCommand('styleWithCSS', false, 'true');
@@ -205,9 +204,25 @@ export const InlineToolbar = ({
       el.classList.contains('lexical-inline-preview')
     ) {
       inlineEditorRef.current = el;
-    } else {
-      inlineEditorRef.current = null;
+      return;
     }
+    // Fallback: check if selection is inside an inline editor
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      let node = sel.anchorNode;
+      while (node) {
+        if (
+          node instanceof HTMLElement &&
+          node.isContentEditable &&
+          node.classList.contains('lexical-inline-preview')
+        ) {
+          inlineEditorRef.current = node;
+          return;
+        }
+        node = node.parentNode;
+      }
+    }
+    inlineEditorRef.current = null;
   }, []);
 
   // --- Inline editor helpers (native DOM) ---
@@ -226,7 +241,6 @@ export const InlineToolbar = ({
   const handleInlineColorChange = useCallback((color: string) => {
     const inlineEditor = inlineEditorRef.current;
     if (!inlineEditor) return;
-    console.log('HI');
     if (inlineEditor.dataset.applyingStyle === 'true') return;
     inlineEditor.dataset.applyingStyle = 'true';
     inlineEditor.focus();
@@ -297,15 +311,16 @@ export const InlineToolbar = ({
 
   const handleColorChange = useCallback(
     (color: string) => {
-      // Use isInlineEditorActive() which checks both activeElement AND selection
-      // This works even when the dropdown/button has focus because the selection
-      // is still inside the inline editor
-      if (isInlineEditorActive()) {
+      // Update the selected color state so the "A" button indicator shows the right color
+      setSelectedTextColor(color);
+      // Check inlineEditorRef.current first — it was captured on mousedown
+      // before the button stole focus from the inline editor.
+      // Fall back to isInlineEditorActive() as a secondary check.
+      if (inlineEditorRef.current || isInlineEditorActive()) {
         handleInlineColorChange(color);
         setShowColorPicker(false);
         return;
       }
-      setSelectedTextColor(color);
       editor.update(() => {
         const selection = $getSelection();
         if ($isRangeSelection(selection)) {
@@ -319,10 +334,8 @@ export const InlineToolbar = ({
 
   const handleFontSizeChange = useCallback(
     (size: string) => {
-      // Use isInlineEditorActive() which checks both activeElement AND selection
-      // This works even when the dropdown/button has focus because the selection
-      // is still inside the inline editor
-      if (isInlineEditorActive()) {
+      // Check inlineEditorRef.current first (captured on mousedown before focus was stolen)
+      if (inlineEditorRef.current || isInlineEditorActive()) {
         handleInlineFontSizeChange(size);
         return;
       }
@@ -339,10 +352,8 @@ export const InlineToolbar = ({
 
   const handleFontFamilyChange = useCallback(
     (font: string) => {
-      // Use isInlineEditorActive() which checks both activeElement AND selection
-      // This works even when the dropdown/button has focus because the selection
-      // is still inside the inline editor
-      if (isInlineEditorActive()) {
+      // Check inlineEditorRef.current first (captured on mousedown before focus was stolen)
+      if (inlineEditorRef.current || isInlineEditorActive()) {
         handleInlineFontFamilyChange(font);
         return;
       }
@@ -609,8 +620,8 @@ export const InlineToolbar = ({
                   key={color.value || 'default'}
                   type="button"
                   onClick={() => {
-                    setSelectedTextColor(color.value);
-                    setShowColorPicker(false);
+                    // Apply the color immediately and close the picker
+                    handleColorChange(color.value);
                   }}
                   title={color.label}
                   aria-label={color.label}

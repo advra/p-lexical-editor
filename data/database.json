@@ -12,7 +12,7 @@
       {
         "type": "TextBlock",
         "props": {
-          "text": "<p><b style=\"font-weight: bold\"><strong style=\"white-space: pre-wrap;\">This is a title</strong></b></p>",
+          "text": "<p><b style=\"font-weight: bold\"><strong class=\"lexical-bold\" style=\"white-space: pre-wrap;\">This is a </strong></b><b style=\"font-weight: bold; color: rgb(239, 68, 68);\"><strong class=\"lexical-bold\" style=\"color: rgb(239, 68, 68); white-space: pre-wrap;\">title</strong></b></p>",
           "id": "TextBlock-af441410-93d6-40a1-abdf-6a2c106a5e57"
         }
       },
@@ -70,8 +70,8 @@
     "zones": {},
     "metadata": {
       "title": "Test asd",
-      "version": 53,
-      "updatedAt": "2026-07-20T18:32:38.555Z",
+      "version": 54,
+      "updatedAt": "2026-07-20T23:15:11.341Z",
       "createdBy": "admin",
       "createdAt": "2025-12-02T23:12:28.642Z"
     }
