@@ -62,9 +62,19 @@ export const EditableInlineRichTextTransform = ({ transformProps }: Props) => {
 
   // Sync external value changes to the DOM only when the inline editor is NOT focused
   // This prevents overwriting user edits while typing in the inline div
+  // Also skip if the inline toolbar has set a skip-sync flag (for font/font-family/color changes)
   useEffect(() => {
-    if (ref.current && !isInlineFocused.current) {
+    if (ref.current && !isInlineFocused.current && ref.current.dataset.skipSync !== 'true') {
       ref.current.innerHTML = extractRichTextContent(value);
+    }
+    // Clear the flag after a delay to prevent the same value change cycle from
+    // clearing it too early (the inline toolbar sets this flag before syncing)
+    if (ref.current && ref.current.dataset.skipSync === 'true') {
+      const el = ref.current;
+      const timer = setTimeout(() => {
+        delete el.dataset.skipSync;
+      }, 200);
+      return () => clearTimeout(timer);
     }
   }, [value]);
 

@@ -1,13 +1,9 @@
 'use client';
 
-import {
-  $getSelectionStyleValueForProperty,
-  $patchStyleText,
-} from '@lexical/selection';
+import { $patchStyleText } from '@lexical/selection';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import {
   $getSelection,
-  $isElementNode,
   $isRangeSelection,
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
@@ -74,54 +70,31 @@ function isInlineEditorActive(): boolean {
   return false;
 }
 
-const getSelection = () => {
-  const sel = window.getSelection();
-  if (sel && sel.rangeCount > 0) {
-    const range = sel.getRangeAt(0);
-    // range.startContainer, range.endContainer, etc.
-    return range;
-  }
-};
-
 /** Trigger input event on the inline editor to sync changes to Lexical */
 function triggerInlineSync(editor: HTMLElement) {
   editor.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
-/** Apply a style to the native selection by wrapping in a <span> */
+/**
+ * Apply a style to the native selection using execCommand with styleWithCSS.
+ * This is the standard browser API for inline styling and handles cursor
+ * position, text selection, and nested elements correctly.
+ */
 function applyInlineStyle(styleProp: string, value: string) {
-  const sel = window.getSelection();
-  if (!sel?.rangeCount) return;
+  // Enable CSS styling via execCommand
+  document.execCommand('styleWithCSS', false, 'true');
 
-  const range = sel.getRangeAt(0);
-  // No text selected - insert a zero-width character, style it, then position cursor after it
-  // This sets the style for newly typed text
-  if (sel.isCollapsed) {
-    const span = document.createElement('span');
-    (span.style as any)[styleProp] = value;
-    span.appendChild(document.createTextNode('\u200B')); // zero-width space
-    range.insertNode(span);
+  // Map our style properties to execCommand commands
+  const commandMap: Record<string, string> = {
+    fontSize: 'fontSize',
+    fontFamily: 'fontName',
+    color: 'foreColor',
+  };
 
-    // Move cursor after the styled span
-    range.setStartAfter(span);
-    range.collapse(true);
-    sel.removeAllRanges();
-    sel.addRange(range);
-    return;
+  const command = commandMap[styleProp];
+  if (command) {
+    document.execCommand(command, false, value);
   }
-
-  // text is selected (wrap it in a styled span)
-  const span = document.createElement('span');
-  (span.style as any)[styleProp] = value;
-  try {
-    range.surroundContents(span);
-  } catch {
-    const fragment = range.extractContents();
-    span.appendChild(fragment);
-    range.insertNode(span);
-  }
-  sel.removeAllRanges();
-  sel.addRange(range);
 }
 
 /** Apply alignment to the parent block of the native selection */
@@ -206,25 +179,62 @@ export const InlineToolbar = ({
   const handleInlineColorChange = useCallback((color: string) => {
     const inlineEditor = inlineEditorRef.current;
     if (!inlineEditor) return;
+    if (inlineEditor.dataset.applyingStyle === 'true') return;
+    inlineEditor.dataset.applyingStyle = 'true';
     inlineEditor.focus();
     applyInlineStyle('color', color);
+    inlineEditor.dataset.skipSync = 'true';
     triggerInlineSync(inlineEditor);
+    setTimeout(() => {
+      delete inlineEditor.dataset.applyingStyle;
+    }, 100);
   }, []);
 
   const handleInlineFontSizeChange = useCallback((size: string) => {
-    const inlineEditor = inlineEditorRef.current;
+    // Find the inline editor from the selection if inlineEditorRef is null
+    let inlineEditor = inlineEditorRef.current;
+    if (!inlineEditor) {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0) {
+        let node = sel.anchorNode;
+        while (node) {
+          if (
+            node instanceof HTMLElement &&
+            node.isContentEditable &&
+            node.classList.contains('lexical-inline-preview')
+          ) {
+            inlineEditor = node;
+            inlineEditorRef.current = node;
+            break;
+          }
+          node = node.parentNode;
+        }
+      }
+    }
     if (!inlineEditor) return;
+    if (inlineEditor.dataset.applyingStyle === 'true') return;
+    inlineEditor.dataset.applyingStyle = 'true';
     inlineEditor.focus();
     applyInlineStyle('fontSize', size);
+    inlineEditor.dataset.skipSync = 'true';
     triggerInlineSync(inlineEditor);
+    setTimeout(() => {
+      delete inlineEditor.dataset.applyingStyle;
+    }, 100);
   }, []);
 
   const handleInlineFontFamilyChange = useCallback((font: string) => {
     const inlineEditor = inlineEditorRef.current;
     if (!inlineEditor) return;
+    if (inlineEditor.dataset.applyingStyle === 'true') return;
+    inlineEditor.dataset.applyingStyle = 'true';
     inlineEditor.focus();
     applyInlineStyle('fontFamily', font);
+    inlineEditor.dataset.skipSync = 'true';
     triggerInlineSync(inlineEditor);
+    setTimeout(() => {
+      delete inlineEditor.dataset.applyingStyle;
+    }, 100);
   }, []);
 
   const handleInlineAlignment = useCallback((align: string) => {
@@ -239,6 +249,9 @@ export const InlineToolbar = ({
 
   const handleColorChange = useCallback(
     (color: string) => {
+      // Use isInlineEditorActive() which checks both activeElement AND selection
+      // This works even when the dropdown/button has focus because the selection
+      // is still inside the inline editor
       if (isInlineEditorActive()) {
         handleInlineColorChange(color);
         setShowColorPicker(false);
@@ -258,6 +271,9 @@ export const InlineToolbar = ({
 
   const handleFontSizeChange = useCallback(
     (size: string) => {
+      // Use isInlineEditorActive() which checks both activeElement AND selection
+      // This works even when the dropdown/button has focus because the selection
+      // is still inside the inline editor
       if (isInlineEditorActive()) {
         handleInlineFontSizeChange(size);
         return;
@@ -275,6 +291,9 @@ export const InlineToolbar = ({
 
   const handleFontFamilyChange = useCallback(
     (font: string) => {
+      // Use isInlineEditorActive() which checks both activeElement AND selection
+      // This works even when the dropdown/button has focus because the selection
+      // is still inside the inline editor
       if (isInlineEditorActive()) {
         handleInlineFontFamilyChange(font);
         return;
@@ -303,56 +322,6 @@ export const InlineToolbar = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  // Track inline editor selection changes for active state updates
-  // useEffect(() => {
-  //   const updateInlineStates = () => {
-  //     if (!isInlineEditorActive()) return;
-
-  //     const sel = window.getSelection();
-  //     if (!sel?.rangeCount) return;
-
-  //     setIsBold(document.queryCommandState('bold'));
-  //     setIsItalics(document.queryCommandState('italic'));
-  //     setIsUnderline(document.queryCommandState('underline'));
-  //     setIsStrikethrough(document.queryCommandState('strikeThrough'));
-
-  //     const node = sel.anchorNode;
-  //     if (node) {
-  //       const el: HTMLElement | null =
-  //         node.nodeType === Node.ELEMENT_NODE
-  //           ? (node as HTMLElement)
-  //           : node.parentElement;
-  //       if (el) {
-  //         const computed = getComputedStyle(el);
-  //         setFontFamily(computed.fontFamily || DEFAULT_FONT_FAMILIES[0].value);
-  //         setFontSize(computed.fontSize || '12pt');
-  //         setSelectedTextColor(computed.color || '#000000');
-
-  //         let block: HTMLElement | null = el;
-  //         const container = inlineEditorRef.current;
-  //         while (
-  //           block &&
-  //           container &&
-  //           block !== container &&
-  //           getComputedStyle(block).display !== 'block'
-  //         ) {
-  //           block = block.parentElement;
-  //         }
-  //         if (block && container && block !== container) {
-  //           setBlockFormat(block.style.textAlign || 'left');
-  //         }
-  //       }
-  //     }
-  //   };
-
-  //   document.addEventListener('selectionchange', updateInlineStates);
-  //   document.addEventListener('mouseup', updateInlineStates);
-  //   return () => {
-  //     document.removeEventListener('selectionchange', updateInlineStates);
-  //     document.removeEventListener('mouseup', updateInlineStates);
-  //   };
-  // }, []);
 
   // Track inline editor selection changes for active state updates
   useEffect(() => {
@@ -455,7 +424,7 @@ export const InlineToolbar = ({
     updateInlineStates();
     document.addEventListener('selectionchange', updateInlineStates);
     document.addEventListener('mouseup', updateInlineStates);
-    document.addEventListener('click', updateInlineStates); // ADD THIS
+    document.addEventListener('click', updateInlineStates);
     return () => {
       document.removeEventListener('selectionchange', updateInlineStates);
       document.removeEventListener('mouseup', updateInlineStates);
