@@ -174,7 +174,6 @@ export const LexicalToolbar = ({
           '#000000',
         );
         setSelectedTextColor(color || '#000000');
-
       }
     });
   }, [editor]);
@@ -415,18 +414,6 @@ export const LexicalToolbar = ({
         label="Align Center"
       >
         <FormatAlignCenterIcon fontSize="inherit" />
-      </ToolbarButton>
-      <ToolbarButton
-        className={buttonClassName}
-        activeButtonClassName={activeButtonClassName}
-        onClick={() => {
-          editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'justify');
-          setBlockFormat('right');
-        }}
-        isActive={blockFormat === 'justify'}
-        label="Justify Align"
-      >
-        <FormatAlignJustifyIcon fontSize="inherit" />
       </ToolbarButton>
       <ToolbarButton
         className={buttonClassName}

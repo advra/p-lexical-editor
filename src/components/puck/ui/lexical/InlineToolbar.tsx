@@ -440,9 +440,7 @@ export const InlineToolbar = ({
           // detect font color (from inline style or font[color] attribute)
           const colorFromStyle = targetEl.style.color;
           const colorFromAttr = targetEl.getAttribute('color');
-          setSelectedTextColor(
-            colorFromStyle || colorFromAttr || '#000000',
-          );
+          setSelectedTextColor(colorFromStyle || colorFromAttr || '#000000');
         } else {
           // Fall back to computed style on the parent element
           const el: HTMLElement | null =
@@ -704,18 +702,6 @@ export const InlineToolbar = ({
         label="Align Center"
       >
         <FormatAlignCenterIcon fontSize="inherit" />
-      </ToolbarButton>
-      <ToolbarButton
-        className={buttonClassName}
-        activeButtonClassName={activeButtonClassName}
-        onClick={() => {
-          handleInlineAlignment('justify');
-          setBlockFormat('justify');
-        }}
-        isActive={blockFormat === 'justify'}
-        label="Justify Align"
-      >
-        <FormatAlignJustifyIcon fontSize="inherit" />
       </ToolbarButton>
       <ToolbarButton
         className={buttonClassName}
