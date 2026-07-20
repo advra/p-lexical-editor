@@ -155,10 +155,21 @@ export const EditableInlineRichTextTransform = ({ transformProps }: Props) => {
       e.stopPropagation();
       if (ref.current) {
         ref.current.focus();
+
+        // Place cursor at the click position using document.caretRangeFromPoint
+        const caretRange = document.caretRangeFromPoint(e.clientX, e.clientY);
+        if (caretRange) {
+          const sel = window.getSelection();
+          if (sel) {
+            sel.removeAllRanges();
+            sel.addRange(caretRange);
+          }
+        }
       }
     },
     [isReadOnly, propName, dispatch],
   );
+
 
   const handleFocus = useCallback(() => {
     isInlineFocused.current = true;
