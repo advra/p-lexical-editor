@@ -114,8 +114,46 @@ function applyInlineStyle(styleProp: string, value: string) {
       );
     } else {
       // Text selected: wrap selection in a styled span
-      // ref: https://developer.mozilla.org/en-US/docs/Web/API/Document/execCommand#fontsize
-      document.execCommand('fontSize', false, value);
+      const selectedText = sel.toString();
+
+      // Insert the styled span wrapping the selected text
+      document.execCommand(
+        'insertHTML',
+        false,
+        `<span style="font-size: ${value}">${selectedText}</span>`,
+      );
+
+      // Re-select the text we just wrapped by finding the span
+      // After insertHTML, the cursor is at the end of the inserted content.
+      // Walk back to find the span we just inserted and select its contents.
+      const newSel = window.getSelection();
+      if (newSel && newSel.rangeCount > 0) {
+        const newRange = newSel.getRangeAt(0);
+        let insertedNode = newRange.startContainer;
+        // Walk backwards from cursor to find the inserted span
+        let span: HTMLElement | null = null;
+        if (
+          insertedNode.nodeType === Node.TEXT_NODE &&
+          insertedNode.previousSibling instanceof HTMLElement &&
+          insertedNode.previousSibling.tagName === 'SPAN'
+        ) {
+          span = insertedNode.previousSibling as HTMLElement;
+        } else if (
+          insertedNode instanceof HTMLElement &&
+          insertedNode.tagName === 'SPAN'
+        ) {
+          span = insertedNode;
+        } else if (insertedNode.parentElement?.tagName === 'SPAN') {
+          span = insertedNode.parentElement;
+        }
+
+        if (span) {
+          const textRange = document.createRange();
+          textRange.selectNodeContents(span);
+          newSel.removeAllRanges();
+          newSel.addRange(textRange);
+        }
+      }
     }
   }
 }
