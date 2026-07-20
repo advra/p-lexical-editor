@@ -608,7 +608,10 @@ export const InlineToolbar = ({
                 <button
                   key={color.value || 'default'}
                   type="button"
-                  onClick={() => handleColorChange(color.value)}
+                  onClick={() => {
+                    setSelectedTextColor(color.value);
+                    setShowColorPicker(false);
+                  }}
                   title={color.label}
                   aria-label={color.label}
                   className={`cursor-pointer w-8 h-8 rounded border flex items-center justify-center text-xs ${

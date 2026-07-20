@@ -9,7 +9,10 @@ import {
   $isRangeSelection,
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
+  SELECTION_CHANGE_COMMAND,
+  COMMAND_PRIORITY_LOW,
 } from 'lexical';
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 import FormatAlignLeftIcon from '@mui/icons-material/FormatAlignLeft';
 import FormatAlignCenterIcon from '@mui/icons-material/FormatAlignCenter';
@@ -21,29 +24,6 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { cn } from '@/lib/utils/cn';
 
 export const FONT_SIZES = [
-  // { label: '8', value: '8pt' },
-  // { label: '9', value: '9pt' },
-  // { label: '10', value: '10pt' },
-  // { label: '11', value: '11pt' },
-  // { label: '12', value: '12pt' },
-  // { label: '14', value: '14pt' },
-  // { label: '16', value: '16pt' },
-  // { label: '18', value: '18pt' },
-  // { label: '20', value: '20pt' },
-  // { label: '22', value: '22pt' },
-  // { label: '24', value: '24pt' },
-  // { label: '26', value: '26pt' },
-  // { label: '28', value: '28pt' },
-  // { label: '32', value: '32pt' },
-  // { label: '36', value: '36pt' },
-  // { label: '48', value: '48pt' },
-  // { label: '60', value: '60pt' },
-  // { label: 'Small Text', value: '0.875rem' },
-  // { label: 'Paragraph', value: '1rem' },
-  // { label: 'Lead Paragraph', value: '1.2rem' },
-  // { label: 'Section Header', value: '1.25rem' },
-  // { label: 'Subtitle', value: '2rem' },
-  // { label: 'Main Title', value: '2.5rem' },
   { label: 'Small Text', value: '0.75rem', size: 9 },
   { label: 'Paragraph', value: '0.833rem', size: 10 },
   { label: 'Subtitle', value: '1rem', size: 12 },
@@ -153,52 +133,72 @@ export const LexicalToolbar = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Read the selected node info
-  useEffect(() => {
-    const unregister = editor.registerUpdateListener(({ editorState }) => {
-      editorState.read(() => {
-        const selection = $getSelection();
-        if ($isRangeSelection(selection)) {
-          const anchorNode = selection.anchor.getNode();
-          // Walk up to find the block-level element (paragraph, heading, etc.)
-          let node = anchorNode;
-          while (node && !$isElementNode(node)) {
-            node = node.getParentOrThrow();
-          }
-          if (node) {
-            const format = node.getFormatType(); // returns 'left' | 'center' | 'right' | 'justify' | 'start'
-            setBlockFormat(format);
-          }
-
-          // font formatting bold, italics, underline, strike
-          setIsBold(selection.hasFormat('bold'));
-          setIsItalics(selection.hasFormat('italic'));
-          setIsUnderline(selection.hasFormat('underline'));
-          setIsStrikethrough(selection.hasFormat('strikethrough'));
-          // font family and size
-          const family = $getSelectionStyleValueForProperty(
-            selection,
-            'font-family',
-            DEFAULT_FONT_FAMILIES[0].value,
-          );
-          const size = $getSelectionStyleValueForProperty(
-            selection,
-            'font-size',
-            '12pt',
-          );
-          setFontFamily(family);
-          setFontSize(size);
-          // text color
-          const color = $getSelectionStyleValueForProperty(
-            selection,
-            'color',
-            '',
-          );
+  // Shared function to read selection state and update toolbar
+  const updateToolbarFromSelection = useCallback(() => {
+    editor.getEditorState().read(() => {
+      const selection = $getSelection();
+      if ($isRangeSelection(selection)) {
+        const anchorNode = selection.anchor.getNode();
+        // Walk up to find the block-level element (paragraph, heading, etc.)
+        let node = anchorNode;
+        while (node && !$isElementNode(node)) {
+          node = node.getParentOrThrow();
         }
-      });
+        if (node) {
+          const format = node.getFormatType(); // returns 'left' | 'center' | 'right' | 'justify' | 'start'
+          setBlockFormat(format);
+        }
+
+        // font formatting bold, italics, underline, strike
+        setIsBold(selection.hasFormat('bold'));
+        setIsItalics(selection.hasFormat('italic'));
+        setIsUnderline(selection.hasFormat('underline'));
+        setIsStrikethrough(selection.hasFormat('strikethrough'));
+        // font family and size
+        const family = $getSelectionStyleValueForProperty(
+          selection,
+          'font-family',
+          DEFAULT_FONT_FAMILIES[0].value,
+        );
+        const size = $getSelectionStyleValueForProperty(
+          selection,
+          'font-size',
+          '12pt',
+        );
+        setFontFamily(family);
+        setFontSize(size);
+        // text color
+        const color = $getSelectionStyleValueForProperty(
+          selection,
+          'color',
+          '#000000',
+        );
+        setSelectedTextColor(color || '#000000');
+
+      }
+    });
+  }, [editor]);
+
+  // Listen for editor state updates (content changes)
+  useEffect(() => {
+    const unregister = editor.registerUpdateListener(() => {
+      updateToolbarFromSelection();
     });
     return () => unregister();
-  }, [editor]);
+  }, [editor, updateToolbarFromSelection]);
+
+  // Listen for selection changes (cursor movement, clicking on different text)
+  useEffect(() => {
+    const unregister = editor.registerCommand(
+      SELECTION_CHANGE_COMMAND,
+      () => {
+        updateToolbarFromSelection();
+        return false;
+      },
+      COMMAND_PRIORITY_LOW,
+    );
+    return () => unregister();
+  }, [editor, updateToolbarFromSelection]);
 
   return (
     <div className="lexical-toolbar flex flex-wrap gap-1 items-center">
