@@ -504,10 +504,27 @@ export const InlineToolbar = ({
     };
   }, []);
 
+  // Prevent Ctrl+ shortcuts (B, I, U, etc.) from propagating to Puck's
+  // document-level keyboard handlers when the toolbar has focus
+  const handleToolbarKeyDown = useCallback((e: React.KeyboardEvent) => {
+    const isCtrl = e.ctrlKey || e.metaKey;
+    if (isCtrl) {
+      switch (e.key.toLowerCase()) {
+        case 'b':
+        case 'i':
+        case 'u':
+          e.preventDefault();
+          e.stopPropagation();
+          break;
+      }
+    }
+  }, []);
+
   return (
     <div
       className="lexical-toolbar flex flex-wrap gap-1 items-center"
       onMouseDown={handleToolbarMouseDown}
+      onKeyDown={handleToolbarKeyDown}
     >
       {/* Font Family */}
       <select
