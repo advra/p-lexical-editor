@@ -16,9 +16,12 @@ import FormatAlignRightIcon from '@mui/icons-material/FormatAlignRight';
 import TextIncreaseIcon from '@mui/icons-material/TextIncrease';
 import TextDecreaseIcon from '@mui/icons-material/TextDecrease';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import AddIcon from '@mui/icons-material/Add';
 import { cn } from '@/lib/utils/cn';
 import { FONT_SIZES, DEFAULT_FONT_FAMILIES, TEXT_COLORS } from './Toolbar';
 import { getComputedFontSizePx } from './utils';
+import { usePuck } from '@puckeditor/core';
+import InsertComponentToolbarPopupMenu from './menu/InsertComponentToolbarPopupMenu';
 
 /**
  * InlineToolbar - A toolbar for Puck's ActionBar that operates on the
@@ -192,8 +195,66 @@ export const InlineToolbar = ({
   const [selectedTextColor, setSelectedTextColor] = useState<string>('#000000');
   const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
   const colorPickerRef = useRef<HTMLDivElement>(null);
+  const [showInsertMenu, setShowInsertMenu] = useState<boolean>(false);
+  const insertMenuRef = useRef<HTMLDivElement>(null);
 
   const inlineEditorRef = useRef<HTMLElement | null>(null);
+
+  // Puck insert component API
+  const puck = usePuck();
+  const puckConfig = puck.config;
+  const puckComponents = puckConfig.components || {};
+  const puckComponentKeys = Object.keys(puckComponents);
+
+  const ROOT_ZONE = 'root:default-zone';
+
+  const handleInsertComponent = useCallback(
+    (componentType: string, position: 'above' | 'below') => {
+      const { appState, dispatch } = puck;
+      const currentSelector = appState.ui.itemSelector;
+
+      if (!currentSelector) {
+        // No item selected, insert at the end of the root zone
+        const content = appState.data.content || [];
+        const destinationIndex = position === 'below' ? content.length : 0;
+        dispatch({
+          type: 'insert',
+          componentType,
+          destinationZone: ROOT_ZONE,
+          destinationIndex,
+          recordHistory: true,
+        });
+      } else {
+        const destinationIndex =
+          position === 'above'
+            ? currentSelector.index
+            : currentSelector.index + 1;
+        dispatch({
+          type: 'insert',
+          componentType,
+          destinationZone: currentSelector.zone || ROOT_ZONE,
+          destinationIndex,
+          recordHistory: true,
+        });
+      }
+      setShowInsertMenu(false);
+    },
+    [puck],
+  );
+
+  // Close insert menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        insertMenuRef.current &&
+        !insertMenuRef.current.contains(event.target as Node)
+      ) {
+        setShowInsertMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Capture the inline editor on mousedown, before focus is stolen by the button
   const handleToolbarMouseDown = useCallback(() => {
@@ -747,6 +808,34 @@ export const InlineToolbar = ({
       >
         <FormatAlignRightIcon fontSize="inherit" />
       </ToolbarButton>
+
+      <span
+        id="separator"
+        className={cn(dividerClassName, 'w-px h-7 bg-slate-300')}
+      />
+
+      {/* Insert Component */}
+      <div className="relative flex items-center" ref={insertMenuRef}>
+        <button
+          type="button"
+          onClick={() => setShowInsertMenu(!showInsertMenu)}
+          title="Insert Component"
+          aria-label="Insert Component"
+          className={cn(
+            buttonClassName,
+            'cursor-pointer px-2 py-1 text-sm rounded text-gray-700 hover:bg-gray-100 flex items-center gap-1',
+          )}
+        >
+          <AddIcon fontSize="small" />
+          <span className="text-xs">Insert</span>
+          {/* <KeyboardArrowDownIcon fontSize="small" /> */}
+        </button>
+        {showInsertMenu && (
+          <InsertComponentToolbarPopupMenu
+            handleInsertComponent={handleInsertComponent}
+          />
+        )}
+      </div>
     </div>
   );
 };
