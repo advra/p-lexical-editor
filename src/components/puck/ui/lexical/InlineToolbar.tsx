@@ -100,60 +100,43 @@ function applyInlineStyle(styleProp: string, value: string) {
   }
 
   // For font-size, execCommand('fontSize') only accepts integers 1-7.
-  // Use insertHTML to apply arbitrary CSS font-size values.
+  // Use DOM Range APIs to apply arbitrary CSS font-size values while
+  // preserving existing formatting (bold, italic, underline, etc.).
   if (styleProp === 'fontSize') {
     const sel = window.getSelection();
     if (!sel?.rangeCount) return;
 
+    const range = sel.getRangeAt(0);
+
     if (sel.isCollapsed) {
       // Collapsed cursor: insert a zero-width space with the style
-      document.execCommand(
-        'insertHTML',
-        false,
-        `<span style="font-size: ${value}">\u200B</span>`,
-      );
+      const span = document.createElement('span');
+      span.style.fontSize = value;
+      span.textContent = '\u200B';
+      range.insertNode(span);
+
+      // Place cursor after the inserted span
+      range.setStartAfter(span);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
     } else {
-      // Text selected: wrap selection in a styled span
-      const selectedText = sel.toString();
+      // Extract the selected content (preserving its DOM structure)
+      const fragment = range.extractContents();
 
-      // Insert the styled span wrapping the selected text
-      document.execCommand(
-        'insertHTML',
-        false,
-        `<span style="font-size: ${value}">${selectedText}</span>`,
-      );
+      // Wrap the extracted fragment in a span with the new font-size
+      const span = document.createElement('span');
+      span.style.fontSize = value;
+      span.appendChild(fragment);
 
-      // Re-select the text we just wrapped by finding the span
-      // After insertHTML, the cursor is at the end of the inserted content.
-      // Walk back to find the span we just inserted and select its contents.
-      const newSel = window.getSelection();
-      if (newSel && newSel.rangeCount > 0) {
-        const newRange = newSel.getRangeAt(0);
-        let insertedNode = newRange.startContainer;
-        // Walk backwards from cursor to find the inserted span
-        let span: HTMLElement | null = null;
-        if (
-          insertedNode.nodeType === Node.TEXT_NODE &&
-          insertedNode.previousSibling instanceof HTMLElement &&
-          insertedNode.previousSibling.tagName === 'SPAN'
-        ) {
-          span = insertedNode.previousSibling as HTMLElement;
-        } else if (
-          insertedNode instanceof HTMLElement &&
-          insertedNode.tagName === 'SPAN'
-        ) {
-          span = insertedNode;
-        } else if (insertedNode.parentElement?.tagName === 'SPAN') {
-          span = insertedNode.parentElement;
-        }
+      // Insert the span at the original range position
+      range.insertNode(span);
 
-        if (span) {
-          const textRange = document.createRange();
-          textRange.selectNodeContents(span);
-          newSel.removeAllRanges();
-          newSel.addRange(textRange);
-        }
-      }
+      // Re-select the contents of the span so the user can continue editing
+      const newRange = document.createRange();
+      newRange.selectNodeContents(span);
+      sel.removeAllRanges();
+      sel.addRange(newRange);
     }
   }
 }
