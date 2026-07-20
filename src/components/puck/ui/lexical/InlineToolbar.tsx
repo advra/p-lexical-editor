@@ -83,26 +83,29 @@ function triggerInlineSync(editor: HTMLElement) {
  * Note: execCommand('fontSize') only accepts integers 1-7 (HTML font sizes),
  * not CSS values like rem/pt. So for font-size we use insertHTML instead.
  */
-function applyInlineStyle(styleProp: string, value: string) {
-  // Enable CSS styling via execCommand
-  document.execCommand('styleWithCSS', false, 'true');
-
-  // Map our style properties to execCommand commands
-  const commandMap: Record<string, string> = {
-    fontFamily: 'fontName',
-    color: 'foreColor',
-  };
-
-  const command = commandMap[styleProp];
-  if (command) {
+function applyInlineStyle(
+  command: 'foreColor' | 'backColor' | 'hiliteColor' | 'fontSize' | 'fontName',
+  value: string,
+) {
+  if (command === 'fontName') {
     document.execCommand(command, false, value);
     return;
+  } else if (
+    command === 'foreColor' ||
+    command === 'backColor' ||
+    command === 'hiliteColor'
+  ) {
+    console.log('command', command, ' value: ', value);
+    // Enable CSS styling via execCommand
+    // required for foreColor, backColor and hiliteColor
+    document.execCommand('styleWithCSS', false, 'true');
+    document.execCommand(command, false, value);
   }
 
   // For font-size, execCommand('fontSize') only accepts integers 1-7.
   // Use DOM Range APIs to apply arbitrary CSS font-size values while
   // preserving existing formatting (bold, italic, underline, etc.).
-  if (styleProp === 'fontSize') {
+  if (command === 'fontSize') {
     const sel = window.getSelection();
     if (!sel?.rangeCount) return;
 
@@ -144,7 +147,7 @@ function applyInlineStyle(styleProp: string, value: string) {
 /** Apply alignment to the parent block of the native selection */
 function applyInlineAlignment(align: string, container: HTMLElement) {
   const sel = window.getSelection();
-  if (!sel || !sel.rangeCount) return;
+  if (!sel?.rangeCount) return;
 
   const node = sel.anchorNode;
   if (!node) return;
@@ -223,10 +226,11 @@ export const InlineToolbar = ({
   const handleInlineColorChange = useCallback((color: string) => {
     const inlineEditor = inlineEditorRef.current;
     if (!inlineEditor) return;
+    console.log('HI');
     if (inlineEditor.dataset.applyingStyle === 'true') return;
     inlineEditor.dataset.applyingStyle = 'true';
     inlineEditor.focus();
-    applyInlineStyle('color', color);
+    applyInlineStyle('foreColor', color);
     inlineEditor.dataset.skipSync = 'true';
     triggerInlineSync(inlineEditor);
     setTimeout(() => {
@@ -273,7 +277,7 @@ export const InlineToolbar = ({
     if (inlineEditor.dataset.applyingStyle === 'true') return;
     inlineEditor.dataset.applyingStyle = 'true';
     inlineEditor.focus();
-    applyInlineStyle('fontFamily', font);
+    applyInlineStyle('fontName', font);
     inlineEditor.dataset.skipSync = 'true';
     triggerInlineSync(inlineEditor);
     setTimeout(() => {
