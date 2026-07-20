@@ -12,7 +12,35 @@
       {
         "type": "TextBlock",
         "props": {
-          "text": "<p style=\"text-align: center;\"><span style=\"white-space: pre-wrap;font-size: 12pt;\">heello</span><span style=\"white-space: pre-wrap;font-size: 12pt;color: #22C55E;\">oo the</span><span style=\"white-space: pre-wrap;font-size: 12pt;\">re </span><b style=\"font-weight: bold\"><strong style=\"white-space: pre-wrap;\">comie </strong></b><span style=\"white-space: pre-wrap;font-size: 12pt;\">the </span><b style=\"font-weight: bold; color: #3B82F6;\"><strong style=\"color: rgb(59, 130, 246); white-space: pre-wrap;\">others </strong></b><span style=\"white-space: pre-wrap;font-size: 12pt;color: #3B82F6;\">an</span><span style=\"white-space: pre-wrap;font-size: 12pt;\">d her</span></p><p style=\"text-align: center;\"><span style=\"font-size: 12pt;white-space: pre-wrap;\">12 </span><span style=\"font-size: 12pt;white-space: pre-wrap;color: #EAB308;\">point</span><span style=\"font-size: 14pt;white-space: pre-wrap;\">14</span><span style=\"font-size: 14pt;white-space: pre-wrap;color: #F97316;\">point</span><span style=\"font-size: 16pt;white-space: pre-wrap;color: #F97316;\">1</span><span style=\"font-size: 16pt;white-space: pre-wrap;color: #6B7280;\">6pt</span><span style=\"font-size: 18pt;white-space: pre-wrap;color: #6B7280;\">1</span><span style=\"font-size: 18pt;white-space: pre-wrap;color: #EC4899;\">8pt</span><span style=\"font-size: 20pt;white-space: pre-wrap;\">20p</span><span style=\"font-size: 20pt;white-space: pre-wrap;color: #EF4444;\">t</span><span style=\"font-size: 12pt;white-space: pre-wrap;color: #A855F7;\">24pt</span><span style=\"font-size: 12pt;white-space: pre-wrap;font-family: Courier New;color: #A855F7;\">28pt 32</span><span style=\"font-size: 12pt;white-space: pre-wrap;font-family: Courier New;\">pt3</span><span style=\"font-size: 12pt;white-space: pre-wrap;\">6pt</span><span style=\"white-space: pre-wrap;font-size: 12pt;\">4</span></p><p style=\"text-align: center;\"><span style=\"font-size: 12pt;white-space: pre-wrap;\">8pt6</span><u style=\"font-weight: bold; text-decoration-line: underline\"><b><strong class=\"lexical-underline\" style=\"white-space: pre-wrap;\">0</strong></b></u><u style=\"font-weight: bold; text-decoration-line: underline line-through\"><s><b><strong class=\"lexical-strikethrough lexical-underline\" style=\"white-space: pre-wrap;\">P</strong></b></s></u><span style=\"font-size: 12pt;white-space: pre-wrap;\">t</span></p><p style=\"text-align: center;\"><br></p><p style=\"text-align: right;\"><span style=\"white-space: pre-wrap;font-size: 12pt;\">sad asd asd asd </span></p><p><span style=\"white-space: pre-wrap;font-size: 12pt;\"> dsaijd </span></p>",
+          "text": "<p><b style=\"font-weight: bold\"><strong style=\"white-space: pre-wrap;\">This is a title</strong></b></p>",
+          "id": "TextBlock-af441410-93d6-40a1-abdf-6a2c106a5e57"
+        }
+      },
+      {
+        "type": "TextBlock",
+        "props": {
+          "text": "<p><span style=\"white-space: pre-wrap;\">Subtitle</span></p>",
+          "id": "TextBlock-55832a7e-2c16-4762-8fd4-4e12f367ff19"
+        }
+      },
+      {
+        "type": "TextBlock",
+        "props": {
+          "text": "<p><span style=\"font-size: 0.833rem;\">Sample paragraph text</span></p>",
+          "id": "TextBlock-39ef9c09-7f54-4990-ab5e-d560d67c11ed"
+        }
+      },
+      {
+        "type": "TextBlock",
+        "props": {
+          "text": "<p><span style=\"font-size: 0.75rem;font-family: Verdana;\">small text</span></p>",
+          "id": "TextBlock-b4ba3121-a0b0-4e9e-aa51-098bb54fad73"
+        }
+      },
+      {
+        "type": "TextBlock",
+        "props": {
+          "text": "<p style=\"text-align: center;\"><span style=\"white-space: pre-wrap;font-size: 0.833rem;\">heello</span><span style=\"white-space: pre-wrap;font-size: 0.833rem;color: #22C55E;\">oo the</span><span style=\"white-space: pre-wrap;font-size: 0.833rem;\">re </span><b style=\"font-weight: bold\"><strong style=\"white-space: pre-wrap;\">comie </strong></b><span style=\"white-space: pre-wrap;font-size: 0.833rem;\">the </span><b style=\"font-weight: bold\"><strong style=\"white-space: pre-wrap;\">others </strong></b><span style=\"white-space: pre-wrap;font-size: 0.833rem;color: #3B82F6;\">an</span><span style=\"white-space: pre-wrap;font-size: 0.833rem;\">d her</span></p><p style=\"text-align: center;\"><span style=\"font-size: 0.833rem;white-space: pre-wrap;\">12 </span><span style=\"font-size: 0.833rem;white-space: pre-wrap;color: #EAB308;\">poi</span><span style=\"font-size: 0.75rem;white-space: pre-wrap;color: #EAB308;\">nt</span><span style=\"font-size: 0.75rem;white-space: pre-wrap;\">14</span><span style=\"font-size: 0.75rem;white-space: pre-wrap;color: #F97316;\">point1</span><span style=\"font-size: 0.75rem;white-space: pre-wrap;color: #6B7280;\">6pt1</span><span style=\"font-size: 0.75rem;white-space: pre-wrap;color: #EC4899;\">8p</span><span style=\"font-size: 0.833rem;white-space: pre-wrap;color: #EC4899;\">t</span><span style=\"font-size: 0.833rem;white-space: pre-wrap;\">20p</span><span style=\"font-size: 0.833rem;white-space: pre-wrap;color: #EF4444;\">t</span><span style=\"font-size: 0.833rem;white-space: pre-wrap;color: #A855F7;\">24pt</span><span style=\"font-size: 0.833rem;white-space: pre-wrap;font-family: Courier New;color: #A855F7;\">28pt 3</span><span style=\"font-size: 1rem;white-space: pre-wrap;font-family: Courier New;color: #A855F7;\">2</span><span style=\"font-size: 1rem;white-space: pre-wrap;font-family: Courier New;\">pt3</span><span style=\"font-size: 1rem;white-space: pre-wrap;\">6</span><span style=\"font-size: 0.833rem;white-space: pre-wrap;\">pt</span><span style=\"white-space: pre-wrap;font-size: 0.833rem;\">4</span></p><p style=\"text-align: center;\"><span style=\"font-size: 1.167rem;white-space: pre-wrap;\">8pt6</span><u style=\"font-weight: bold; text-decoration-line: underline\"><b><strong class=\"lexical-underline\" style=\"white-space: pre-wrap;\">0</strong></b></u><u style=\"font-weight: bold; text-decoration-line: underline line-through\"><s><b><strong class=\"lexical-strikethrough lexical-underline\" style=\"white-space: pre-wrap;\">P</strong></b></s></u><span style=\"font-size: 1.167rem;white-space: pre-wrap;\">t</span></p><p style=\"text-align: center;\"><br></p><p style=\"text-align: right;\"><span style=\"white-space: pre-wrap;font-size: 0.833rem;\">sad asd asd asd </span></p><p><span style=\"white-space: pre-wrap;font-size: 0.833rem;\"> dsaijd </span></p>",
           "id": "TextBlock-fece9711-b0fb-4aee-9352-f8ef24f50b63"
         }
       },
@@ -42,8 +70,8 @@
     "zones": {},
     "metadata": {
       "title": "Test asd",
-      "version": 51,
-      "updatedAt": "2026-07-11T01:24:47.382Z",
+      "version": 53,
+      "updatedAt": "2026-07-20T18:32:38.555Z",
       "createdBy": "admin",
       "createdAt": "2025-12-02T23:12:28.642Z"
     }

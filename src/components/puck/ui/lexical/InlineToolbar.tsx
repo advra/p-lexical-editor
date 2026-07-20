@@ -22,6 +22,7 @@ import TextDecreaseIcon from '@mui/icons-material/TextDecrease';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { cn } from '@/lib/utils/cn';
 import { FONT_SIZES, DEFAULT_FONT_FAMILIES, TEXT_COLORS } from './Toolbar';
+import { getComputedFontSizePx } from './utils';
 
 /**
  * InlineToolbar - A toolbar for Puck's ActionBar that operates on the
@@ -267,6 +268,56 @@ export const InlineToolbar = ({
   }, []);
 
   // Track inline editor selection changes for active state updates
+  // useEffect(() => {
+  //   const updateInlineStates = () => {
+  //     if (!isInlineEditorActive()) return;
+
+  //     const sel = window.getSelection();
+  //     if (!sel?.rangeCount) return;
+
+  //     setIsBold(document.queryCommandState('bold'));
+  //     setIsItalics(document.queryCommandState('italic'));
+  //     setIsUnderline(document.queryCommandState('underline'));
+  //     setIsStrikethrough(document.queryCommandState('strikeThrough'));
+
+  //     const node = sel.anchorNode;
+  //     if (node) {
+  //       const el: HTMLElement | null =
+  //         node.nodeType === Node.ELEMENT_NODE
+  //           ? (node as HTMLElement)
+  //           : node.parentElement;
+  //       if (el) {
+  //         const computed = getComputedStyle(el);
+  //         setFontFamily(computed.fontFamily || DEFAULT_FONT_FAMILIES[0].value);
+  //         setFontSize(computed.fontSize || '12pt');
+  //         setSelectedTextColor(computed.color || '#000000');
+
+  //         let block: HTMLElement | null = el;
+  //         const container = inlineEditorRef.current;
+  //         while (
+  //           block &&
+  //           container &&
+  //           block !== container &&
+  //           getComputedStyle(block).display !== 'block'
+  //         ) {
+  //           block = block.parentElement;
+  //         }
+  //         if (block && container && block !== container) {
+  //           setBlockFormat(block.style.textAlign || 'left');
+  //         }
+  //       }
+  //     }
+  //   };
+
+  //   document.addEventListener('selectionchange', updateInlineStates);
+  //   document.addEventListener('mouseup', updateInlineStates);
+  //   return () => {
+  //     document.removeEventListener('selectionchange', updateInlineStates);
+  //     document.removeEventListener('mouseup', updateInlineStates);
+  //   };
+  // }, []);
+
+  // Track inline editor selection changes for active state updates
   useEffect(() => {
     const updateInlineStates = () => {
       if (!isInlineEditorActive()) return;
@@ -274,45 +325,104 @@ export const InlineToolbar = ({
       const sel = window.getSelection();
       if (!sel?.rangeCount) return;
 
+      // Also capture the inline editor ref here as a fallback
+      if (!inlineEditorRef.current) {
+        const activeEl = document.activeElement;
+        if (
+          activeEl instanceof HTMLElement &&
+          activeEl.isContentEditable &&
+          activeEl.classList.contains('lexical-inline-preview')
+        ) {
+          inlineEditorRef.current = activeEl;
+        }
+      }
+
       setIsBold(document.queryCommandState('bold'));
       setIsItalics(document.queryCommandState('italic'));
       setIsUnderline(document.queryCommandState('underline'));
       setIsStrikethrough(document.queryCommandState('strikeThrough'));
 
-      const node = sel.anchorNode;
+      // Use focusNode instead of anchorNode for more intuitive behavior
+      const node = sel.focusNode;
       if (node) {
-        const el: HTMLElement | null =
-          node.nodeType === Node.ELEMENT_NODE
-            ? (node as HTMLElement)
-            : node.parentElement;
-        if (el) {
-          const computed = getComputedStyle(el);
-          setFontFamily(computed.fontFamily || DEFAULT_FONT_FAMILIES[0].value);
-          setFontSize(computed.fontSize || '12pt');
-          setSelectedTextColor(computed.color || '#000000');
+        // Walk up from the focus node to find the nearest element with inline styles
+        let targetEl: HTMLElement | null = null;
+        let current: Node | null = node;
+        const container = inlineEditorRef.current;
 
-          let block: HTMLElement | null = el;
-          const container = inlineEditorRef.current;
-          while (
-            block &&
-            container &&
-            block !== container &&
-            getComputedStyle(block).display !== 'block'
-          ) {
-            block = block.parentElement;
+        while (current && current !== container) {
+          if (current.nodeType === Node.ELEMENT_NODE) {
+            const el = current as HTMLElement;
+            if (el.hasAttribute('style')) {
+              targetEl = el;
+              break;
+            }
           }
-          if (block && container && block !== container) {
-            setBlockFormat(block.style.textAlign || 'left');
+          current = current.parentNode;
+        }
+
+        if (targetEl) {
+          // Read inline styles directly from the styled span
+
+          // detect font
+          setFontFamily(
+            targetEl.style.fontFamily || DEFAULT_FONT_FAMILIES[0].value,
+          );
+          // detect font size
+          const computed = getComputedStyle(targetEl);
+          const computedPx = Number.parseFloat(computed.fontSize);
+          const matched = FONT_SIZES.find((opt) => {
+            const optPx = getComputedFontSizePx(opt.value);
+            return Math.abs(optPx - computedPx) < 0.5; // within 0.5px tolerance
+          });
+          setFontSize(matched ? matched.value : computed.fontSize);
+          // detect font color
+          setSelectedTextColor(targetEl.style.color || '#000000');
+        } else {
+          // Fall back to computed style on the parent element
+          const el: HTMLElement | null =
+            node.nodeType === Node.ELEMENT_NODE
+              ? (node as HTMLElement)
+              : node.parentElement;
+          if (el) {
+            const computed = getComputedStyle(el);
+            setFontFamily(
+              computed.fontFamily || DEFAULT_FONT_FAMILIES[0].value,
+            );
+            setFontSize(computed.fontSize || '12pt');
+            setSelectedTextColor(computed.color || '#000000');
           }
+        }
+
+        // Block format detection (walk up to find block-level element)
+        let block: HTMLElement | null =
+          targetEl ||
+          (node.nodeType === Node.ELEMENT_NODE
+            ? (node as HTMLElement)
+            : node.parentElement);
+        while (
+          block &&
+          container &&
+          block !== container &&
+          getComputedStyle(block).display !== 'block'
+        ) {
+          block = block.parentElement;
+        }
+        if (block && container && block !== container) {
+          setBlockFormat(block.style.textAlign || 'left');
         }
       }
     };
 
+    // imediately register
+    updateInlineStates();
     document.addEventListener('selectionchange', updateInlineStates);
     document.addEventListener('mouseup', updateInlineStates);
+    document.addEventListener('click', updateInlineStates); // ADD THIS
     return () => {
       document.removeEventListener('selectionchange', updateInlineStates);
       document.removeEventListener('mouseup', updateInlineStates);
+      document.removeEventListener('click', updateInlineStates);
     };
   }, []);
 
