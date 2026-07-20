@@ -197,6 +197,7 @@ export const InlineToolbar = ({
   const colorPickerRef = useRef<HTMLDivElement>(null);
   const [showInsertMenu, setShowInsertMenu] = useState<boolean>(false);
   const insertMenuRef = useRef<HTMLDivElement>(null);
+  const insertButtonRef = useRef<HTMLButtonElement>(null);
 
   const inlineEditorRef = useRef<HTMLElement | null>(null);
 
@@ -242,21 +243,8 @@ export const InlineToolbar = ({
     [puck],
   );
 
-  // Close insert menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        insertMenuRef.current &&
-        !insertMenuRef.current.contains(event.target as Node)
-      ) {
-        setShowInsertMenu(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   // Capture the inline editor on mousedown, before focus is stolen by the button
+
   const handleToolbarMouseDown = useCallback(() => {
     const el = document.activeElement;
     if (
@@ -814,13 +802,14 @@ export const InlineToolbar = ({
         className={cn(dividerClassName, 'w-px h-7 bg-slate-300')}
       />
 
-      {/* Insert Component */}
+      {/* Insert Block */}
       <div className="relative flex items-center" ref={insertMenuRef}>
         <button
           type="button"
+          ref={insertButtonRef}
           onClick={() => setShowInsertMenu(!showInsertMenu)}
-          title="Insert Component"
-          aria-label="Insert Component"
+          title="Insert Block"
+          aria-label="Insert Block"
           className={cn(
             buttonClassName,
             'cursor-pointer px-2 py-1 text-sm rounded text-gray-700 hover:bg-gray-100 flex items-center gap-1',
@@ -833,6 +822,8 @@ export const InlineToolbar = ({
         {showInsertMenu && (
           <InsertComponentToolbarPopupMenu
             handleInsertComponent={handleInsertComponent}
+            triggerRef={insertButtonRef}
+            onClose={() => setShowInsertMenu(false)}
           />
         )}
       </div>
