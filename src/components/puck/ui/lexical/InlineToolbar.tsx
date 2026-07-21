@@ -85,10 +85,16 @@ function triggerInlineSync(editor: HTMLElement) {
  *
  * Note: execCommand('fontSize') only accepts integers 1-7 (HTML font sizes),
  * not CSS values like rem/pt. So for font-size we use insertHTML instead.
+ *
+ * @param savedRange - Optional saved Range to use instead of the current selection.
+ *   This is needed because clicking a toolbar button steals focus from the inline
+ *   editor, which clears the text selection. The saved range is captured on mousedown
+ *   before focus is lost.
  */
 function applyInlineStyle(
   command: 'foreColor' | 'backColor' | 'hiliteColor' | 'fontSize' | 'fontName',
   value: string,
+  savedRange?: Range | null,
 ) {
   if (command === 'fontName') {
     document.execCommand(command, false, value);
@@ -108,26 +114,67 @@ function applyInlineStyle(
   // Use DOM Range APIs to apply arbitrary CSS font-size values while
   // preserving existing formatting (bold, italic, underline, etc.).
   if (command === 'fontSize') {
-    const sel = window.getSelection();
-    if (!sel?.rangeCount) return;
+    // Use the saved range if provided (captured on mousedown before focus was stolen),
+    // otherwise fall back to the current selection.
+    let range: Range | null = null;
+    let isCollapsed = true;
 
-    const range = sel.getRangeAt(0);
+    if (savedRange) {
+      range = savedRange.cloneRange();
+      isCollapsed = savedRange.collapsed;
+    } else {
+      const sel = window.getSelection();
+      if (!sel?.rangeCount) return;
+      range = sel.getRangeAt(0);
+      isCollapsed = sel.isCollapsed;
+    }
 
-    if (sel.isCollapsed) {
+    if (isCollapsed) {
       // Collapsed cursor: insert a zero-width space with the style
       const span = document.createElement('span');
       span.style.fontSize = value;
       span.textContent = '\u200B';
       range.insertNode(span);
 
-      // Place cursor after the inserted span
-      range.setStartAfter(span);
-      range.collapse(true);
-      sel.removeAllRanges();
-      sel.addRange(range);
+      // Place cursor inside the span (after the zero-width space text node)
+      // so that walking up from the cursor finds the styled span.
+      // This is important for subsequent increase/decrease operations
+      // which read the current font size from the DOM selection.
+      const zwspNode = span.firstChild;
+      if (zwspNode) {
+        range.setStartAfter(zwspNode);
+        range.collapse(true);
+      } else {
+        range.setStartAfter(span);
+        range.collapse(true);
+      }
+      const sel = window.getSelection();
+      if (sel) {
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
     } else {
       // Extract the selected content (preserving its DOM structure)
       const fragment = range.extractContents();
+
+      // Strip any existing font-size styles from all elements in the fragment
+      // so the new font-size fully overrides previous ones.
+      // This handles cases like "Hello" where each letter has a different size
+      // and the user wants to apply a single size to the entire selection.
+      const walker = document.createTreeWalker(
+        fragment,
+        NodeFilter.SHOW_ELEMENT,
+        null,
+      );
+      let node: Node | null;
+      while ((node = walker.nextNode())) {
+        const el = node as HTMLElement;
+        el.style.fontSize = '';
+        // Also remove empty style attributes
+        if (el.getAttribute('style') === '') {
+          el.removeAttribute('style');
+        }
+      }
 
       // Wrap the extracted fragment in a span with the new font-size
       const span = document.createElement('span');
@@ -140,8 +187,11 @@ function applyInlineStyle(
       // Re-select the contents of the span so the user can continue editing
       const newRange = document.createRange();
       newRange.selectNodeContents(span);
-      sel.removeAllRanges();
-      sel.addRange(newRange);
+      const sel = window.getSelection();
+      if (sel) {
+        sel.removeAllRanges();
+        sel.addRange(newRange);
+      }
     }
   }
 }
@@ -265,6 +315,9 @@ export const InlineToolbar = ({
   const insertButtonRef = useRef<HTMLButtonElement>(null);
 
   const inlineEditorRef = useRef<HTMLElement | null>(null);
+  // Save the selection range on mousedown (before the button steals focus)
+  // so we can restore it when applying styles to highlighted text.
+  const savedRangeRef = useRef<Range | null>(null);
 
   // Puck insert component API
   const puck = usePuck();
@@ -309,7 +362,6 @@ export const InlineToolbar = ({
   );
 
   // Capture the inline editor on mousedown, before focus is stolen by the button
-
   const handleToolbarMouseDown = useCallback(() => {
     const el = document.activeElement;
     if (
@@ -318,6 +370,11 @@ export const InlineToolbar = ({
       el.classList.contains('lexical-inline-preview')
     ) {
       inlineEditorRef.current = el;
+      // Save the current selection range before focus is stolen by the button
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0) {
+        savedRangeRef.current = sel.getRangeAt(0).cloneRange();
+      }
       return;
     }
     // Fallback: check if selection is inside an inline editor
@@ -331,12 +388,14 @@ export const InlineToolbar = ({
           node.classList.contains('lexical-inline-preview')
         ) {
           inlineEditorRef.current = node;
+          savedRangeRef.current = sel.getRangeAt(0).cloneRange();
           return;
         }
         node = node.parentNode;
       }
     }
     inlineEditorRef.current = null;
+    savedRangeRef.current = null;
   }, []);
 
   // --- Inline editor helpers (native DOM) ---
@@ -358,7 +417,8 @@ export const InlineToolbar = ({
     if (inlineEditor.dataset.applyingStyle === 'true') return;
     inlineEditor.dataset.applyingStyle = 'true';
     inlineEditor.focus();
-    applyInlineStyle('foreColor', color);
+    applyInlineStyle('foreColor', color, savedRangeRef.current);
+    savedRangeRef.current = null;
     inlineEditor.dataset.skipSync = 'true';
     triggerInlineSync(inlineEditor);
     setTimeout(() => {
@@ -391,7 +451,8 @@ export const InlineToolbar = ({
     if (inlineEditor.dataset.applyingStyle === 'true') return;
     inlineEditor.dataset.applyingStyle = 'true';
     inlineEditor.focus();
-    applyInlineStyle('fontSize', size);
+    applyInlineStyle('fontSize', size, savedRangeRef.current);
+    savedRangeRef.current = null;
     inlineEditor.dataset.skipSync = 'true';
     triggerInlineSync(inlineEditor);
     setTimeout(() => {
@@ -405,7 +466,8 @@ export const InlineToolbar = ({
     if (inlineEditor.dataset.applyingStyle === 'true') return;
     inlineEditor.dataset.applyingStyle = 'true';
     inlineEditor.focus();
-    applyInlineStyle('fontName', font);
+    applyInlineStyle('fontName', font, savedRangeRef.current);
+    savedRangeRef.current = null;
     inlineEditor.dataset.skipSync = 'true';
     triggerInlineSync(inlineEditor);
     setTimeout(() => {
@@ -501,6 +563,12 @@ export const InlineToolbar = ({
   useEffect(() => {
     const updateInlineStates = () => {
       if (!isInlineEditorActive()) return;
+
+      // Skip state updates while a style is being applied (e.g., font size change
+      // from increase/decrease buttons). The inline editor's DOM is in flux and
+      // reading it now would give stale values that override the intended state.
+      const inlineEditor = inlineEditorRef.current;
+      if (inlineEditor?.dataset.applyingStyle === 'true') return;
 
       const sel = window.getSelection();
       if (!sel?.rangeCount) return;
