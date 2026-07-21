@@ -146,6 +146,71 @@ function applyInlineStyle(
   }
 }
 
+/**
+ * Read the current font size directly from the DOM selection.
+ * This is used by the increase/decrease buttons to avoid relying on
+ * potentially stale React state.
+ */
+function getCurrentFontSizeFromDOM(): string {
+  const sel = window.getSelection();
+  if (!sel?.rangeCount) return '';
+
+  const node = sel.focusNode;
+  if (!node) return '';
+
+  // Walk up from the focus node to find the nearest element with inline styles
+  let targetEl: HTMLElement | null = null;
+  let current: Node | null = node;
+  const container =
+    document.activeElement instanceof HTMLElement &&
+    document.activeElement.isContentEditable
+      ? document.activeElement
+      : null;
+
+  while (current && current !== container) {
+    if (current.nodeType === Node.ELEMENT_NODE) {
+      const el = current as HTMLElement;
+      if (
+        el.hasAttribute('style') ||
+        el.tagName === 'FONT' ||
+        el.hasAttribute('face') ||
+        el.hasAttribute('color')
+      ) {
+        targetEl = el;
+        break;
+      }
+    }
+    current = current.parentNode;
+  }
+
+  if (targetEl) {
+    const computed = getComputedStyle(targetEl);
+    const computedPx = Number.parseFloat(computed.fontSize);
+    const matched = FONT_SIZES.find((opt) => {
+      const optPx = getComputedFontSizePx(opt.value);
+      return Math.abs(optPx - computedPx) < 0.5;
+    });
+    return matched ? matched.value : computed.fontSize;
+  }
+
+  // Fall back to computed style on the parent element
+  const el: HTMLElement | null =
+    node.nodeType === Node.ELEMENT_NODE
+      ? (node as HTMLElement)
+      : node.parentElement;
+  if (el) {
+    const computed = getComputedStyle(el);
+    const computedPx = Number.parseFloat(computed.fontSize);
+    const matched = FONT_SIZES.find((opt) => {
+      const optPx = getComputedFontSizePx(opt.value);
+      return Math.abs(optPx - computedPx) < 0.5;
+    });
+    return matched ? matched.value : computed.fontSize;
+  }
+
+  return '';
+}
+
 /** Apply alignment to the parent block of the native selection */
 function applyInlineAlignment(align: string, container: HTMLElement) {
   const sel = window.getSelection();
@@ -386,6 +451,7 @@ export const InlineToolbar = ({
       // Check inlineEditorRef.current first (captured on mousedown before focus was stolen)
       if (inlineEditorRef.current || isInlineEditorActive()) {
         handleInlineFontSizeChange(size);
+        setFontSize(size);
         return;
       }
       setFontSize(size);
@@ -613,10 +679,16 @@ export const InlineToolbar = ({
       <ToolbarButton
         className={buttonClassName}
         onClick={() => {
+          // Read the current font size directly from the DOM selection
+          // to avoid issues with stale React state
+          const currentSize = getCurrentFontSizeFromDOM();
           const currentIndex = FONT_SIZES.findIndex(
-            (s) => s.value === fontSize,
+            (s) => s.value === currentSize,
           );
-          const nextIndex = Math.min(currentIndex + 1, FONT_SIZES.length - 1);
+          const nextIndex = Math.min(
+            currentIndex >= 0 ? currentIndex + 1 : 0,
+            FONT_SIZES.length - 1,
+          );
           const nextFont = FONT_SIZES[nextIndex];
           if (nextFont) {
             handleFontSizeChange(nextFont.value);
@@ -630,10 +702,16 @@ export const InlineToolbar = ({
       <ToolbarButton
         className={buttonClassName}
         onClick={() => {
+          // Read the current font size directly from the DOM selection
+          // to avoid issues with stale React state
+          const currentSize = getCurrentFontSizeFromDOM();
           const currentIndex = FONT_SIZES.findIndex(
-            (s) => s.value === fontSize,
+            (s) => s.value === currentSize,
           );
-          const nextIndex = Math.max(currentIndex - 1, 0);
+          const nextIndex = Math.max(
+            currentIndex >= 0 ? currentIndex - 1 : 0,
+            0,
+          );
           const nextFont = FONT_SIZES[nextIndex];
           if (nextFont) {
             handleFontSizeChange(nextFont.value);

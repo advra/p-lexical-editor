@@ -156,11 +156,13 @@ export const EditableInlineRichTextTransform = ({ transformProps }: Props) => {
       if (ref.current) {
         ref.current.focus();
 
-        // Place cursor at the click position using document.caretRangeFromPoint
-        const caretRange = document.caretRangeFromPoint(e.clientX, e.clientY);
-        if (caretRange) {
-          const sel = window.getSelection();
-          if (sel) {
+        // Only place cursor at click position if there's no text selection
+        // (i.e., the user just clicked without dragging to select text).
+        // Preserving an existing selection allows highlighting text for formatting.
+        const sel = window.getSelection();
+        if (sel && sel.isCollapsed) {
+          const caretRange = document.caretRangeFromPoint(e.clientX, e.clientY);
+          if (caretRange) {
             sel.removeAllRanges();
             sel.addRange(caretRange);
           }
